@@ -4,7 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    allowed_versions: [">=1.0.0"]
+    allowed_versions: [">=0.0.1"]
     versioning:
       file:
         - name: requirements.txt
