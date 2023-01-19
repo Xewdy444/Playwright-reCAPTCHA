@@ -1,0 +1,10 @@
+version: 2
+versioning:
+  file:
+    - name: requirements.txt
+    - name: setup.py
+updates:
+  - package-ecosystem: "pypi"
+    directory: "/"
+    schedule:
+      interval: "daily"
