@@ -11,6 +11,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Xewdy444/Playwright-reCAPTCHA",
     packages=find_packages(),
+    python_requires=">=3.8",
     install_requires=[
         "httpx==0.23.3",
         "playwright==1.29.1",
