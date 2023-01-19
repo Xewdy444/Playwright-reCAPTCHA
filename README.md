@@ -1,6 +1,6 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![PyPI](https://img.shields.io/pypi/v/playwright-recaptcha.svg)](https://pypi.org/project/playwright-recaptcha/)
-[![License](https://img.shields.io/github/license/Xewdy444/Playwright-reCAPTCHA.svg?style=flat-square)](https://github.com/Xewdy444/Playwright-reCAPTCHA/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/Xewdy444/Playwright-reCAPTCHA.svg?style=flat-square)](https://github.com/Xewdy444/Playwright-reCAPTCHA/blob/main/LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # Playwright-reCAPTCHA
