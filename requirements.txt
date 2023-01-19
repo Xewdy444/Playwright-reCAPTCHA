@@ -1,0 +1,4 @@
+httpx==0.23.3
+playwright==1.29.1
+pydub==0.25.1
+SpeechRecognition==3.9.0
