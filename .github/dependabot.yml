@@ -4,8 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    allowed_versions: [">=0.0.1"]
-    versioning:
-      file:
+    file:
         - name: requirements.txt
         - name: setup.py
