@@ -11,3 +11,5 @@ from playwright_recaptcha.recaptchav2.async_solver import AsyncSolver as AsyncSo
 from playwright_recaptcha.recaptchav2.sync_solver import SyncSolver as SyncSolverV2
 from playwright_recaptcha.recaptchav3.async_solver import AsyncSolver as AsyncSolverV3
 from playwright_recaptcha.recaptchav3.sync_solver import SyncSolver as SyncSolverV3
+
+__version__ = "0.0.2"
