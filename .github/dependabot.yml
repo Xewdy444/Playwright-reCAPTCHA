@@ -4,6 +4,3 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    file:
-        - name: requirements.txt
-        - name: setup.py
