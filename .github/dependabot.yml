@@ -1,10 +1,11 @@
 version: 2
-versioning:
-  file:
-    - name: requirements.txt
-    - name: setup.py
 updates:
-  - package-ecosystem: "pypi"
+  - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "daily"
+    allowed_versions: [">=1.0.0"]
+    versioning:
+      file:
+        - name: requirements.txt
+        - name: setup.py
