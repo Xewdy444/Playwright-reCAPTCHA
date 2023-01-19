@@ -19,7 +19,7 @@ class TestRecaptchaSolver(unittest.TestCase):
             ):
                 browser = playwright_browser.launch()
                 page = browser.new_page()
-                page.goto("https://www.google.com/recaptcha/api2")
+                page.goto("https://www.google.com/recaptcha/api2/demo")
 
                 with recaptchav2.SyncSolver(page) as solver:
                     try:
@@ -32,7 +32,7 @@ class TestRecaptchaSolver(unittest.TestCase):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(slow_mo=1000)
             page = browser.new_page()
-            page.goto("https://www.google.com/recaptcha/api2")
+            page.goto("https://www.google.com/recaptcha/api2/demo")
 
             with recaptchav2.SyncSolver(page) as solver:
                 try:

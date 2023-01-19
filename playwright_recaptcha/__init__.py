@@ -12,4 +12,4 @@ from playwright_recaptcha.recaptchav2.sync_solver import SyncSolver as SyncSolve
 from playwright_recaptcha.recaptchav3.async_solver import AsyncSolver as AsyncSolverV3
 from playwright_recaptcha.recaptchav3.sync_solver import SyncSolver as SyncSolverV3
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"

@@ -19,7 +19,7 @@ class TestRecaptchaSolver(unittest.IsolatedAsyncioTestCase):
             ):
                 browser = await playwright_browser.launch()
                 page = await browser.new_page()
-                await page.goto("https://www.google.com/recaptcha/api2")
+                await page.goto("https://www.google.com/recaptcha/api2/demo")
 
                 async with recaptchav2.AsyncSolver(page) as solver:
                     try:
@@ -32,7 +32,7 @@ class TestRecaptchaSolver(unittest.IsolatedAsyncioTestCase):
         async with async_playwright() as playwright:
             browser = await playwright.chromium.launch(slow_mo=1000)
             page = await browser.new_page()
-            await page.goto("https://www.google.com/recaptcha/api2")
+            await page.goto("https://www.google.com/recaptcha/api2/demo")
 
             async with recaptchav2.AsyncSolver(page) as solver:
                 try:
