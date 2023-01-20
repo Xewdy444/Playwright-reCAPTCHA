@@ -18,9 +18,10 @@ def test_solver() -> None:
         with recaptchav2.SyncSolver(page) as solver:
             try:
                 token = solver.solve_recaptcha()
-                assert token is not None
             except RecaptchaRateLimitError:
-                pass
+                return
+
+            assert token is not None
 
 
 def test_solver_with_slow_browser() -> None:
@@ -33,10 +34,10 @@ def test_solver_with_slow_browser() -> None:
         with recaptchav2.SyncSolver(page) as solver:
             try:
                 token = solver.solve_recaptcha()
-                assert token is not None
             except RecaptchaRateLimitError:
-                pass
+                return
 
+            assert token is not None
 
 def test_recaptcha_not_found() -> None:
     """Test the solver with a page that does not have a reCAPTCHA."""
