@@ -39,9 +39,8 @@ def test_recaptcha_not_found() -> None:
         page = browser.new_page()
         page.goto("https://www.google.com/")
 
-        with pytest.raises(RecaptchaTimeoutError):
-            with recaptchav3.SyncSolver(page, timeout=10) as solver:
-                solver.solve_recaptcha()
+        with pytest.raises(RecaptchaTimeoutError), recaptchav3.SyncSolver(page, timeout=10) as solver:
+            solver.solve_recaptcha()
 
 
 def test_recaptcha_version_error() -> None:
@@ -51,6 +50,5 @@ def test_recaptcha_version_error() -> None:
         page = browser.new_page()
         page.goto("https://cobra.ehr.com/ESS/Home/Login.aspx")
 
-        with pytest.raises(RecaptchaVersionError):
-            with recaptchav3.SyncSolver(page) as solver:
-                solver.solve_recaptcha()
+        with pytest.raises(RecaptchaVersionError), recaptchav3.SyncSolver(page) as solver:
+            solver.solve_recaptcha()
