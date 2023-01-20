@@ -8,7 +8,6 @@ from typing import Any, Optional
 import httpx
 import pydub
 import speech_recognition
-from playwright._impl._api_types import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import Frame, Locator, Page, Response
 
 from playwright_recaptcha.errors import RecaptchaRateLimitError, RecaptchaSolveError
@@ -230,22 +229,16 @@ class SyncSolver:
             return self.token
 
         while retries > 0:
-            try:
-                self._random_delay()
-                url = self._get_audio_url(recaptcha_frame)
-                text = self._convert_audio_to_text(url)
-                self._random_delay()
-                self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
-            except PlaywrightTimeoutError:
-                pass
-            else:
-                if recaptcha_checkbox.is_checked():
-                    break
+            self._random_delay()
+            url = self._get_audio_url(recaptcha_frame)
+            text = self._convert_audio_to_text(url)
+            self._random_delay()
+            self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
-                recaptcha_frame.get_by_role(
-                    "button", name="Get a new challenge"
-                ).click()
+            if recaptcha_checkbox.is_checked():
+                break
 
+            recaptcha_frame.get_by_role("button", name="Get a new challenge").click()
             retries -= 1
 
         if not recaptcha_checkbox.is_checked():

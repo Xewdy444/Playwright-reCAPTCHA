@@ -11,7 +11,6 @@ from typing import Any, Optional
 import httpx
 import pydub
 import speech_recognition
-from playwright._impl._api_types import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import Frame, Locator, Page, Response
 
 from playwright_recaptcha.errors import RecaptchaRateLimitError, RecaptchaSolveError
@@ -263,24 +262,20 @@ class AsyncSolver:
             return self.token
 
         while retries > 0:
-            try:
-                await self._random_delay()
-                url = await self._get_audio_url(recaptcha_frame)
-                text = await self._convert_audio_to_text(url)
-                await self._random_delay()
-                await self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
-            except PlaywrightTimeoutError:
-                pass
-            else:
-                if await recaptcha_checkbox.is_checked():
-                    break
+            await self._random_delay()
+            url = await self._get_audio_url(recaptcha_frame)
+            text = await self._convert_audio_to_text(url)
+            await self._random_delay()
+            await self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
-                new_challenge_button = recaptcha_frame.get_by_role(
-                    "button", name="Get a new challenge"
-                )
+            if await recaptcha_checkbox.is_checked():
+                break
 
-                await new_challenge_button.click()
+            new_challenge_button = recaptcha_frame.get_by_role(
+                "button", name="Get a new challenge"
+            )
 
+            await new_challenge_button.click()
             retries -= 1
 
         if not await recaptcha_checkbox.is_checked():
