@@ -112,7 +112,10 @@ class SyncSolver:
             audio_challenge_button.click()
 
         while True:
-            if recaptcha_frame.get_by_text("Press PLAY to listen").is_visible():
+            if (
+                recaptcha_frame.is_detached
+                or recaptcha_frame.get_by_text("Press PLAY to listen").is_visible()
+            ):
                 break
 
             if recaptcha_frame.get_by_text("Try again later").is_visible():
@@ -179,7 +182,8 @@ class SyncSolver:
 
         while True:
             if (
-                recaptcha_frame.get_by_text(
+                recaptcha_frame.is_detached
+                or recaptcha_frame.get_by_text(
                     "Multiple correct solutions required - please solve more."
                 ).is_visible()
                 or recaptcha_checkbox.is_checked()
@@ -229,13 +233,16 @@ class SyncSolver:
             return self.token
 
         while retries > 0:
+            if recaptcha_frame.is_detached:
+                break
+
             self._random_delay()
             url = self._get_audio_url(recaptcha_frame)
             text = self._convert_audio_to_text(url)
             self._random_delay()
             self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
-            if recaptcha_checkbox.is_checked():
+            if recaptcha_frame.is_detached or recaptcha_checkbox.is_checked():
                 break
 
             recaptcha_frame.get_by_role("button", name="Get a new challenge").click()
