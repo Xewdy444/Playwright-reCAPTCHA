@@ -206,7 +206,7 @@ class AsyncSolver:
         await textbox.fill(text)
         await verify_button.click()
 
-        while True:
+        while not recaptcha_frame.is_detached():
             solve_failure = recaptcha_frame.get_by_text(
                 "Multiple correct solutions required - please solve more."
             )
@@ -214,8 +214,8 @@ class AsyncSolver:
             rate_limit = recaptcha_frame.get_by_text("Try again later")
 
             if (
-                await solve_failure.is_visible()
-                or await recaptcha_checkbox.is_checked()
+                await recaptcha_checkbox.is_checked()
+                or await solve_failure.is_visible()
             ):
                 break
 
@@ -268,7 +268,7 @@ class AsyncSolver:
             await self._random_delay()
             await self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
-            if await recaptcha_checkbox.is_checked():
+            if recaptcha_frame.is_detached() or await recaptcha_checkbox.is_checked():
                 break
 
             new_challenge_button = recaptcha_frame.get_by_role(
