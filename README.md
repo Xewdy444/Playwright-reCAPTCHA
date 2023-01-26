@@ -7,10 +7,10 @@
 A Python libary for solving reCAPTCHA v2 and v3 with Playwright.
 
 ## Solving reCAPTCHA v2
-reCAPTCHA v2 audio challenges are solved by using the Google speech recognition API to transcribe the challenge and enter the text as the response.
+reCAPTCHA v2 is solved by transcribing the audio challenge using the Google speech recognition API and entering the text as the response.
 
 ## Solving reCAPTCHA v3
-reCAPTCHA v3 is solved by waiting for the reload request (https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload) response and parsing the token.
+reCAPTCHA v3 is solved by waiting for the reload POST request (https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload) and parsing the token from the response.
 
 ---
 
@@ -37,6 +37,8 @@ This library requires ffmpeg to be installed on your system in order to to conve
 # Examples
 
 ## reCAPTCHA v2
+
+### Synchronous
 ```py
 from playwright.sync_api import sync_playwright
 from playwright_recaptcha import recaptchav2
@@ -51,6 +53,7 @@ with sync_playwright() as playwright:
         print(token)
 ```
 
+### Asynchronous
 ```py
 import asyncio
 from playwright.async_api import async_playwright
@@ -70,6 +73,8 @@ asyncio.run(main())
 ```
 
 ## reCAPTCHA v3
+
+### Synchronous
 ```py
 from playwright.sync_api import sync_playwright
 from playwright_recaptcha import recaptchav3
@@ -84,6 +89,7 @@ with sync_playwright() as playwright:
         print(token)
 ```
 
+### Asynchronous
 ```py
 import asyncio
 from playwright.async_api import async_playwright
@@ -103,15 +109,14 @@ asyncio.run(main())
 ```
 
 # Exceptions
-|        Exception        |                                                                                                            Description                                                                                                            |
-| :---------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-|     RecaptchaError      |                                                                  The base class for reCAPTCHA exceptions, used as a catch-all for any reCAPTCHA-related errors.                                                                   |
-|  RecaptchaVersionError  |                     An exception raised when the reCAPTCHA is not version 3. This indicates that the website is using reCAPTCHA v2, not v3. To solve this issue, simply use the reCAPTCHA v2 solver instead.                      |
-| RecaptchaNotFoundError  |                                             An exception raised when the reCAPTCHA was not found on the website. This can happen if the reCAPTCHA v2 has been removed from the page.                                              |
-| RecaptchaRateLimitError | An exception raised when the reCAPTCHA rate limit has been reached. This can happen if the library is being used to solve reCAPTCHA v2s too quickly or if the website has implemented rate limiting to prevent automated solving. |
-|   RecaptchaSolveError   |                       An exception raised when the reCAPTCHA could not be solved. This can happen if the reCAPTCHA v2 could not be solved via speech-to-text conversion in the specified amount of retries.                       |
-|  RecaptchaTimeoutError  |       An exception raised when the reCAPTCHA solve timeout has been reached. This can happen if the library failed to solve the reCAPTCHA v3 in the specified timeout or if the website is experiencing performance issues.       |
-
+|        Exception        |                                                                     Description                                                                     |
+| :---------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------: |
+|     RecaptchaError      |                           The base class for reCAPTCHA exceptions, used as a catch-all for any reCAPTCHA-related errors.                            |
+|  RecaptchaVersionError  |     An exception raised when the reCAPTCHA v3 solver is used for reCAPTCHA v2. To solve this issue, simply use the reCAPTCHA v2 solver instead.     |
+| RecaptchaNotFoundError  |                                       An exception raised when the reCAPTCHA v2 was not found on the website.                                       |
+| RecaptchaRateLimitError | An exception raised when the reCAPTCHA rate limit has been reached. This can happen if the library is being used to solve reCAPTCHA v2 too quickly. |
+|   RecaptchaSolveError   |           An exception raised when the reCAPTCHA v2 could not be solved via speech-to-text conversion in the specified amount of retries.           |
+|  RecaptchaTimeoutError  |                             An exception raised when the reCAPTCHA v3 could not be solved within the specified timeout.                             |
 
 # Disclaimer
 This library is intended for use in automated testing and development environments only and should not be used for any illegal or malicious purposes. Any use of this library for activities that violate the terms of service of any website or service is strictly prohibited. The contributors of this library will not be held liable for any damages or legal issues that may arise from the use of this library. By using this library, you agree to these terms and take full responsibility for your actions.
