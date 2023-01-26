@@ -20,4 +20,13 @@ setup(
         "pydub==0.25.1",
         "SpeechRecognition==3.9.0",
     ],
+    classifiers=[
+        "Programming Language :: Python :: 3.8",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Testing",
+        "Topic :: Internet :: WWW/HTTP :: Browsers",
+        "Framework :: AsyncIO",
+    ],
 )
