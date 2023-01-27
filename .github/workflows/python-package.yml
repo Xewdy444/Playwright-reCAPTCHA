@@ -30,6 +30,10 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         python -m pip install flake8 pytest .
         python -m playwright install --with-deps chromium
+    - name: Install ffmpeg
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
