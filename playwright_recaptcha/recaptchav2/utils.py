@@ -34,7 +34,7 @@ def get_recaptcha_frame(frames: Iterable[Frame]) -> Frame:
 
 def get_recaptcha_checkbox(frames: Iterable[Frame]) -> Locator:
     """
-    Get the reCAPTCHA checkbox.
+    Get the reCAPTCHA checkbox locator.
 
     Parameters
     ----------
@@ -52,7 +52,12 @@ def get_recaptcha_checkbox(frames: Iterable[Frame]) -> Locator:
         If the reCAPTCHA checkbox was not found.
     """
     for frame in frames:
-        if re.search("/recaptcha/(api2|enterprise)/anchor", frame.url) is not None:
-            return frame.get_by_role("checkbox", name="I'm not a robot")
+        if re.search("/recaptcha/(api2|enterprise)/anchor", frame.url) is None:
+            continue
+
+        checkbox = frame.get_by_role("checkbox", name="I'm not a robot")
+
+        if checkbox.is_visible():
+            return checkbox
 
     raise RecaptchaNotFoundError
