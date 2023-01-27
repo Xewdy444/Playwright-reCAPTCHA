@@ -223,10 +223,18 @@ class SyncSolver:
         self._page.wait_for_load_state("networkidle")
         recaptcha_frame = get_recaptcha_frame(self._page.frames)
         recaptcha_checkbox = get_recaptcha_checkbox(self._page.frames)
-        recaptcha_checkbox.click()
+        recaptcha_checkbox.click(force=True)
 
-        if recaptcha_checkbox.is_checked():
-            return self.token
+        while True:
+            if recaptcha_frame.get_by_role(
+                "button", name="Get an audio challenge"
+            ).is_enabled():
+                break
+
+            if recaptcha_checkbox.is_checked():
+                return self.token
+
+            self._page.wait_for_timeout(100)
 
         while retries > 0:
             self._random_delay()
