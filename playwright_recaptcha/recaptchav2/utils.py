@@ -1,12 +1,17 @@
 import re
-from typing import Iterable
+from typing import Iterable, Union
 
-from playwright.sync_api import Frame, Locator
+from playwright.async_api import Frame as AsyncFrame
+from playwright.async_api import Locator as AsyncLocator
+from playwright.sync_api import Frame as SyncFrame
+from playwright.sync_api import Locator as SyncLocator
 
 from playwright_recaptcha.errors import RecaptchaNotFoundError
 
 
-def get_recaptcha_frame(frames: Iterable[Frame]) -> Frame:
+def get_recaptcha_frame(
+    frames: Iterable[Union[AsyncFrame, SyncFrame]]
+) -> Union[AsyncFrame, SyncFrame]:
     """
     Get the reCAPTCHA frame.
 
@@ -32,7 +37,9 @@ def get_recaptcha_frame(frames: Iterable[Frame]) -> Frame:
     raise RecaptchaNotFoundError
 
 
-def get_recaptcha_checkbox(frames: Iterable[Frame]) -> Locator:
+def get_recaptcha_checkbox(
+    frames: Iterable[Union[AsyncFrame, SyncFrame]]
+) -> Union[AsyncLocator, SyncLocator]:
     """
     Get the reCAPTCHA checkbox locator.
 
@@ -52,12 +59,7 @@ def get_recaptcha_checkbox(frames: Iterable[Frame]) -> Locator:
         If the reCAPTCHA checkbox was not found.
     """
     for frame in frames:
-        if re.search("/recaptcha/(api2|enterprise)/anchor", frame.url) is None:
-            continue
-
-        checkbox = frame.get_by_role("checkbox", name="I'm not a robot")
-
-        if checkbox.is_visible():
-            return checkbox
+        if re.search("/recaptcha/(api2|enterprise)/anchor", frame.url) is not None:
+            return frame.get_by_role("checkbox", name="I'm not a robot")
 
     raise RecaptchaNotFoundError
