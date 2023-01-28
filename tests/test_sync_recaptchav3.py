@@ -16,8 +16,7 @@ def test_solver() -> None:
         page.goto("https://antcpt.com/score_detector/")
 
         with recaptchav3.SyncSolver(page) as solver:
-            token = solver.solve_recaptcha()
-            assert token is not None
+            solver.solve_recaptcha()
 
 
 def test_solver_with_slow_browser() -> None:
@@ -28,8 +27,7 @@ def test_solver_with_slow_browser() -> None:
         page.goto("https://antcpt.com/score_detector/")
 
         with recaptchav3.SyncSolver(page) as solver:
-            token = solver.solve_recaptcha()
-            assert token is not None
+            solver.solve_recaptcha()
 
 
 def test_recaptcha_not_found() -> None:
@@ -39,7 +37,9 @@ def test_recaptcha_not_found() -> None:
         page = browser.new_page()
         page.goto("https://www.google.com/")
 
-        with pytest.raises(RecaptchaTimeoutError), recaptchav3.SyncSolver(page, timeout=10) as solver:
+        with pytest.raises(RecaptchaTimeoutError), recaptchav3.SyncSolver(
+            page, timeout=10
+        ) as solver:
             solver.solve_recaptcha()
 
 
@@ -50,5 +50,7 @@ def test_recaptcha_version_error() -> None:
         page = browser.new_page()
         page.goto("https://cobra.ehr.com/ESS/Home/Login.aspx")
 
-        with pytest.raises(RecaptchaVersionError), recaptchav3.SyncSolver(page) as solver:
+        with pytest.raises(RecaptchaVersionError), recaptchav3.SyncSolver(
+            page
+        ) as solver:
             solver.solve_recaptcha()

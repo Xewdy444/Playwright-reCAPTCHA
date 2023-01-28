@@ -60,7 +60,7 @@ class AsyncSolver:
     def __init__(self, page: Page, retries: int = 3) -> None:
         self._page = page
         self._retries = retries
-        self.token = None
+        self.token: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"AsyncSolver(page={self._page!r}, retries={self._retries!r})"
@@ -210,7 +210,7 @@ class AsyncSolver:
         await textbox.fill(text)
         await verify_button.click()
 
-        while True:
+        while not recaptcha_frame.is_detached():
             solve_failure = recaptcha_frame.get_by_text(
                 "Multiple correct solutions required - please solve more."
             )
@@ -218,8 +218,8 @@ class AsyncSolver:
             rate_limit = recaptcha_frame.get_by_text("Try again later")
 
             if (
-                await solve_failure.is_visible()
-                or await recaptcha_checkbox.is_checked()
+                await recaptcha_checkbox.is_checked()
+                or await solve_failure.is_visible()
             ):
                 break
 
@@ -275,6 +275,9 @@ class AsyncSolver:
                 break
 
             if await recaptcha_checkbox.is_checked():
+                if self.token is None:
+                    raise RecaptchaSolveError
+
                 return self.token
 
             await self._page.wait_for_timeout(100)
@@ -286,8 +289,11 @@ class AsyncSolver:
             await self._random_delay()
             await self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
-            if await recaptcha_checkbox.is_checked():
-                break
+            if recaptcha_frame.is_detached() or await recaptcha_checkbox.is_checked():
+                if self.token is None:
+                    raise RecaptchaSolveError
+
+                return self.token
 
             new_challenge_button = recaptcha_frame.get_by_role(
                 "button", name="Get a new challenge"
@@ -296,7 +302,4 @@ class AsyncSolver:
             await new_challenge_button.click()
             retries -= 1
 
-        if not await recaptcha_checkbox.is_checked():
-            raise RecaptchaSolveError
-
-        return self.token
+        raise RecaptchaSolveError

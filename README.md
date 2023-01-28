@@ -23,7 +23,7 @@ It's important to note that reCAPTCHA v3 uses a token-based scoring system, wher
 pip install playwright-recaptcha
 ```
 
-This library requires ffmpeg to be installed on your system in order to to convert the audio challenge from reCAPTCHA v2 into text.
+This library requires ffmpeg to be installed on your system in order to convert the audio challenge from reCAPTCHA v2 into text.
 
 |   OS    |                                          Install                                           |
 | :-----: | :----------------------------------------------------------------------------------------: |
