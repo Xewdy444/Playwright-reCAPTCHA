@@ -43,7 +43,7 @@ class AsyncSolver:
     def __init__(self, page: Page, timeout: int = 30) -> None:
         self._page = page
         self._timeout = timeout
-        self.token = None
+        self.token: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"AsyncSolver(page={self._page!r}, timeout={self._timeout!r})"
