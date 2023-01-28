@@ -53,7 +53,7 @@ class SyncSolver:
     def __init__(self, page: Page, retries: int = 3) -> None:
         self._page = page
         self._retries = retries
-        self.token = None
+        self.token: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"SyncSolver(page={self._page!r}, retries={self._retries!r})"
@@ -177,12 +177,12 @@ class SyncSolver:
         recaptcha_frame.get_by_role("textbox", name="Enter what you hear").fill(text)
         recaptcha_frame.get_by_role("button", name="Verify").click()
 
-        while True:
+        while not recaptcha_frame.is_detached():
             if (
-                recaptcha_frame.get_by_text(
+                recaptcha_checkbox.is_checked()
+                or recaptcha_frame.get_by_text(
                     "Multiple correct solutions required - please solve more."
                 ).is_visible()
-                or recaptcha_checkbox.is_checked()
             ):
                 break
 
@@ -226,6 +226,9 @@ class SyncSolver:
         recaptcha_checkbox.click()
 
         if recaptcha_checkbox.is_checked():
+            if self.token is None:
+                raise RecaptchaSolveError
+
             return self.token
 
         while retries > 0:
@@ -235,13 +238,13 @@ class SyncSolver:
             self._random_delay()
             self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
-            if recaptcha_checkbox.is_checked():
-                break
+            if recaptcha_frame.is_detached() or recaptcha_checkbox.is_checked():
+                if self.token is None:
+                    raise RecaptchaSolveError
+
+                return self.token
 
             recaptcha_frame.get_by_role("button", name="Get a new challenge").click()
             retries -= 1
 
-        if not recaptcha_checkbox.is_checked():
-            raise RecaptchaSolveError
-
-        return self.token
+        raise RecaptchaSolveError
