@@ -269,7 +269,7 @@ class AsyncSolver:
             await self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
             if recaptcha_frame.is_detached() or await recaptcha_checkbox.is_checked():
-                break
+                return self.token
 
             new_challenge_button = recaptcha_frame.get_by_role(
                 "button", name="Get a new challenge"
@@ -278,7 +278,4 @@ class AsyncSolver:
             await new_challenge_button.click()
             retries -= 1
 
-        if not await recaptcha_checkbox.is_checked():
-            raise RecaptchaSolveError
-
-        return self.token
+        raise RecaptchaSolveError

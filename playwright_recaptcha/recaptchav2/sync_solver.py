@@ -236,12 +236,9 @@ class SyncSolver:
             self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
             if recaptcha_frame.is_detached() or recaptcha_checkbox.is_checked():
-                break
+                return self.token
 
             recaptcha_frame.get_by_role("button", name="Get a new challenge").click()
             retries -= 1
 
-        if not recaptcha_checkbox.is_checked():
-            raise RecaptchaSolveError
-
-        return self.token
+        raise RecaptchaSolveError
