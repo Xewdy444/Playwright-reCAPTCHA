@@ -1,10 +1,8 @@
 from setuptools import find_packages, setup
 
-from playwright_recaptcha import __version__
-
 setup(
     name="playwright-recaptcha",
-    version=__version__,
+    version="0.0.4",
     author="Xewdy444",
     author_email="xewdy@xewdy.tech",
     description="A libary for solving reCAPTCHA v2 and v3 with Playwright",
@@ -19,5 +17,14 @@ setup(
         "playwright==1.30.0",
         "pydub==0.25.1",
         "SpeechRecognition==3.9.0",
+    ],
+    classifiers=[
+        "Programming Language :: Python :: 3.8",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Testing",
+        "Topic :: Internet :: WWW/HTTP :: Browsers",
+        "Framework :: AsyncIO",
     ],
 )

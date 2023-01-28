@@ -9,6 +9,7 @@ from playwright_recaptcha import (
 
 
 @pytest.mark.asyncio
+@pytest.mark.xfail(raises=RecaptchaRateLimitError)
 async def test_solver() -> None:
     """Test the solver with a normal browser."""
     async with async_playwright() as playwright:
@@ -17,15 +18,11 @@ async def test_solver() -> None:
         await page.goto("https://www.google.com/recaptcha/api2/demo")
 
         async with recaptchav2.AsyncSolver(page) as solver:
-            try:
-                token = await solver.solve_recaptcha()
-            except RecaptchaRateLimitError:
-                return
-
-            assert token is not None
+            await solver.solve_recaptcha()
 
 
 @pytest.mark.asyncio
+@pytest.mark.xfail(raises=RecaptchaRateLimitError)
 async def test_solver_with_slow_browser() -> None:
     """Test the solver with a slow browser."""
     async with async_playwright() as playwright:
@@ -34,12 +31,7 @@ async def test_solver_with_slow_browser() -> None:
         await page.goto("https://www.google.com/recaptcha/api2/demo")
 
         async with recaptchav2.AsyncSolver(page) as solver:
-            try:
-                token = await solver.solve_recaptcha()
-            except RecaptchaRateLimitError:
-                return
-
-            assert token is not None
+            await solver.solve_recaptcha()
 
 
 @pytest.mark.asyncio

@@ -17,10 +17,10 @@ class RecaptchaNotFoundError(RecaptchaError):
 
 
 class RecaptchaRateLimitError(RecaptchaError):
-    """An exception raised when the reCAPTCHA rate limit has been reached."""
+    """An exception raised when the reCAPTCHA rate limit has been exceeded."""
 
     def __init__(self) -> None:
-        super().__init__("The reCAPTCHA rate limit has been reached.")
+        super().__init__("The reCAPTCHA rate limit has been exceeded.")
 
 
 class RecaptchaSolveError(RecaptchaError):
@@ -31,7 +31,7 @@ class RecaptchaSolveError(RecaptchaError):
 
 
 class RecaptchaTimeoutError(RecaptchaError):
-    """An exception raised when the reCAPTCHA solve timeout has been reached."""
+    """An exception raised when the reCAPTCHA solve timeout has been exceeded."""
 
     def __init__(self) -> None:
-        super().__init__("The reCAPTCHA solve timeout has been reached.")
+        super().__init__("The reCAPTCHA solve timeout has been exceeded.")
