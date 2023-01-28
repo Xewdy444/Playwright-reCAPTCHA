@@ -25,11 +25,13 @@ pip install playwright-recaptcha
 
 This library requires ffmpeg to be installed on your system in order to convert the audio challenge from reCAPTCHA v2 into text.
 
-|   OS    |                                          Install                                           |
-| :-----: | :----------------------------------------------------------------------------------------: |
-| Debian  |                                sudo apt-get install ffmpeg                                 |
-|  MacOS  |                                    brew install ffmpeg                                     |
-| Windows | Download and install the latest static build from [here](https://ffmpeg.org/download.html) |
+|   OS    |           Command           |
+| :-----: | :-------------------------: |
+| Debian  | sudo apt-get install ffmpeg |
+|  MacOS  |     brew install ffmpeg     |
+| Windows |    choco install ffmpeg     |
+
+You can also download the latest static build from [here](https://ffmpeg.org/download.html)
 
 > **Note**
 > Make sure to have ffmpeg and ffprobe in your system's PATH so that the library can find them.
