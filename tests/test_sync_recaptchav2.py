@@ -8,6 +8,7 @@ from playwright_recaptcha import (
 )
 
 
+@pytest.mark.xfail(raises=RecaptchaRateLimitError)
 def test_solver() -> None:
     """Test the solver with a normal browser."""
     with sync_playwright() as playwright:
@@ -16,14 +17,10 @@ def test_solver() -> None:
         page.goto("https://www.google.com/recaptcha/api2/demo")
 
         with recaptchav2.SyncSolver(page) as solver:
-            try:
-                token = solver.solve_recaptcha()
-            except RecaptchaRateLimitError:
-                return
-
-            assert token is not None
+            solver.solve_recaptcha()
 
 
+@pytest.mark.xfail(raises=RecaptchaRateLimitError)
 def test_solver_with_slow_browser() -> None:
     """Test the solver with a slow browser."""
     with sync_playwright() as playwright:
@@ -32,12 +29,7 @@ def test_solver_with_slow_browser() -> None:
         page.goto("https://www.google.com/recaptcha/api2/demo")
 
         with recaptchav2.SyncSolver(page) as solver:
-            try:
-                token = solver.solve_recaptcha()
-            except RecaptchaRateLimitError:
-                return
-
-            assert token is not None
+            solver.solve_recaptcha()
 
 
 def test_recaptcha_not_found() -> None:

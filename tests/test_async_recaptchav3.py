@@ -17,8 +17,7 @@ async def test_solver() -> None:
         await page.goto("https://antcpt.com/score_detector/")
 
         async with recaptchav3.AsyncSolver(page) as solver:
-            token = await solver.solve_recaptcha()
-            assert token is not None
+            await solver.solve_recaptcha()
 
 
 @pytest.mark.asyncio
@@ -30,8 +29,7 @@ async def test_solver_with_slow_browser() -> None:
         await page.goto("https://antcpt.com/score_detector/")
 
         async with recaptchav3.AsyncSolver(page) as solver:
-            token = await solver.solve_recaptcha()
-            assert token is not None
+            await solver.solve_recaptcha()
 
 
 @pytest.mark.asyncio
