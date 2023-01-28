@@ -35,7 +35,7 @@ class AsyncSolver:
     Raises
     ------
     RecaptchaTimeoutError
-        If the timeout is reached.
+        If the timeout has been exceeded.
     RecaptchaVersionError
         If the reCAPTCHA is not version 3.
     """
@@ -95,7 +95,7 @@ class AsyncSolver:
         Raises
         ------
         RecaptchaTimeoutError
-            If the timeout is reached.
+            If the timeout has been exceeded.
         RecaptchaVersionError
             If the reCAPTCHA is not version 3.
         """

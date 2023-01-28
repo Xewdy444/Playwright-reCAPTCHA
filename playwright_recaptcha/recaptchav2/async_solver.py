@@ -52,7 +52,7 @@ class AsyncSolver:
     RecaptchaNotFoundError
         If the reCAPTCHA was not found.
     RecaptchaRateLimitError
-        If the reCAPTCHA rate limit has been reached.
+        If the reCAPTCHA rate limit has been exceeded.
     RecaptchaSolveError
         If the reCAPTCHA could not be solved.
     """
@@ -251,7 +251,9 @@ class AsyncSolver:
 
         Raises
         ------
-        RecapchaSolveError
+        RecaptchaNotFoundError
+            If the reCAPTCHA checkbox was not found.
+        RecaptchaSolveError
             If the reCAPTCHA could not be solved.
         """
         self._page.on("response", self._extract_token)
