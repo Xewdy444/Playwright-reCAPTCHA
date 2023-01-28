@@ -10,7 +10,11 @@ import pydub
 import speech_recognition
 from playwright.sync_api import Frame, Locator, Page, Response
 
-from playwright_recaptcha.errors import RecaptchaRateLimitError, RecaptchaSolveError
+from playwright_recaptcha.errors import (
+    RecaptchaNotFoundError,
+    RecaptchaRateLimitError,
+    RecaptchaSolveError,
+)
 from playwright_recaptcha.recaptchav2.utils import (
     get_recaptcha_checkbox,
     get_recaptcha_frame,
@@ -223,13 +227,25 @@ class SyncSolver:
         self._page.wait_for_load_state("networkidle")
         recaptcha_frame = get_recaptcha_frame(self._page.frames)
         recaptcha_checkbox = get_recaptcha_checkbox(self._page.frames)
-        recaptcha_checkbox.click()
 
-        if recaptcha_checkbox.is_checked():
-            if self.token is None:
-                raise RecaptchaSolveError
+        if recaptcha_checkbox.is_hidden():
+            raise RecaptchaNotFoundError
 
-            return self.token
+        recaptcha_checkbox.click(force=True)
+
+        while True:
+            if recaptcha_frame.get_by_role(
+                "button", name="Get an audio challenge"
+            ).is_enabled():
+                break
+
+            if recaptcha_checkbox.is_checked():
+                if self.token is None:
+                    raise RecaptchaSolveError
+
+                return self.token
+
+            self._page.wait_for_timeout(100)
 
         while retries > 0:
             self._random_delay()

@@ -1,12 +1,17 @@
 import re
-from typing import Iterable
+from typing import Iterable, Union
 
-from playwright.sync_api import Frame, Locator
+from playwright.async_api import Frame as AsyncFrame
+from playwright.async_api import Locator as AsyncLocator
+from playwright.sync_api import Frame as SyncFrame
+from playwright.sync_api import Locator as SyncLocator
 
 from playwright_recaptcha.errors import RecaptchaNotFoundError
 
 
-def get_recaptcha_frame(frames: Iterable[Frame]) -> Frame:
+def get_recaptcha_frame(
+    frames: Iterable[Union[AsyncFrame, SyncFrame]]
+) -> Union[AsyncFrame, SyncFrame]:
     """
     Get the reCAPTCHA frame.
 
@@ -32,9 +37,11 @@ def get_recaptcha_frame(frames: Iterable[Frame]) -> Frame:
     raise RecaptchaNotFoundError
 
 
-def get_recaptcha_checkbox(frames: Iterable[Frame]) -> Locator:
+def get_recaptcha_checkbox(
+    frames: Iterable[Union[AsyncFrame, SyncFrame]]
+) -> Union[AsyncLocator, SyncLocator]:
     """
-    Get the reCAPTCHA checkbox.
+    Get the reCAPTCHA checkbox locator.
 
     Parameters
     ----------
