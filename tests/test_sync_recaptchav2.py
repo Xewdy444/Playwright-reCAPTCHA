@@ -39,6 +39,7 @@ def test_solver_with_slow_browser() -> None:
 
             assert token is not None
 
+
 def test_recaptcha_not_found() -> None:
     """Test the solver with a page that does not have a reCAPTCHA."""
     with sync_playwright() as playwright:
