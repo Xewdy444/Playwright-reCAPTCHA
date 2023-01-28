@@ -56,7 +56,7 @@ class AsyncSolver:
     def __init__(self, page: Page, retries: int = 3) -> None:
         self._page = page
         self._retries = retries
-        self.token = None
+        self.token: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"AsyncSolver(page={self._page!r}, retries={self._retries!r})"
@@ -259,6 +259,9 @@ class AsyncSolver:
         await recaptcha_checkbox.click()
 
         if await recaptcha_checkbox.is_checked():
+            if self.token is None:
+                raise RecaptchaSolveError
+
             return self.token
 
         while retries > 0:
@@ -269,6 +272,9 @@ class AsyncSolver:
             await self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
             if recaptcha_frame.is_detached() or await recaptcha_checkbox.is_checked():
+                if self.token is None:
+                    raise RecaptchaSolveError
+
                 return self.token
 
             new_challenge_button = recaptcha_frame.get_by_role(

@@ -53,7 +53,7 @@ class SyncSolver:
     def __init__(self, page: Page, retries: int = 3) -> None:
         self._page = page
         self._retries = retries
-        self.token = None
+        self.token: Optional[str] = None
 
     def __repr__(self) -> str:
         return f"SyncSolver(page={self._page!r}, retries={self._retries!r})"
@@ -226,6 +226,9 @@ class SyncSolver:
         recaptcha_checkbox.click()
 
         if recaptcha_checkbox.is_checked():
+            if self.token is None:
+                raise RecaptchaSolveError
+
             return self.token
 
         while retries > 0:
@@ -236,6 +239,9 @@ class SyncSolver:
             self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
             if recaptcha_frame.is_detached() or recaptcha_checkbox.is_checked():
+                if self.token is None:
+                    raise RecaptchaSolveError
+
                 return self.token
 
             recaptcha_frame.get_by_role("button", name="Get a new challenge").click()
