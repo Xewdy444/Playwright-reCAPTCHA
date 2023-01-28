@@ -1,10 +1,8 @@
 from setuptools import find_packages, setup
 
-from playwright_recaptcha import __version__
-
 setup(
     name="playwright-recaptcha",
-    version=__version__,
+    version="0.0.4",
     author="Xewdy444",
     author_email="xewdy@xewdy.tech",
     description="A libary for solving reCAPTCHA v2 and v3 with Playwright",

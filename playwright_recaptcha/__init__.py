@@ -24,5 +24,3 @@ __all__ = [
     "AsyncSolverV3",
     "SyncSolverV3",
 ]
-
-__version__ = "0.0.4"
