@@ -106,7 +106,7 @@ class SyncSolver:
         Raises
         ------
         RecaptchaRateLimitError
-            If the reCAPTCHA rate limit has been reached.
+            If the reCAPTCHA rate limit has been exceeded.
         """
         audio_challenge_button = recaptcha_frame.get_by_role(
             "button", name="Get an audio challenge"
@@ -176,7 +176,7 @@ class SyncSolver:
         Raises
         ------
         RecaptchaRateLimitError
-            If the reCAPTCHA rate limit has been reached.
+            If the reCAPTCHA rate limit has been exceeded.
         """
         recaptcha_frame.get_by_role("textbox", name="Enter what you hear").fill(text)
         recaptcha_frame.get_by_role("button", name="Verify").click()

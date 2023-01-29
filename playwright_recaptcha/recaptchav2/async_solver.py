@@ -109,7 +109,7 @@ class AsyncSolver:
         Raises
         ------
         RecaptchaRateLimitError
-            If the reCAPTCHA rate limit has been reached.
+            If the reCAPTCHA rate limit has been exceeded.
         """
         audio_challenge_button = recaptcha_frame.get_by_role(
             "button", name="Get an audio challenge"
@@ -202,7 +202,7 @@ class AsyncSolver:
         Raises
         ------
         RecaptchaRateLimitError
-            If the reCAPTCHA rate limit has been reached.
+            If the reCAPTCHA rate limit has been exceeded.
         """
         textbox = recaptcha_frame.get_by_role("textbox", name="Enter what you hear")
         verify_button = recaptcha_frame.get_by_role("button", name="Verify")
