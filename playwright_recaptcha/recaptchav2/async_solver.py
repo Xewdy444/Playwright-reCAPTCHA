@@ -146,12 +146,12 @@ class AsyncSolver:
 
         Parameters
         ----------
-        audio_url : Optional[str]
+        audio_url : str
             The reCAPTCHA audio URL.
 
         Returns
         -------
-        str
+        Optional[str]
             The reCAPTCHA audio text.
         """
         loop = asyncio.get_event_loop()

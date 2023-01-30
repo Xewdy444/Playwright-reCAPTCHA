@@ -137,12 +137,12 @@ class SyncSolver:
 
         Parameters
         ----------
-        audio_url : Optional[str]
+        audio_url : str
             The reCAPTCHA audio URL.
 
         Returns
         -------
-        str
+        Optional[str]
             The reCAPTCHA audio text.
         """
         response = httpx.get(audio_url)
