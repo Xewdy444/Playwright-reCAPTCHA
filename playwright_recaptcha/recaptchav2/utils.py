@@ -13,16 +13,16 @@ def get_recaptcha_frame(
     frames: Iterable[Union[AsyncFrame, SyncFrame]]
 ) -> Union[AsyncFrame, SyncFrame]:
     """
-    Get the reCAPTCHA frame.
+    Find the reCAPTCHA frame in the provided list of frames.
 
     Parameters
     ----------
-    frames : Iterable[Frame]
-        The frames to search for the reCAPTCHA frame.
+    frames : Iterable[Union[AsyncFrame, SyncFrame]]
+        A list of frames to search for the reCAPTCHA frame.
 
     Returns
     -------
-    Frame
+    Union[AsyncFrame, SyncFrame]
         The reCAPTCHA frame.
 
     Raises
@@ -41,16 +41,16 @@ def get_recaptcha_checkbox(
     frames: Iterable[Union[AsyncFrame, SyncFrame]]
 ) -> Union[AsyncLocator, SyncLocator]:
     """
-    Get the reCAPTCHA checkbox locator.
+    Find the reCAPTCHA checkbox in the provided list of frames.
 
     Parameters
     ----------
-    frames : Iterable[Frame]
-        The frames to search for the reCAPTCHA checkbox.
+    frames : Iterable[Union[AsyncFrame, SyncFrame]]
+        A list of frames to search for the reCAPTCHA checkbox.
 
     Returns
     -------
-    Locator
+    Union[AsyncLocator, SyncLocator]
         The reCAPTCHA checkbox.
 
     Raises
