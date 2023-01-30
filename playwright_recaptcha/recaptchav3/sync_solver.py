@@ -100,8 +100,8 @@ class SyncSolver:
             If the reCAPTCHA is not version 3.
         """
         self._page.on("response", self._extract_token)
-        start_time = time.time()
         timeout = timeout or self._timeout
+        start_time = time.time()
 
         while self.token is None:
             if time.time() - start_time >= timeout:
