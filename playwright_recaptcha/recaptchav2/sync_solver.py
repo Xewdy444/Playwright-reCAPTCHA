@@ -116,7 +116,9 @@ class SyncSolver:
             audio_challenge_button.click()
 
         while True:
-            if recaptcha_frame.get_by_text("Press PLAY to listen").is_visible():
+            if recaptcha_frame.get_by_role(
+                "button", name="Press PLAY to listen"
+            ).is_visible():
                 break
 
             if recaptcha_frame.get_by_text("Try again later").is_visible():
@@ -129,13 +131,13 @@ class SyncSolver:
         ).get_attribute("href")
 
     @staticmethod
-    def _convert_audio_to_text(audio_url: str) -> str:
+    def _convert_audio_to_text(audio_url: str) -> Optional[str]:
         """
         Convert the reCAPTCHA audio to text.
 
         Parameters
         ----------
-        audio_url : str
+        audio_url : Optional[str]
             The reCAPTCHA audio URL.
 
         Returns
@@ -156,7 +158,7 @@ class SyncSolver:
             audio_data = recognizer.record(source)
 
         text = recognizer.recognize_google(audio_data, show_all=True)
-        return text["alternative"][0]["transcript"]
+        return text["alternative"][0]["transcript"] if text else None
 
     def _submit_audio_text(
         self, recaptcha_frame: Frame, recaptcha_checkbox: Locator, text: str
@@ -249,10 +251,20 @@ class SyncSolver:
 
             self._page.wait_for_timeout(100)
 
+        new_challenge_button = recaptcha_frame.get_by_role(
+            "button", name="Get a new challenge"
+        )
+
         while retries > 0:
             self._random_delay()
             url = self._get_audio_url(recaptcha_frame)
             text = self._convert_audio_to_text(url)
+
+            if text is None:
+                new_challenge_button.click()
+                retries -= 1
+                continue
+
             self._random_delay()
             self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
@@ -262,7 +274,7 @@ class SyncSolver:
 
                 return self.token
 
-            recaptcha_frame.get_by_role("button", name="Get a new challenge").click()
+            new_challenge_button.click()
             retries -= 1
 
         raise RecaptchaSolveError

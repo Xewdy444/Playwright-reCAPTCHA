@@ -119,7 +119,10 @@ class AsyncSolver:
             await audio_challenge_button.click()
 
         while True:
-            play_button = recaptcha_frame.get_by_text("Press PLAY to listen")
+            play_button = recaptcha_frame.get_by_role(
+                "button", name="Press PLAY to listen"
+            )
+
             rate_limit = recaptcha_frame.get_by_text("Try again later")
 
             if await play_button.is_visible():
@@ -137,13 +140,13 @@ class AsyncSolver:
         return await audio_url.get_attribute("href")
 
     @staticmethod
-    async def _convert_audio_to_text(audio_url: str) -> str:
+    async def _convert_audio_to_text(audio_url: str) -> Optional[str]:
         """
         Convert the reCAPTCHA audio to text.
 
         Parameters
         ----------
-        audio_url : str
+        audio_url : Optional[str]
             The reCAPTCHA audio URL.
 
         Returns
@@ -182,7 +185,7 @@ class AsyncSolver:
                 ),
             )
 
-        return text["alternative"][0]["transcript"]
+        return text["alternative"][0]["transcript"] if text else None
 
     async def _submit_audio_text(
         self, recaptcha_frame: Frame, recaptcha_checkbox: Locator, text: str
@@ -284,10 +287,20 @@ class AsyncSolver:
 
             await self._page.wait_for_timeout(100)
 
+        new_challenge_button = recaptcha_frame.get_by_role(
+            "button", name="Get a new challenge"
+        )
+
         while retries > 0:
             await self._random_delay()
             url = await self._get_audio_url(recaptcha_frame)
             text = await self._convert_audio_to_text(url)
+
+            if text is None:
+                await new_challenge_button.click()
+                retries -= 1
+                continue
+
             await self._random_delay()
             await self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
 
@@ -296,10 +309,6 @@ class AsyncSolver:
                     raise RecaptchaSolveError
 
                 return self.token
-
-            new_challenge_button = recaptcha_frame.get_by_role(
-                "button", name="Get a new challenge"
-            )
 
             await new_challenge_button.click()
             retries -= 1
