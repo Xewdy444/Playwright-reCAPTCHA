@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="playwright-recaptcha",
-    version="0.0.5",
+    version="0.0.6",
     author="Xewdy444",
     author_email="xewdy@xewdy.tech",
     description="A libary for solving reCAPTCHA v2 and v3 with Playwright",
