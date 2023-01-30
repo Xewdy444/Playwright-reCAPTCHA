@@ -84,7 +84,7 @@ class SyncSolver:
         if re.search("/recaptcha/(api2|enterprise)/userverify", response.url) is None:
             return
 
-        token_match = re.search(r'"uvresp","(.*?)"', response.text())
+        token_match = re.search('"uvresp","(.*?)"', response.text())
 
         if token_match is not None:
             self.token = token_match.group(1)
@@ -115,20 +115,23 @@ class SyncSolver:
         if audio_challenge_button.is_visible():
             audio_challenge_button.click()
 
+        play_button = recaptcha_frame.get_by_role("button", name="Press PLAY to listen")
+        rate_limit = recaptcha_frame.get_by_text("Try again later")
+
         while True:
-            if recaptcha_frame.get_by_role(
-                "button", name="Press PLAY to listen"
-            ).is_visible():
+            if play_button.is_visible():
                 break
 
-            if recaptcha_frame.get_by_text("Try again later").is_visible():
+            if rate_limit.is_visible():
                 raise RecaptchaRateLimitError
 
             self._page.wait_for_timeout(100)
 
-        return recaptcha_frame.get_by_role(
+        audio_url = recaptcha_frame.get_by_role(
             "link", name="Alternatively, download audio as MP3"
-        ).get_attribute("href")
+        )
+
+        return audio_url.get_attribute("href")
 
     @staticmethod
     def _convert_audio_to_text(audio_url: str) -> Optional[str]:
@@ -183,16 +186,17 @@ class SyncSolver:
         recaptcha_frame.get_by_role("textbox", name="Enter what you hear").fill(text)
         recaptcha_frame.get_by_role("button", name="Verify").click()
 
+        solve_failure = recaptcha_frame.get_by_text(
+            "Multiple correct solutions required - please solve more."
+        )
+
+        rate_limit = recaptcha_frame.get_by_text("Try again later")
+
         while not recaptcha_frame.is_detached():
-            if (
-                recaptcha_checkbox.is_checked()
-                or recaptcha_frame.get_by_text(
-                    "Multiple correct solutions required - please solve more."
-                ).is_visible()
-            ):
+            if recaptcha_checkbox.is_checked() or solve_failure.is_visible():
                 break
 
-            if recaptcha_frame.get_by_text("Try again later").is_visible():
+            if rate_limit.is_visible():
                 raise RecaptchaRateLimitError
 
             self._page.wait_for_timeout(100)
@@ -237,10 +241,12 @@ class SyncSolver:
 
         recaptcha_checkbox.click(force=True)
 
+        audio_challenge_button = recaptcha_frame.get_by_role(
+            "button", name="Get an audio challenge"
+        )
+
         while True:
-            if recaptcha_frame.get_by_role(
-                "button", name="Get an audio challenge"
-            ).is_enabled():
+            if audio_challenge_button.is_enabled():
                 break
 
             if recaptcha_checkbox.is_checked():

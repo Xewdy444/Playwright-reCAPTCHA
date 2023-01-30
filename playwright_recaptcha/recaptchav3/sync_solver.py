@@ -66,7 +66,7 @@ class SyncSolver:
         if re.search("/recaptcha/(api2|enterprise)/reload", response.url) is None:
             return
 
-        token_match = re.search(r'"rresp","(.*?)"', response.text())
+        token_match = re.search('"rresp","(.*?)"', response.text())
 
         if token_match is not None:
             self.token = token_match.group(1)

@@ -66,7 +66,7 @@ class AsyncSolver:
         if re.search("/recaptcha/(api2|enterprise)/reload", response.url) is None:
             return
 
-        token_match = re.search(r'"rresp","(.*?)"', await response.text())
+        token_match = re.search('"rresp","(.*?)"', await response.text())
 
         if token_match is not None:
             self.token = token_match.group(1)
@@ -100,8 +100,8 @@ class AsyncSolver:
             If the reCAPTCHA is not version 3.
         """
         self._page.on("response", self._extract_token)
-        start_time = time.time()
         timeout = timeout or self._timeout
+        start_time = time.time()
 
         while self.token is None:
             if time.time() - start_time >= timeout:

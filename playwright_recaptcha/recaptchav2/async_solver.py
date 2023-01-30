@@ -87,7 +87,7 @@ class AsyncSolver:
         if re.search("/recaptcha/(api2|enterprise)/userverify", response.url) is None:
             return
 
-        token_match = re.search(r'"uvresp","(.*?)"', await response.text())
+        token_match = re.search('"uvresp","(.*?)"', await response.text())
 
         if token_match is not None:
             self.token = token_match.group(1)
@@ -118,13 +118,10 @@ class AsyncSolver:
         if await audio_challenge_button.is_visible():
             await audio_challenge_button.click()
 
+        play_button = recaptcha_frame.get_by_role("button", name="Press PLAY to listen")
+        rate_limit = recaptcha_frame.get_by_text("Try again later")
+
         while True:
-            play_button = recaptcha_frame.get_by_role(
-                "button", name="Press PLAY to listen"
-            )
-
-            rate_limit = recaptcha_frame.get_by_text("Try again later")
-
             if await play_button.is_visible():
                 break
 
@@ -213,13 +210,13 @@ class AsyncSolver:
         await textbox.fill(text)
         await verify_button.click()
 
+        solve_failure = recaptcha_frame.get_by_text(
+            "Multiple correct solutions required - please solve more."
+        )
+
+        rate_limit = recaptcha_frame.get_by_text("Try again later")
+
         while not recaptcha_frame.is_detached():
-            solve_failure = recaptcha_frame.get_by_text(
-                "Multiple correct solutions required - please solve more."
-            )
-
-            rate_limit = recaptcha_frame.get_by_text("Try again later")
-
             if (
                 await recaptcha_checkbox.is_checked()
                 or await solve_failure.is_visible()
@@ -271,11 +268,11 @@ class AsyncSolver:
 
         await recaptcha_checkbox.click(force=True)
 
-        while True:
-            audio_challenge_button = recaptcha_frame.get_by_role(
-                "button", name="Get an audio challenge"
-            )
+        audio_challenge_button = recaptcha_frame.get_by_role(
+            "button", name="Get an audio challenge"
+        )
 
+        while True:
             if await audio_challenge_button.is_enabled():
                 break
 
