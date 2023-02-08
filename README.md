@@ -114,10 +114,10 @@ asyncio.run(main())
 |        Exception        |                                                                     Description                                                                     |
 | :---------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------: |
 |     RecaptchaError      |                           The base class for reCAPTCHA exceptions, used as a catch-all for any reCAPTCHA-related errors.                            |
-|  RecaptchaVersionError  |     An exception raised when the reCAPTCHA v3 solver is used for reCAPTCHA v2. To solve this issue, simply use the reCAPTCHA v2 solver instead.     |
+|   RecaptchaSolveError   |               An exception raised when the reCAPTCHA could not be solved, used as a catch-all for any reCAPTCHA solve-related errors.               |
 | RecaptchaNotFoundError  |                                       An exception raised when the reCAPTCHA v2 was not found on the website.                                       |
+|  RecaptchaVersionError  |     An exception raised when the reCAPTCHA v3 solver is used for reCAPTCHA v2. To solve this issue, simply use the reCAPTCHA v2 solver instead.     |
 | RecaptchaRateLimitError | An exception raised when the reCAPTCHA rate limit has been reached. This can happen if the library is being used to solve reCAPTCHA v2 too quickly. |
-|   RecaptchaSolveError   |           An exception raised when the reCAPTCHA v2 could not be solved via speech-to-text conversion in the specified amount of retries.           |
 |  RecaptchaTimeoutError  |                             An exception raised when the reCAPTCHA v3 could not be solved within the specified timeout.                             |
 
 # Disclaimer

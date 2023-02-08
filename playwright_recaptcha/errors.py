@@ -1,12 +1,15 @@
+from typing import Optional
+
+
 class RecaptchaError(Exception):
     """Base class for reCAPTCHA exceptions."""
 
 
-class RecaptchaVersionError(RecaptchaError):
-    """An exception raised when the reCAPTCHA is not version 3."""
+class RecaptchaSolveError(RecaptchaError):
+    """Base class for reCAPTCHA solve exceptions."""
 
-    def __init__(self) -> None:
-        super().__init__("The reCAPTCHA is not version 3.")
+    def __init__(self, message: Optional[str] = None) -> None:
+        super().__init__(message or "The reCAPTCHA could not be solved.")
 
 
 class RecaptchaNotFoundError(RecaptchaError):
@@ -16,21 +19,21 @@ class RecaptchaNotFoundError(RecaptchaError):
         super().__init__("The reCAPTCHA was not found.")
 
 
-class RecaptchaRateLimitError(RecaptchaError):
+class RecaptchaVersionError(RecaptchaSolveError):
+    """An exception raised when the reCAPTCHA v3 solver is used for reCAPTCHA v2."""
+
+    def __init__(self) -> None:
+        super().__init__("The reCAPTCHA is not version 3.")
+
+
+class RecaptchaRateLimitError(RecaptchaSolveError):
     """An exception raised when the reCAPTCHA rate limit has been exceeded."""
 
     def __init__(self) -> None:
         super().__init__("The reCAPTCHA rate limit has been exceeded.")
 
 
-class RecaptchaSolveError(RecaptchaError):
-    """An exception raised when the reCAPTCHA could not be solved."""
-
-    def __init__(self) -> None:
-        super().__init__("The reCAPTCHA could not be solved.")
-
-
-class RecaptchaTimeoutError(RecaptchaError):
+class RecaptchaTimeoutError(RecaptchaSolveError):
     """An exception raised when the reCAPTCHA solve timeout has been exceeded."""
 
     def __init__(self) -> None:
