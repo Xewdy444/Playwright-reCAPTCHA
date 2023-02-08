@@ -11,7 +11,7 @@ from playwright_recaptcha import (
 def test_solver() -> None:
     """Test the solver with a normal browser."""
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.firefox.launch()
         page = browser.new_page()
         page.goto("https://antcpt.com/score_detector/")
 
@@ -22,7 +22,7 @@ def test_solver() -> None:
 def test_solver_with_slow_browser() -> None:
     """Test the solver with a slow browser."""
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(slow_mo=1000)
+        browser = playwright.firefox.launch(slow_mo=1000)
         page = browser.new_page()
         page.goto("https://antcpt.com/score_detector/")
 
@@ -33,7 +33,7 @@ def test_solver_with_slow_browser() -> None:
 def test_recaptcha_not_found() -> None:
     """Test the solver with a page that does not have a reCAPTCHA."""
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.firefox.launch()
         page = browser.new_page()
         page.goto("https://www.google.com/")
 
@@ -46,7 +46,7 @@ def test_recaptcha_not_found() -> None:
 def test_recaptcha_version_error() -> None:
     """Test the solver with a page that has a reCAPTCHA v2."""
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.firefox.launch()
         page = browser.new_page()
         page.goto("https://cobra.ehr.com/ESS/Home/Login.aspx")
 

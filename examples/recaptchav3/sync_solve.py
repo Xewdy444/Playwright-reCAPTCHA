@@ -7,7 +7,7 @@ from playwright_recaptcha import recaptchav3
 
 def main() -> None:
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.firefox.launch()
         page = browser.new_page()
         page.goto("https://antcpt.com/score_detector/")
 

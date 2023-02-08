@@ -13,7 +13,7 @@ from playwright_recaptcha import (
 async def test_solver() -> None:
     """Test the solver with a normal browser."""
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch()
+        browser = await playwright.firefox.launch()
         page = await browser.new_page()
         await page.goto("https://www.google.com/recaptcha/api2/demo")
 
@@ -26,7 +26,7 @@ async def test_solver() -> None:
 async def test_solver_with_slow_browser() -> None:
     """Test the solver with a slow browser."""
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(slow_mo=1000)
+        browser = await playwright.firefox.launch(slow_mo=1000)
         page = await browser.new_page()
         await page.goto("https://www.google.com/recaptcha/api2/demo")
 
@@ -38,7 +38,7 @@ async def test_solver_with_slow_browser() -> None:
 async def test_recaptcha_not_found() -> None:
     """Test the solver with a page that does not have a reCAPTCHA."""
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch()
+        browser = await playwright.firefox.launch()
         page = await browser.new_page()
         await page.goto("https://www.google.com/")
 

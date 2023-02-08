@@ -5,7 +5,7 @@ from playwright_recaptcha import recaptchav2
 
 def main() -> None:
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.firefox.launch()
         page = browser.new_page()
         page.goto("https://www.google.com/recaptcha/api2/demo")
 
