@@ -1,4 +1,4 @@
-"""A libary for solving reCAPTCHA v2 and v3 with Playwright."""
+"""A library for solving reCAPTCHA v2 and v3 with Playwright."""
 from playwright_recaptcha.errors import (
     RecaptchaError,
     RecaptchaNotFoundError,

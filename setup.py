@@ -5,7 +5,7 @@ setup(
     version="0.0.6",
     author="Xewdy444",
     author_email="xewdy@xewdy.tech",
-    description="A libary for solving reCAPTCHA v2 and v3 with Playwright",
+    description="A library for solving reCAPTCHA v2 and v3 with Playwright",
     license="MIT",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",

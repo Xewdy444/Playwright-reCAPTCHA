@@ -1,29 +1,33 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![PyPI](https://img.shields.io/pypi/v/playwright-recaptcha.svg)](https://pypi.org/project/playwright-recaptcha/)
+[![Downloads](https://img.shields.io/pypi/dm/playwright-recaptcha.svg)](https://pypi.org/project/playwright-recaptcha/)
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/Xewdy444/Playwright-reCAPTCHA/blob/main/LICENSE)
 [![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # Playwright-reCAPTCHA
-A Python libary for solving reCAPTCHA v2 and v3 with Playwright.
+A Python library for solving reCAPTCHA v2 and v3 with Playwright.
 
 ## Solving reCAPTCHA v2
 reCAPTCHA v2 is solved by transcribing the audio challenge using the Google speech recognition API and entering the text as the response.
 
 ## Solving reCAPTCHA v3
-reCAPTCHA v3 is solved by waiting for the reload POST request (https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload) and parsing the token from the response.
+reCAPTCHA v3 is solved by waiting for the reload POST request (https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload) and parsing the response to get the `g-recaptcha-response` token.
 
 ---
 
-All of the solvers return the g-recaptcha-response token required for the form submission.
+> **Note**
+> Headless Chromium may get flagged by reCAPTCHA v2 as sending automated requests. This may cause the RecaptchaRateLimitError to be thrown even if you haven't solved any reCAPTCHAs yet. If this is an issue, use headless Firefox or Webkit instead.
 
-It's important to note that reCAPTCHA v3 uses a token-based scoring system, where each user's token is automatically assigned a score based on their interactions with the website. This score is used to determine the likelihood of the user being a human or a bot. The token is then passed to the website's server, and it's up to the website owner to decide what action to take based on the score.
+All solvers return the `g-recaptcha-response` token, which is required for form submissions.
+
+It's important to note that reCAPTCHA v3 uses a token-based scoring system. Each user's token is automatically assigned a score based on their interactions with the website. The score is used to determine the likelihood of the user being a human or a bot. The token is then passed to the website server, and the website owner decides what action to take based on the score.
 
 # Installation
 ```
 pip install playwright-recaptcha
 ```
 
-This library requires ffmpeg to be installed on your system in order to convert the audio challenge from reCAPTCHA v2 into text.
+This library requires FFmpeg to be installed on your system in order to convert the audio challenge from reCAPTCHA v2 into text.
 
 |   OS    |           Command           |
 | :-----: | :-------------------------: |
@@ -31,10 +35,10 @@ This library requires ffmpeg to be installed on your system in order to convert 
 |  MacOS  |     brew install ffmpeg     |
 | Windows |    choco install ffmpeg     |
 
-You can also download the latest static build from [here](https://ffmpeg.org/download.html)
+You can also download the latest static build from [here](https://ffmpeg.org/download.html).
 
 > **Note**
-> Make sure to have ffmpeg and ffprobe in your system's PATH so that the library can find them.
+> Make sure to have the ffmpeg and ffprobe binaries in your system's PATH so that the SpeechRecognition library can find them.
 
 # Examples
 
@@ -46,7 +50,7 @@ from playwright.sync_api import sync_playwright
 from playwright_recaptcha import recaptchav2
 
 with sync_playwright() as playwright:
-    browser = playwright.chromium.launch()
+    browser = playwright.firefox.launch()
     page = browser.new_page()
     page.goto("https://www.google.com/recaptcha/api2/demo")
 
@@ -63,7 +67,7 @@ from playwright_recaptcha import recaptchav2
 
 async def main() -> None:
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch()
+        browser = await playwright.firefox.launch()
         page = await browser.new_page()
         await page.goto("https://www.google.com/recaptcha/api2/demo")
 
@@ -82,7 +86,7 @@ from playwright.sync_api import sync_playwright
 from playwright_recaptcha import recaptchav3
 
 with sync_playwright() as playwright:
-    browser = playwright.chromium.launch()
+    browser = playwright.firefox.launch()
     page = browser.new_page()
     page.goto("https://antcpt.com/score_detector/")
 
@@ -99,7 +103,7 @@ from playwright_recaptcha import recaptchav3
 
 async def main() -> None:
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch()
+        browser = await playwright.firefox.launch()
         page = await browser.new_page()
         await page.goto("https://antcpt.com/score_detector/")
 
