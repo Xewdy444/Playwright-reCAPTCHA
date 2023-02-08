@@ -273,7 +273,7 @@ class AsyncSolver:
         )
 
         while True:
-            if await audio_challenge_button.is_enabled():
+            if await audio_challenge_button.is_visible():
                 break
 
             if await recaptcha_checkbox.is_checked():
