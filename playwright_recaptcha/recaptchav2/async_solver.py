@@ -118,11 +118,11 @@ class AsyncSolver:
         if await audio_challenge_button.is_visible():
             await audio_challenge_button.click(force=True)
 
-        play_button = recaptcha_frame.get_by_role("button", name="Press PLAY to listen")
+        audio_challenge_text = recaptcha_frame.get_by_text("Press PLAY to listen")
         rate_limit = recaptcha_frame.get_by_text("Try again later")
 
         while True:
-            if await play_button.is_visible():
+            if await audio_challenge_text.is_visible():
                 break
 
             if await rate_limit.is_visible():
@@ -273,7 +273,7 @@ class AsyncSolver:
         )
 
         while True:
-            if await audio_challenge_button.is_visible():
+            if await audio_challenge_button.is_enabled():
                 break
 
             if await recaptcha_checkbox.is_checked():

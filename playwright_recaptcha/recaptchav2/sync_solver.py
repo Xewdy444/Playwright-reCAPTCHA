@@ -115,11 +115,11 @@ class SyncSolver:
         if audio_challenge_button.is_visible():
             audio_challenge_button.click(force=True)
 
-        play_button = recaptcha_frame.get_by_role("button", name="Press PLAY to listen")
+        audio_challenge_text = recaptcha_frame.get_by_text("Press PLAY to listen")
         rate_limit = recaptcha_frame.get_by_text("Try again later")
 
         while True:
-            if play_button.is_visible():
+            if audio_challenge_text.is_visible():
                 break
 
             if rate_limit.is_visible():
@@ -246,7 +246,7 @@ class SyncSolver:
         )
 
         while True:
-            if audio_challenge_button.is_visible():
+            if audio_challenge_button.is_enabled():
                 break
 
             if recaptcha_checkbox.is_checked():
