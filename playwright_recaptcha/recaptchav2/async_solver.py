@@ -122,7 +122,10 @@ class AsyncSolver:
         rate_limit = recaptcha_frame.get_by_text("Try again later")
 
         while True:
-            if await audio_challenge_text.is_visible():
+            if (
+                await audio_challenge_text.is_visible()
+                and await audio_challenge_text.is_enabled()
+            ):
                 break
 
             if await rate_limit.is_visible():

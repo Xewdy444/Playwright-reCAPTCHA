@@ -246,7 +246,10 @@ class SyncSolver:
         )
 
         while True:
-            if audio_challenge_button.is_enabled():
+            if (
+                audio_challenge_button.is_visible()
+                and audio_challenge_button.is_enabled()
+            ):
                 break
 
             if recaptcha_checkbox.is_checked():
