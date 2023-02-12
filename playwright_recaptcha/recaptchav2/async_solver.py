@@ -73,7 +73,7 @@ class AsyncSolver:
 
     async def _random_delay(self) -> None:
         """Delay the execution for a random amount of time between 1 and 4 seconds."""
-        await self._page.wait_for_timeout(random.randint(1, 4) * 1000)
+        await self._page.wait_for_timeout(random.randint(1000, 4000))
 
     async def _extract_token(self, response: Response) -> None:
         """
@@ -270,13 +270,18 @@ class AsyncSolver:
             raise RecaptchaNotFoundError
 
         await recaptcha_checkbox.click(force=True)
+        audio_challenge_text = recaptcha_frame.get_by_text("Press PLAY to listen")
 
         audio_challenge_button = recaptcha_frame.get_by_role(
             "button", name="Get an audio challenge"
         )
 
         while True:
-            if await audio_challenge_button.is_enabled():
+            if (
+                await audio_challenge_text.is_visible()
+                or await audio_challenge_button.is_visible()
+                and await audio_challenge_button.is_enabled()
+            ):
                 break
 
             if await recaptcha_checkbox.is_checked():
