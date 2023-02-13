@@ -30,7 +30,7 @@ class SyncSolver:
     close() -> None
         Remove the reload response listener.
     solve_recaptcha(timeout: Optional[int] = None) -> str
-        Solve the reCAPTCHA and return the token.
+        Solve the reCAPTCHA and return the g-recaptcha-response token.
 
     Raises
     ------
@@ -61,7 +61,7 @@ class SyncSolver:
         Parameters
         ----------
         response : Response
-            The response to extract the token from.
+            The response to extract the g-recaptcha-response token from.
         """
         if re.search("/recaptcha/(api2|enterprise)/reload", response.url) is None:
             return
@@ -80,7 +80,7 @@ class SyncSolver:
 
     def solve_recaptcha(self, timeout: Optional[int] = None) -> str:
         """
-        Solve the reCAPTCHA and return the token.
+        Solve the reCAPTCHA and return the g-recaptcha-response token.
 
         Parameters
         ----------

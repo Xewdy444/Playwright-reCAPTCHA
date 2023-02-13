@@ -45,7 +45,7 @@ class AsyncSolver:
     close() -> None
         Remove the userverify response listener.
     solve_recaptcha(retries: Optional[int] = None) -> str
-        Solve the reCAPTCHA and return the token.
+        Solve the reCAPTCHA and return the g-recaptcha-response token.
 
     Raises
     ------
@@ -82,7 +82,7 @@ class AsyncSolver:
         Parameters
         ----------
         response : Response
-            The response to extract the token from.
+            The response to extract the g-recaptcha-response token from.
         """
         if re.search("/recaptcha/(api2|enterprise)/userverify", response.url) is None:
             return
@@ -237,7 +237,7 @@ class AsyncSolver:
 
     async def solve_recaptcha(self, retries: Optional[int] = None) -> str:
         """
-        Solve the reCAPTCHA and return the token.
+        Solve the reCAPTCHA and return the g-recaptcha-response token.
 
         Parameters
         ----------
