@@ -38,7 +38,7 @@ class AsyncSolver:
     Attributes
     ----------
     token : Optional[str]
-        The reCAPTCHA token.
+        The g-recaptcha-response token.
 
     Methods
     -------
@@ -77,7 +77,7 @@ class AsyncSolver:
 
     async def _extract_token(self, response: Response) -> None:
         """
-        Extract the reCAPTCHA token from the userverify response.
+        Extract the g-recaptcha-response token from the userverify response.
 
         Parameters
         ----------
@@ -247,12 +247,14 @@ class AsyncSolver:
         Returns
         -------
         str
-            The reCAPTCHA token.
+            The g-recaptcha-response token.
 
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA checkbox was not found.
+            If the reCAPTCHA was not found.
+        RecaptchaRateLimitError
+            If the reCAPTCHA rate limit has been exceeded.
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
         """

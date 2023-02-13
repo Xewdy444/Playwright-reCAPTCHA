@@ -35,7 +35,7 @@ class SyncSolver:
     Attributes
     ----------
     token : Optional[str]
-        The reCAPTCHA token.
+        The g-recaptcha-response token.
 
     Methods
     -------
@@ -74,7 +74,7 @@ class SyncSolver:
 
     def _extract_token(self, response: Response) -> None:
         """
-        Extract the reCAPTCHA token from the userverify response.
+        Extract the g-recaptcha-response token from the userverify response.
 
         Parameters
         ----------
@@ -220,12 +220,14 @@ class SyncSolver:
         Returns
         -------
         str
-            The reCAPTCHA token.
+            The g-recaptcha-response token.
 
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA checkbox was not found.
+            If the reCAPTCHA was not found.
+        RecaptchaRateLimitError
+            If the reCAPTCHA rate limit has been exceeded.
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
         """
