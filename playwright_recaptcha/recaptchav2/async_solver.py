@@ -242,7 +242,7 @@ class AsyncSolver:
         Parameters
         ----------
         retries : Optional[int], optional
-            The number of retries, by default None
+            The number of retries, by default 3.
 
         Returns
         -------

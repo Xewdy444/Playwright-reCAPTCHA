@@ -85,7 +85,7 @@ class SyncSolver:
         Parameters
         ----------
         timeout : Optional[int], optional
-            The timeout in seconds, by default None.
+            The timeout in seconds, by default 30.
 
         Returns
         -------
