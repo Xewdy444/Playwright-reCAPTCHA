@@ -20,7 +20,7 @@ reCAPTCHA v3 is solved by waiting for the reload POST request (https://www.googl
 
 All solvers return the `g-recaptcha-response` token, which is required for form submissions.
 
-It's important to note that reCAPTCHA v3 uses a token-based scoring system. Each user's token is automatically assigned a score based on their interactions with the website. The score is used to determine the likelihood of the user being a human or a bot. The token is then passed to the website server, and the website owner decides what action to take based on the score.
+It's important to note that reCAPTCHA v3 uses a token-based scoring system. Each user's token is automatically assigned a score based on their interactions with the website. The score is used to determine the likelihood of the user being a human or a bot. The token is then passed to the web server, and the website owner decides what action to take based on the score.
 
 # Installation
 ```
