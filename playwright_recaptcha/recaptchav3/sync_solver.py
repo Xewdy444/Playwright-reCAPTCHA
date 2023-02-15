@@ -23,14 +23,14 @@ class SyncSolver:
     Attributes
     ----------
     token : Optional[str]
-        The reCAPTCHA token.
+        The g-recaptcha-response token.
 
     Methods
     -------
     close() -> None
         Remove the reload response listener.
     solve_recaptcha(timeout: Optional[int] = None) -> str
-        Solve the reCAPTCHA and return the token.
+        Solve the reCAPTCHA and return the g-recaptcha-response token.
 
     Raises
     ------
@@ -56,12 +56,12 @@ class SyncSolver:
 
     def _extract_token(self, response: Response) -> None:
         """
-        Extract the reCAPTCHA token from the userverify response.
+        Extract the g-recaptcha-response token from the userverify response.
 
         Parameters
         ----------
         response : Response
-            The response to extract the token from.
+            The response to extract the g-recaptcha-response token from.
         """
         if re.search("/recaptcha/(api2|enterprise)/reload", response.url) is None:
             return
@@ -80,17 +80,17 @@ class SyncSolver:
 
     def solve_recaptcha(self, timeout: Optional[int] = None) -> str:
         """
-        Solve the reCAPTCHA and return the token.
+        Solve the reCAPTCHA and return the g-recaptcha-response token.
 
         Parameters
         ----------
         timeout : Optional[int], optional
-            The timeout in seconds, by default None.
+            The timeout in seconds, by default 30.
 
         Returns
         -------
         str
-            The reCAPTCHA token.
+            The g-recaptcha-response token.
 
         Raises
         ------
