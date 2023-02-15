@@ -29,8 +29,8 @@ class SyncSolver:
     ----------
     page : Page
         The playwright page to solve the reCAPTCHA on.
-    retries : int, optional
-        The number of retries, by default 3.
+    attempts : int, optional
+        The number of solve attempts, by default 3.
 
     Attributes
     ----------
@@ -41,7 +41,7 @@ class SyncSolver:
     -------
     close() -> None
         Remove the userverify response listener.
-    solve_recaptcha(retries: Optional[int] = None) -> str
+    solve_recaptcha(attempts: Optional[int] = None) -> str
         Solve the reCAPTCHA and return the g-recaptcha-response token.
 
     Raises
@@ -54,13 +54,13 @@ class SyncSolver:
         If the reCAPTCHA could not be solved.
     """
 
-    def __init__(self, page: Page, retries: int = 3) -> None:
+    def __init__(self, page: Page, attempts: int = 3) -> None:
         self._page = page
-        self._retries = retries
+        self._attempts = attempts
         self.token: Optional[str] = None
 
     def __repr__(self) -> str:
-        return f"SyncSolver(page={self._page!r}, retries={self._retries!r})"
+        return f"SyncSolver(page={self._page!r}, attempts={self._attempts!r})"
 
     def __enter__(self) -> SyncSolver:
         return self
@@ -208,14 +208,14 @@ class SyncSolver:
         except KeyError:
             pass
 
-    def solve_recaptcha(self, retries: Optional[int] = None) -> str:
+    def solve_recaptcha(self, attempts: Optional[int] = None) -> str:
         """
         Solve the reCAPTCHA and return the g-recaptcha-response token.
 
         Parameters
         ----------
-        retries : Optional[int], optional
-            The number of retries, by default 3.
+        attempts : Optional[int], optional
+            The number of solve attempts, by default 3.
 
         Returns
         -------
@@ -232,7 +232,7 @@ class SyncSolver:
             If the reCAPTCHA could not be solved.
         """
         self._page.on("response", self._extract_token)
-        retries = retries or self._retries
+        attempts = attempts or self._attempts
 
         self._page.wait_for_load_state("networkidle")
         recaptcha_frame = get_recaptcha_frame(self._page.frames)
@@ -263,14 +263,14 @@ class SyncSolver:
             "button", name="Get a new challenge"
         )
 
-        while retries > 0:
+        while attempts > 0:
             self._random_delay()
             url = self._get_audio_url(recaptcha_frame)
             text = self._convert_audio_to_text(url)
 
             if text is None:
                 new_challenge_button.click()
-                retries -= 1
+                attempts -= 1
                 continue
 
             self._random_delay()
@@ -283,6 +283,6 @@ class SyncSolver:
                 return self.token
 
             new_challenge_button.click()
-            retries -= 1
+            attempts -= 1
 
         raise RecaptchaSolveError
