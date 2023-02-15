@@ -70,7 +70,7 @@ class SyncSolver:
 
     def _random_delay(self) -> None:
         """Delay the execution for a random amount of time between 1 and 4 seconds."""
-        self._page.wait_for_timeout(random.randint(1, 4) * 1000)
+        self._page.wait_for_timeout(random.randint(1000, 4000))
 
     def _extract_token(self, response: Response) -> None:
         """
@@ -115,11 +115,11 @@ class SyncSolver:
         if audio_challenge_button.is_visible():
             audio_challenge_button.click(force=True)
 
-        play_button = recaptcha_frame.get_by_role("button", name="Press PLAY to listen")
+        audio_challenge_text = recaptcha_frame.get_by_text("Press PLAY to listen")
         rate_limit = recaptcha_frame.get_by_text("Try again later")
 
         while True:
-            if play_button.is_visible():
+            if audio_challenge_text.is_visible():
                 break
 
             if rate_limit.is_visible():
@@ -242,13 +242,18 @@ class SyncSolver:
             raise RecaptchaNotFoundError
 
         recaptcha_checkbox.click(force=True)
+        audio_challenge_text = recaptcha_frame.get_by_text("Press PLAY to listen")
 
         audio_challenge_button = recaptcha_frame.get_by_role(
             "button", name="Get an audio challenge"
         )
 
         while True:
-            if audio_challenge_button.is_enabled():
+            if (
+                audio_challenge_text.is_visible()
+                or audio_challenge_button.is_visible()
+                and audio_challenge_button.is_enabled()
+            ):
                 break
 
             if recaptcha_checkbox.is_checked():
