@@ -8,17 +8,14 @@ from typing import Any, Optional
 import httpx
 import pydub
 import speech_recognition
-from playwright.sync_api import Frame, Locator, Page, Response
+from playwright.sync_api import Page, Response
 
 from playwright_recaptcha.errors import (
     RecaptchaNotFoundError,
     RecaptchaRateLimitError,
     RecaptchaSolveError,
 )
-from playwright_recaptcha.recaptchav2.utils import (
-    get_recaptcha_checkbox,
-    get_recaptcha_frame,
-)
+from playwright_recaptcha.recaptchav2.recaptcha_box import SyncRecaptchaBox
 
 
 class SyncSolver:
@@ -89,14 +86,14 @@ class SyncSolver:
         if token_match is not None:
             self.token = token_match.group(1)
 
-    def _get_audio_url(self, recaptcha_frame: Frame) -> str:
+    def _get_audio_url(self, recaptcha_box: SyncRecaptchaBox) -> str:
         """
         Get the reCAPTCHA audio URL.
 
         Parameters
         ----------
-        recaptcha_frame : Frame
-            The reCAPTCHA frame.
+        recaptcha_box : SyncRecaptchaBox
+            The reCAPTCHA box.
 
         Returns
         -------
@@ -108,30 +105,19 @@ class SyncSolver:
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        audio_challenge_button = recaptcha_frame.get_by_role(
-            "button", name="Get an audio challenge"
-        )
-
-        if audio_challenge_button.is_visible():
-            audio_challenge_button.click(force=True)
-
-        audio_challenge_text = recaptcha_frame.get_by_text("Press PLAY to listen")
-        rate_limit = recaptcha_frame.get_by_text("Try again later")
+        if recaptcha_box.audio_challenge_button.is_visible():
+            recaptcha_box.audio_challenge_button.click(force=True)
 
         while True:
-            if audio_challenge_text.is_visible():
+            if recaptcha_box.audio_challenge_is_visible():
                 break
 
-            if rate_limit.is_visible():
+            if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
             self._page.wait_for_timeout(100)
 
-        audio_url = recaptcha_frame.get_by_role(
-            "link", name="Alternatively, download audio as MP3"
-        )
-
-        return audio_url.get_attribute("href")
+        return recaptcha_box.audio_download_button.get_attribute("href")
 
     @staticmethod
     def _convert_audio_to_text(audio_url: str) -> Optional[str]:
@@ -163,18 +149,14 @@ class SyncSolver:
         text = recognizer.recognize_google(audio_data, show_all=True)
         return text["alternative"][0]["transcript"] if text else None
 
-    def _submit_audio_text(
-        self, recaptcha_frame: Frame, recaptcha_checkbox: Locator, text: str
-    ) -> None:
+    def _submit_audio_text(self, recaptcha_box: SyncRecaptchaBox, text: str) -> None:
         """
         Submit the reCAPTCHA audio text.
 
         Parameters
         ----------
-        recaptcha_frame : Frame
-            The reCAPTCHA frame.
-        recaptcha_checkbox : Locator
-            The reCAPTCHA checkbox.
+        recaptcha_box : SyncRecaptchaBox
+            The reCAPTCHA box.
         text : str
             The reCAPTCHA audio text.
 
@@ -183,20 +165,17 @@ class SyncSolver:
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        recaptcha_frame.get_by_role("textbox", name="Enter what you hear").fill(text)
-        recaptcha_frame.get_by_role("button", name="Verify").click()
+        recaptcha_box.audio_challenge_textbox.fill(text)
+        recaptcha_box.audio_challenge_verify_button.click()
 
-        solve_failure = recaptcha_frame.get_by_text(
-            "Multiple correct solutions required - please solve more."
-        )
-
-        rate_limit = recaptcha_frame.get_by_text("Try again later")
-
-        while not recaptcha_frame.is_detached():
-            if recaptcha_checkbox.is_checked() or solve_failure.is_visible():
+        while recaptcha_box.frames_are_attached():
+            if (
+                recaptcha_box.checkbox.is_checked()
+                or recaptcha_box.solve_failure_is_visible()
+            ):
                 break
 
-            if rate_limit.is_visible():
+            if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
             self._page.wait_for_timeout(100)
@@ -235,28 +214,25 @@ class SyncSolver:
         attempts = attempts or self._attempts
 
         self._page.wait_for_load_state("networkidle")
-        recaptcha_frame = get_recaptcha_frame(self._page.frames)
-        recaptcha_checkbox = get_recaptcha_checkbox(self._page.frames)
+        recaptcha_box = SyncRecaptchaBox.from_frames(self._page.frames)
 
-        if recaptcha_checkbox.is_hidden():
+        if recaptcha_box.checkbox.is_hidden():
             raise RecaptchaNotFoundError
 
-        recaptcha_checkbox.click(force=True)
-        audio_challenge_text = recaptcha_frame.get_by_text("Press PLAY to listen")
-
-        audio_challenge_button = recaptcha_frame.get_by_role(
-            "button", name="Get an audio challenge"
-        )
+        recaptcha_box.checkbox.click(force=True)
 
         while True:
             if (
-                audio_challenge_text.is_visible()
-                or audio_challenge_button.is_visible()
-                and audio_challenge_button.is_enabled()
+                recaptcha_box.audio_challenge_is_visible()
+                or recaptcha_box.audio_challenge_button.is_visible()
+                and recaptcha_box.audio_challenge_button.is_enabled()
             ):
                 break
 
-            if recaptcha_checkbox.is_checked():
+            if (
+                not recaptcha_box.frames_are_attached()
+                or recaptcha_box.checkbox.is_checked()
+            ):
                 if self.token is None:
                     raise RecaptchaSolveError
 
@@ -264,30 +240,29 @@ class SyncSolver:
 
             self._page.wait_for_timeout(100)
 
-        new_challenge_button = recaptcha_frame.get_by_role(
-            "button", name="Get a new challenge"
-        )
-
         while attempts > 0:
             self._random_delay()
-            url = self._get_audio_url(recaptcha_frame)
+            url = self._get_audio_url(recaptcha_box)
             text = self._convert_audio_to_text(url)
 
             if text is None:
-                new_challenge_button.click()
+                recaptcha_box.new_challenge_button.click()
                 attempts -= 1
                 continue
 
             self._random_delay()
-            self._submit_audio_text(recaptcha_frame, recaptcha_checkbox, text)
+            self._submit_audio_text(recaptcha_box, text)
 
-            if recaptcha_frame.is_detached() or recaptcha_checkbox.is_checked():
+            if (
+                not recaptcha_box.frames_are_attached()
+                or recaptcha_box.checkbox.is_checked()
+            ):
                 if self.token is None:
                     raise RecaptchaSolveError
 
                 return self.token
 
-            new_challenge_button.click()
+            recaptcha_box.new_challenge_button.click()
             attempts -= 1
 
         raise RecaptchaSolveError
