@@ -164,13 +164,11 @@ class RecaptchaBox(ABC):
     @abstractmethod
     def anchor_frame(self) -> Frame:
         """The reCAPTCHA anchor frame."""
-        pass
 
     @property
     @abstractmethod
     def bframe_frame(self) -> Frame:
         """The reCAPTCHA bframe frame."""
-        pass
 
     @classmethod
     @abstractmethod
@@ -198,7 +196,6 @@ class RecaptchaBox(ABC):
         RecaptchaSolveError
             If no unchecked reCAPTCHA boxes were found.
         """
-        pass
 
     @abstractmethod
     def rate_limit_is_visible(self) -> bool:
@@ -210,7 +207,6 @@ class RecaptchaBox(ABC):
         bool
             True if the reCAPTCHA rate limit has been exceeded, False otherwise.
         """
-        pass
 
     @abstractmethod
     def solve_failure_is_visible(self) -> bool:
@@ -222,7 +218,6 @@ class RecaptchaBox(ABC):
         bool
             True if the reCAPTCHA solve failure message is visible, False otherwise.
         """
-        pass
 
     @abstractmethod
     def audio_challenge_is_visible(self) -> bool:
@@ -234,7 +229,6 @@ class RecaptchaBox(ABC):
         bool
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
-        pass
 
 
 class SyncRecaptchaBox(RecaptchaBox):
