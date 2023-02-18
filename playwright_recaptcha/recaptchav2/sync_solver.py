@@ -210,10 +210,10 @@ class SyncSolver:
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
         """
+        self.token = None
         self._page.on("response", self._extract_token)
-        attempts = attempts or self._attempts
 
-        self._page.wait_for_load_state("networkidle")
+        attempts = attempts or self._attempts
         recaptcha_box = SyncRecaptchaBox.from_frames(self._page.frames)
 
         if recaptcha_box.checkbox.is_hidden():

@@ -99,7 +99,9 @@ class SyncSolver:
         RecaptchaVersionError
             If the reCAPTCHA is not version 3.
         """
+        self.token = None
         self._page.on("response", self._extract_token)
+
         timeout = timeout or self._timeout
         start_time = time.time()
 
