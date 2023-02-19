@@ -18,7 +18,7 @@ class SyncSolver:
     page : Page
         The playwright page to solve the reCAPTCHA on.
     timeout : int, optional
-        The timeout in seconds, by default 30.
+        The solve timeout in seconds, by default 30.
 
     Attributes
     ----------
@@ -35,7 +35,7 @@ class SyncSolver:
     Raises
     ------
     RecaptchaTimeoutError
-        If the timeout has been exceeded.
+        If the solve timeout has been exceeded.
     RecaptchaVersionError
         If the reCAPTCHA is not version 3.
     """
@@ -85,7 +85,7 @@ class SyncSolver:
         Parameters
         ----------
         timeout : Optional[int], optional
-            The timeout in seconds, by default 30.
+            The solve timeout in seconds, by default 30.
 
         Returns
         -------
@@ -95,7 +95,7 @@ class SyncSolver:
         Raises
         ------
         RecaptchaTimeoutError
-            If the timeout has been exceeded.
+            If the solve timeout has been exceeded.
         RecaptchaVersionError
             If the reCAPTCHA is not version 3.
         """

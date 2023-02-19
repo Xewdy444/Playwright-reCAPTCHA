@@ -205,7 +205,7 @@ class RecaptchaBox(ABC):
         Returns
         -------
         bool
-            True if the reCAPTCHA rate limit has been exceeded, False otherwise.
+            True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
 
     @abstractmethod
@@ -287,7 +287,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         self._bframe_frame = bframe_frame
 
     def __repr__(self) -> str:
-        return f"SyncRecaptchaBox(anchor_frame={self.anchor_frame!r}, bframe_frame={self.bframe_frame!r})"
+        return f"SyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, bframe_frame={self._bframe_frame!r})"
 
     @classmethod
     def from_frames(cls, frames: Iterable[SyncFrame]) -> SyncRecaptchaBox:
@@ -338,7 +338,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         Returns
         -------
         bool
-            True if the reCAPTCHA rate limit has been exceeded, False otherwise.
+            True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text("Try again later").is_visible()
 
@@ -423,7 +423,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         self._bframe_frame = bframe_frame
 
     def __repr__(self) -> str:
-        return f"AsyncRecaptchaBox(anchor_frame={self.anchor_frame!r}, bframe_frame={self.bframe_frame!r})"
+        return f"AsyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, bframe_frame={self._bframe_frame!r})"
 
     @classmethod
     async def from_frames(cls, frames: Iterable[AsyncFrame]) -> AsyncRecaptchaBox:
@@ -435,8 +435,15 @@ class AsyncRecaptchaBox(RecaptchaBox):
         frames : Iterable[AsyncFrame]
             A list of frames to search for the reCAPTCHA frames.
 
+        Returns
+        -------
+        AsyncRecaptchaBox
+            The reCAPTCHA box.
+
         Raises
         ------
+        RecaptchaNotFoundError
+            If the reCAPTCHA frames were not found.
         RecaptchaSolveError
             If no unchecked reCAPTCHA boxes were found.
         """
@@ -467,7 +474,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         Returns
         -------
         bool
-            True if the reCAPTCHA rate limit has been exceeded, False otherwise.
+            True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text("Try again later").is_visible()
 
