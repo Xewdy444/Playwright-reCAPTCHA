@@ -14,7 +14,10 @@ def test_solver() -> None:
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch()
         page = browser.new_page()
-        page.goto("https://www.google.com/recaptcha/api2/demo")
+
+        page.goto(
+            "https://www.google.com/recaptcha/api2/demo", wait_until="networkidle"
+        )
 
         with recaptchav2.SyncSolver(page) as solver:
             solver.solve_recaptcha()
@@ -26,7 +29,10 @@ def test_solver_with_slow_browser() -> None:
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch(slow_mo=1000)
         page = browser.new_page()
-        page.goto("https://www.google.com/recaptcha/api2/demo")
+
+        page.goto(
+            "https://www.google.com/recaptcha/api2/demo", wait_until="networkidle"
+        )
 
         with recaptchav2.SyncSolver(page) as solver:
             solver.solve_recaptcha()
