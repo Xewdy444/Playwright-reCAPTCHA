@@ -68,6 +68,54 @@ class AsyncSolver:
     async def __aexit__(self, *args: Any) -> None:
         self.close()
 
+    @staticmethod
+    async def _convert_audio_to_text(audio_url: str) -> Optional[str]:
+        """
+        Convert the reCAPTCHA audio to text.
+
+        Parameters
+        ----------
+        audio_url : str
+            The reCAPTCHA audio URL.
+
+        Returns
+        -------
+        Optional[str]
+            The reCAPTCHA audio text.
+        """
+        loop = asyncio.get_event_loop()
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(audio_url)
+
+        wav_audio = io.BytesIO()
+        mp3_audio = io.BytesIO(response.content)
+
+        with ThreadPoolExecutor() as executor:
+            audio = await loop.run_in_executor(
+                executor, pydub.AudioSegment.from_mp3, mp3_audio
+            )
+
+            await loop.run_in_executor(
+                executor, functools.partial(audio.export, wav_audio, format="wav")
+            )
+
+            recognizer = speech_recognition.Recognizer()
+
+            with speech_recognition.AudioFile(wav_audio) as source:
+                audio_data = await loop.run_in_executor(
+                    executor, recognizer.record, source
+                )
+
+            text = await loop.run_in_executor(
+                executor,
+                functools.partial(
+                    recognizer.recognize_google, audio_data, show_all=True
+                ),
+            )
+
+        return text["alternative"][0]["transcript"] if text else None
+
     async def _random_delay(self) -> None:
         """Delay the execution for a random amount of time between 1 and 4 seconds."""
         await self._page.wait_for_timeout(random.randint(1000, 4000))
@@ -121,54 +169,6 @@ class AsyncSolver:
             await self._page.wait_for_timeout(100)
 
         return await recaptcha_box.audio_download_button.get_attribute("href")
-
-    @staticmethod
-    async def _convert_audio_to_text(audio_url: str) -> Optional[str]:
-        """
-        Convert the reCAPTCHA audio to text.
-
-        Parameters
-        ----------
-        audio_url : str
-            The reCAPTCHA audio URL.
-
-        Returns
-        -------
-        Optional[str]
-            The reCAPTCHA audio text.
-        """
-        loop = asyncio.get_event_loop()
-
-        async with httpx.AsyncClient() as client:
-            response = await client.get(audio_url)
-
-        wav_audio = io.BytesIO()
-        mp3_audio = io.BytesIO(response.content)
-
-        with ThreadPoolExecutor() as executor:
-            audio = await loop.run_in_executor(
-                executor, pydub.AudioSegment.from_mp3, mp3_audio
-            )
-
-            await loop.run_in_executor(
-                executor, functools.partial(audio.export, wav_audio, format="wav")
-            )
-
-            recognizer = speech_recognition.Recognizer()
-
-            with speech_recognition.AudioFile(wav_audio) as source:
-                audio_data = await loop.run_in_executor(
-                    executor, recognizer.record, source
-                )
-
-            text = await loop.run_in_executor(
-                executor,
-                functools.partial(
-                    recognizer.recognize_google, audio_data, show_all=True
-                ),
-            )
-
-        return text["alternative"][0]["transcript"] if text else None
 
     async def _submit_audio_text(
         self, recaptcha_box: AsyncRecaptchaBox, text: str

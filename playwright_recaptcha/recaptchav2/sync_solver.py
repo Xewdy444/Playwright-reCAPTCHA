@@ -65,6 +65,36 @@ class SyncSolver:
     def __exit__(self, *args: Any) -> None:
         self.close()
 
+    @staticmethod
+    def _convert_audio_to_text(audio_url: str) -> Optional[str]:
+        """
+        Convert the reCAPTCHA audio to text.
+
+        Parameters
+        ----------
+        audio_url : str
+            The reCAPTCHA audio URL.
+
+        Returns
+        -------
+        Optional[str]
+            The reCAPTCHA audio text.
+        """
+        response = httpx.get(audio_url)
+
+        wav_audio = io.BytesIO()
+        mp3_audio = io.BytesIO(response.content)
+        audio = pydub.AudioSegment.from_mp3(mp3_audio)
+        audio.export(wav_audio, format="wav")
+
+        recognizer = speech_recognition.Recognizer()
+
+        with speech_recognition.AudioFile(wav_audio) as source:
+            audio_data = recognizer.record(source)
+
+        text = recognizer.recognize_google(audio_data, show_all=True)
+        return text["alternative"][0]["transcript"] if text else None
+
     def _random_delay(self) -> None:
         """Delay the execution for a random amount of time between 1 and 4 seconds."""
         self._page.wait_for_timeout(random.randint(1000, 4000))
@@ -118,36 +148,6 @@ class SyncSolver:
             self._page.wait_for_timeout(100)
 
         return recaptcha_box.audio_download_button.get_attribute("href")
-
-    @staticmethod
-    def _convert_audio_to_text(audio_url: str) -> Optional[str]:
-        """
-        Convert the reCAPTCHA audio to text.
-
-        Parameters
-        ----------
-        audio_url : str
-            The reCAPTCHA audio URL.
-
-        Returns
-        -------
-        Optional[str]
-            The reCAPTCHA audio text.
-        """
-        response = httpx.get(audio_url)
-
-        wav_audio = io.BytesIO()
-        mp3_audio = io.BytesIO(response.content)
-        audio = pydub.AudioSegment.from_mp3(mp3_audio)
-        audio.export(wav_audio, format="wav")
-
-        recognizer = speech_recognition.Recognizer()
-
-        with speech_recognition.AudioFile(wav_audio) as source:
-            audio_data = recognizer.record(source)
-
-        text = recognizer.recognize_google(audio_data, show_all=True)
-        return text["alternative"][0]["transcript"] if text else None
 
     def _submit_audio_text(self, recaptcha_box: SyncRecaptchaBox, text: str) -> None:
         """
