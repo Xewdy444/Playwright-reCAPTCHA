@@ -42,13 +42,13 @@ class RecaptchaBox(ABC):
     -------
     from_frames(frames: Iterable[Frame]) -> Union[AsyncRecaptchaBox, SyncRecaptchaBox]
         Create a reCAPTCHA box using a list of frames.
-    frames_are_attached()
+    frames_are_attached() -> bool
         Check if the reCAPTCHA frames are attached.
-    rate_limit_is_visible()
+    rate_limit_is_visible() -> bool
         Check if the reCAPTCHA rate limit message is visible.
-    solve_failure_is_visible()
+    solve_failure_is_visible() -> bool
         Check if the reCAPTCHA solve failure message is visible.
-    audio_challenge_is_visible()
+    audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
 
     Raises
@@ -265,13 +265,13 @@ class SyncRecaptchaBox(RecaptchaBox):
     -------
     from_frames(frames: Iterable[SyncFrame]) -> SyncRecaptchaBox
         Create a reCAPTCHA box using a list of frames.
-    frames_are_attached()
+    frames_are_attached() -> bool
         Check if the reCAPTCHA frames are attached.
-    rate_limit_is_visible()
+    rate_limit_is_visible() -> bool
         Check if the reCAPTCHA rate limit message is visible.
-    solve_failure_is_visible()
+    solve_failure_is_visible() -> bool
         Check if the reCAPTCHA solve failure message is visible.
-    audio_challenge_is_visible()
+    audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
 
     Raises
@@ -401,13 +401,13 @@ class AsyncRecaptchaBox(RecaptchaBox):
     -------
     from_frames(frames: Iterable[AsyncFrame]) -> AsyncRecaptchaBox
         Create a reCAPTCHA box using a list of frames.
-    frames_are_attached()
+    frames_are_attached() -> bool
         Check if the reCAPTCHA frames are attached.
-    rate_limit_is_visible()
+    rate_limit_is_visible() -> bool
         Check if the reCAPTCHA rate limit message is visible.
-    solve_failure_is_visible()
+    solve_failure_is_visible() -> bool
         Check if the reCAPTCHA solve failure message is visible.
-    audio_challenge_is_visible()
+    audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
 
     Raises
