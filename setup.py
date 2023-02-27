@@ -17,7 +17,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "httpx==0.23.3",
-        "playwright==1.30.0",
+        "playwright==1.31.1",
         "pydub==0.25.1",
         "SpeechRecognition==3.9.0",
     ],
