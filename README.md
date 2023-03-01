@@ -11,7 +11,7 @@ A Python library for solving reCAPTCHA v2 and v3 with Playwright.
 reCAPTCHA v2 is solved by transcribing the audio challenge using the Google speech recognition API and entering the text as the response.
 
 ## Solving reCAPTCHA v3
-reCAPTCHA v3 is solved by waiting for the reload POST request (https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload) and parsing the response to get the `g-recaptcha-response` token.
+The solving of reCAPTCHA v3 is done by the browser itself, so this library simply waits for the browser to make a POST request to https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload and parses the response to get the `g-recaptcha-response` token.
 
 ---
 
@@ -118,14 +118,14 @@ asyncio.run(main())
 ```
 
 # Exceptions
-|        Exception        |                                                                     Description                                                                     |
-| :---------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------: |
-|     RecaptchaError      |                           The base class for reCAPTCHA exceptions, used as a catch-all for any reCAPTCHA-related errors.                            |
-|   RecaptchaSolveError   |               An exception raised when the reCAPTCHA could not be solved, used as a catch-all for any reCAPTCHA solve-related errors.               |
-| RecaptchaNotFoundError  |                                       An exception raised when the reCAPTCHA v2 was not found on the website.                                       |
-|  RecaptchaVersionError  |     An exception raised when the reCAPTCHA v3 solver is used for reCAPTCHA v2. To solve this issue, simply use the reCAPTCHA v2 solver instead.     |
-| RecaptchaRateLimitError | An exception raised when the reCAPTCHA rate limit has been reached. This can happen if the library is being used to solve reCAPTCHA v2 too quickly. |
-|  RecaptchaTimeoutError  |                             An exception raised when the reCAPTCHA v3 could not be solved within the specified timeout.                             |
+|        Exception        |                                                                      Description                                                                      |
+| :---------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------: |
+|     RecaptchaError      |                            The base class for reCAPTCHA exceptions, used as a catch-all for any reCAPTCHA-related errors.                             |
+|   RecaptchaSolveError   |                An exception raised when the reCAPTCHA could not be solved, used as a catch-all for any reCAPTCHA solve-related errors.                |
+| RecaptchaNotFoundError  |                                        An exception raised when the reCAPTCHA v2 was not found on the website.                                        |
+|  RecaptchaVersionError  |      An exception raised when the reCAPTCHA v3 solver is used for reCAPTCHA v2. To solve this issue, simply use the reCAPTCHA v2 solver instead.      |
+| RecaptchaRateLimitError | An exception raised when the reCAPTCHA rate limit has been exceeded. This can happen if the library is being used to solve reCAPTCHA v2s too quickly. |
+|  RecaptchaTimeoutError  |                                An exception raised when the reCAPTCHA v3 was not solved within the specified timeout.                                 |
 
 # Disclaimer
 This library is intended for use in automated testing and development environments only and should not be used for any illegal or malicious purposes. Any use of this library for activities that violate the terms of service of any website or service is strictly prohibited. The contributors of this library will not be held liable for any damages or legal issues that may arise from the use of this library. By using this library, you agree to these terms and take full responsibility for your actions.
