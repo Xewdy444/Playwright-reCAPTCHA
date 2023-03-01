@@ -9,7 +9,10 @@ async def main() -> None:
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch()
         page = await browser.new_page()
-        await page.goto("https://www.google.com/recaptcha/api2/demo")
+
+        await page.goto(
+            "https://www.google.com/recaptcha/api2/demo", wait_until="networkidle"
+        )
 
         async with recaptchav2.AsyncSolver(page) as solver:
             token = await solver.solve_recaptcha()

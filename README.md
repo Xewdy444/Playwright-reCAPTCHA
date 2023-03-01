@@ -49,7 +49,10 @@ from playwright_recaptcha import recaptchav2
 with sync_playwright() as playwright:
     browser = playwright.firefox.launch()
     page = browser.new_page()
-    page.goto("https://www.google.com/recaptcha/api2/demo")
+
+    page.goto(
+        "https://www.google.com/recaptcha/api2/demo", wait_until="networkidle"
+    )
 
     with recaptchav2.SyncSolver(page) as solver:
         token = solver.solve_recaptcha()
@@ -66,7 +69,10 @@ async def main() -> None:
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch()
         page = await browser.new_page()
-        await page.goto("https://www.google.com/recaptcha/api2/demo")
+
+        await page.goto(
+            "https://www.google.com/recaptcha/api2/demo", wait_until="networkidle"
+        )
 
         async with recaptchav2.AsyncSolver(page) as solver:
             token = await solver.solve_recaptcha()
