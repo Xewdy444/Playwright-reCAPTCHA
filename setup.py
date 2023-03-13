@@ -19,7 +19,7 @@ setup(
         "httpx==0.23.3",
         "playwright==1.31.1",
         "pydub==0.25.1",
-        "SpeechRecognition==3.9.0",
+        "SpeechRecognition==3.10.0",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
