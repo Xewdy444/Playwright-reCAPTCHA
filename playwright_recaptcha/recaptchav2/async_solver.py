@@ -107,14 +107,12 @@ class AsyncSolver:
                     executor, recognizer.record, source
                 )
 
-            text = await loop.run_in_executor(
-                executor,
-                functools.partial(
-                    recognizer.recognize_google, audio_data, show_all=True
-                ),
-            )
-
-        return text["alternative"][0]["transcript"] if text else None
+            try:
+                return await loop.run_in_executor(
+                    executor, recognizer.recognize_google, audio_data
+                )
+            except speech_recognition.UnknownValueError:
+                return None
 
     async def _random_delay(self) -> None:
         """Delay the execution for a random amount of time between 1 and 4 seconds."""

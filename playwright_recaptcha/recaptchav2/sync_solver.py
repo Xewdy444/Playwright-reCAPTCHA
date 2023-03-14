@@ -92,8 +92,10 @@ class SyncSolver:
         with speech_recognition.AudioFile(wav_audio) as source:
             audio_data = recognizer.record(source)
 
-        text = recognizer.recognize_google(audio_data, show_all=True)
-        return text["alternative"][0]["transcript"] if text else None
+        try:
+            return recognizer.recognize_google(audio_data)
+        except speech_recognition.UnknownValueError:
+            return None
 
     def _random_delay(self) -> None:
         """Delay the execution for a random amount of time between 1 and 4 seconds."""
