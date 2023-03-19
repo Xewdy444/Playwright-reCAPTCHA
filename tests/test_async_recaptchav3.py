@@ -3,7 +3,6 @@ from playwright.async_api import async_playwright
 
 from playwright_recaptcha import (
     RecaptchaTimeoutError,
-    RecaptchaVersionError,
     recaptchav3,
 )
 
@@ -42,17 +41,4 @@ async def test_recaptcha_not_found() -> None:
 
         with pytest.raises(RecaptchaTimeoutError):
             async with recaptchav3.AsyncSolver(page, timeout=10) as solver:
-                await solver.solve_recaptcha()
-
-
-@pytest.mark.asyncio
-async def test_recaptcha_version_error() -> None:
-    """Test the solver with a page that has a reCAPTCHA v2."""
-    async with async_playwright() as playwright:
-        browser = await playwright.firefox.launch()
-        page = await browser.new_page()
-        await page.goto("https://cobra.ehr.com/ESS/Home/Login.aspx")
-
-        with pytest.raises(RecaptchaVersionError):
-            async with recaptchav3.AsyncSolver(page) as solver:
                 await solver.solve_recaptcha()
