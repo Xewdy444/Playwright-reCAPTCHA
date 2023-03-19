@@ -19,13 +19,6 @@ class RecaptchaNotFoundError(RecaptchaError):
         super().__init__("The reCAPTCHA was not found.")
 
 
-class RecaptchaVersionError(RecaptchaSolveError):
-    """An exception raised when the reCAPTCHA v3 solver is used for reCAPTCHA v2."""
-
-    def __init__(self) -> None:
-        super().__init__("The reCAPTCHA is not version 3.")
-
-
 class RecaptchaRateLimitError(RecaptchaSolveError):
     """An exception raised when the reCAPTCHA rate limit has been exceeded."""
 

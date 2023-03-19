@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 from playwright.async_api import Page, Response
 
-from playwright_recaptcha.errors import RecaptchaTimeoutError, RecaptchaVersionError
+from playwright_recaptcha.errors import RecaptchaTimeoutError
 
 
 class AsyncSolver:
@@ -36,8 +36,6 @@ class AsyncSolver:
     ------
     RecaptchaTimeoutError
         If the solve timeout has been exceeded.
-    RecaptchaVersionError
-        If the reCAPTCHA is not version 3.
     """
 
     def __init__(self, page: Page, timeout: int = 30) -> None:
@@ -96,8 +94,6 @@ class AsyncSolver:
         ------
         RecaptchaTimeoutError
             If the solve timeout has been exceeded.
-        RecaptchaVersionError
-            If the reCAPTCHA is not version 3.
         """
         self.token = None
         self._page.on("response", self._extract_token)
@@ -110,8 +106,5 @@ class AsyncSolver:
                 raise RecaptchaTimeoutError
 
             await self._page.wait_for_timeout(100)
-
-        if len(self.token) > 600:
-            raise RecaptchaVersionError
 
         return self.token
