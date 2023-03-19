@@ -5,7 +5,6 @@ from playwright_recaptcha.errors import (
     RecaptchaRateLimitError,
     RecaptchaSolveError,
     RecaptchaTimeoutError,
-    RecaptchaVersionError,
 )
 from playwright_recaptcha.recaptchav2.async_solver import AsyncSolver as AsyncSolverV2
 from playwright_recaptcha.recaptchav2.sync_solver import SyncSolver as SyncSolverV2
@@ -18,7 +17,6 @@ __all__ = [
     "RecaptchaRateLimitError",
     "RecaptchaSolveError",
     "RecaptchaTimeoutError",
-    "RecaptchaVersionError",
     "AsyncSolverV2",
     "SyncSolverV2",
     "AsyncSolverV3",
