@@ -151,8 +151,8 @@ class RecaptchaBox(ABC):
         def decorator(func: Union[Callable, Coroutine]) -> Union[Callable, Coroutine]:
             if asyncio.iscoroutinefunction(func):
                 return coroutine_decorator(func)
-            else:
-                return callable_decorator(func)
+
+            return callable_decorator(func)
 
         return decorator
 
