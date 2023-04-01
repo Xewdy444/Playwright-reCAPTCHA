@@ -4,7 +4,7 @@ import asyncio
 import re
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Any, Callable, Coroutine, Iterable, List, Tuple, Union
+from typing import Callable, Coroutine, Iterable, List, Tuple, Union
 
 from playwright.async_api import Frame as AsyncFrame
 from playwright.async_api import Locator as AsyncLocator
@@ -52,6 +52,8 @@ class RecaptchaBox(ABC):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
+    is_solved() -> bool
+        Check if the reCAPTCHA challenge is solved.
 
     Raises
     ------
@@ -118,9 +120,10 @@ class RecaptchaBox(ABC):
         return frame_pairs
 
     @staticmethod
-    def _check_attached() -> Callable:
+    def _check_if_attached(func: Union[Callable, Coroutine]) -> Callable:
         """
-        A decorator that checks if the reCAPTCHA frames are attached, otherwise return False.
+        A decorator that checks if the reCAPTCHA frames are attached,
+        otherwise return False.
 
         Returns
         -------
@@ -130,7 +133,7 @@ class RecaptchaBox(ABC):
 
         def callable_decorator(func: Callable) -> Callable:
             @wraps(func)
-            def wrapper(self: SyncRecaptchaBox) -> Union[bool, Any]:
+            def wrapper(self: SyncRecaptchaBox) -> bool:
                 if self.frames_are_detached():
                     return False
 
@@ -140,7 +143,7 @@ class RecaptchaBox(ABC):
 
         def coroutine_decorator(func: Coroutine) -> Coroutine:
             @wraps(func)
-            async def wrapper(self: AsyncRecaptchaBox) -> Union[bool, Any]:
+            async def wrapper(self: AsyncRecaptchaBox) -> bool:
                 if self.frames_are_detached():
                     return False
 
@@ -148,13 +151,10 @@ class RecaptchaBox(ABC):
 
             return wrapper
 
-        def decorator(func: Union[Callable, Coroutine]) -> Union[Callable, Coroutine]:
-            if asyncio.iscoroutinefunction(func):
-                return coroutine_decorator(func)
+        if asyncio.iscoroutinefunction(func):
+            return coroutine_decorator(func)
 
-            return callable_decorator(func)
-
-        return decorator
+        return callable_decorator(func)
 
     @property
     def checkbox(self) -> Locator:
@@ -282,6 +282,17 @@ class RecaptchaBox(ABC):
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
 
+    @abstractmethod
+    def is_solved(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge is solved.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is solved, False otherwise.
+        """
+
 
 class SyncRecaptchaBox(RecaptchaBox):
     """
@@ -325,6 +336,8 @@ class SyncRecaptchaBox(RecaptchaBox):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
+    is_solved() -> bool
+        Check if the reCAPTCHA challenge is solved.
 
     Raises
     ------
@@ -366,13 +379,14 @@ class SyncRecaptchaBox(RecaptchaBox):
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
         for anchor_frame, bframe_frame in frame_pairs:
+            checkbox = anchor_frame.get_by_role("checkbox", name="I'm not a robot")
+
             if (
                 bframe_frame.get_by_role(
                     "button", name="Get an audio challenge"
                 ).is_visible()
-                or not anchor_frame.get_by_role(
-                    "checkbox", name="I'm not a robot"
-                ).is_checked()
+                or checkbox.is_visible()
+                and not checkbox.is_checked()
             ):
                 return cls(anchor_frame, bframe_frame)
 
@@ -388,7 +402,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         """The reCAPTCHA bframe frame."""
         return self._bframe_frame
 
-    @RecaptchaBox._check_attached()
+    @RecaptchaBox._check_if_attached
     def rate_limit_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA rate limit message is visible.
@@ -400,7 +414,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         """
         return self.bframe_frame.get_by_text("Try again later").is_visible()
 
-    @RecaptchaBox._check_attached()
+    @RecaptchaBox._check_if_attached
     def solve_failure_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA solve failure message is visible.
@@ -414,7 +428,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             "Multiple correct solutions required - please solve more."
         ).is_visible()
 
-    @RecaptchaBox._check_attached()
+    @RecaptchaBox._check_if_attached
     def audio_challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA audio challenge is visible.
@@ -425,6 +439,21 @@ class SyncRecaptchaBox(RecaptchaBox):
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
+
+    def is_solved(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge is solved.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is solved, False otherwise.
+        """
+        return (
+            self.frames_are_detached()
+            or self.checkbox.is_visible()
+            and self.checkbox.is_checked()
+        )
 
 
 class AsyncRecaptchaBox(RecaptchaBox):
@@ -469,6 +498,8 @@ class AsyncRecaptchaBox(RecaptchaBox):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
+    is_solved() -> bool
+        Check if the reCAPTCHA challenge is solved.
 
     Raises
     ------
@@ -510,13 +541,14 @@ class AsyncRecaptchaBox(RecaptchaBox):
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
         for anchor_frame, bframe_frame in frame_pairs:
+            checkbox = anchor_frame.get_by_role("checkbox", name="I'm not a robot")
+
             if (
                 await bframe_frame.get_by_role(
                     "button", name="Get an audio challenge"
                 ).is_visible()
-                or not await anchor_frame.get_by_role(
-                    "checkbox", name="I'm not a robot"
-                ).is_checked()
+                or await checkbox.is_visible()
+                and not await checkbox.is_checked()
             ):
                 return cls(anchor_frame, bframe_frame)
 
@@ -532,7 +564,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         """The reCAPTCHA bframe frame."""
         return self._bframe_frame
 
-    @RecaptchaBox._check_attached()
+    @RecaptchaBox._check_if_attached
     async def rate_limit_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA rate limit message is visible.
@@ -544,7 +576,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         """
         return await self.bframe_frame.get_by_text("Try again later").is_visible()
 
-    @RecaptchaBox._check_attached()
+    @RecaptchaBox._check_if_attached
     async def solve_failure_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA solve failure message is visible.
@@ -558,7 +590,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             "Multiple correct solutions required - please solve more."
         ).is_visible()
 
-    @RecaptchaBox._check_attached()
+    @RecaptchaBox._check_if_attached
     async def audio_challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA audio challenge is visible.
@@ -569,3 +601,18 @@ class AsyncRecaptchaBox(RecaptchaBox):
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
+
+    async def is_solved(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge is solved.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is solved, False otherwise.
+        """
+        return (
+            self.frames_are_detached()
+            or await self.checkbox.is_visible()
+            and await self.checkbox.is_checked()
+        )

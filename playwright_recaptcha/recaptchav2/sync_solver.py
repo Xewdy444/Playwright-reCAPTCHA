@@ -5,7 +5,6 @@ import random
 import re
 from typing import Any, Optional
 
-import httpx
 import pydub
 import speech_recognition
 from playwright.sync_api import Page, Response
@@ -65,8 +64,7 @@ class SyncSolver:
     def __exit__(self, *args: Any) -> None:
         self.close()
 
-    @staticmethod
-    def _convert_audio_to_text(audio_url: str) -> Optional[str]:
+    def _convert_audio_to_text(self, audio_url: str) -> Optional[str]:
         """
         Convert the reCAPTCHA audio to text.
 
@@ -80,10 +78,10 @@ class SyncSolver:
         Optional[str]
             The reCAPTCHA audio text.
         """
-        response = httpx.get(audio_url)
+        response = self._page.request.get(audio_url)
 
         wav_audio = io.BytesIO()
-        mp3_audio = io.BytesIO(response.content)
+        mp3_audio = io.BytesIO(response.body())
         audio = pydub.AudioSegment.from_mp3(mp3_audio)
         audio.export(wav_audio, format="wav")
 
@@ -129,21 +127,18 @@ class SyncSolver:
         """
         recaptcha_box.checkbox.click(force=True)
 
-        while True:
+        while recaptcha_box.frames_are_attached():
+            if recaptcha_box.is_solved():
+                if self.token is None:
+                    raise RecaptchaSolveError
+
+                break
+
             if (
                 recaptcha_box.audio_challenge_is_visible()
                 or recaptcha_box.audio_challenge_button.is_visible()
                 and recaptcha_box.audio_challenge_button.is_enabled()
             ):
-                break
-
-            if (
-                recaptcha_box.frames_are_detached()
-                or recaptcha_box.checkbox.is_checked()
-            ):
-                if self.token is None:
-                    raise RecaptchaSolveError
-
                 break
 
             self._page.wait_for_timeout(100)
@@ -200,13 +195,8 @@ class SyncSolver:
         recaptcha_box.audio_challenge_textbox.fill(text)
         recaptcha_box.audio_challenge_verify_button.click()
 
-        while True:
-            if (
-                recaptcha_box.frames_are_detached()
-                or recaptcha_box.checkbox.is_visible()
-                and recaptcha_box.checkbox.is_checked()
-                or recaptcha_box.solve_failure_is_visible()
-            ):
+        while recaptcha_box.frames_are_attached():
+            if recaptcha_box.solve_failure_is_visible() or recaptcha_box.is_solved():
                 break
 
             if recaptcha_box.rate_limit_is_visible():
@@ -275,10 +265,7 @@ class SyncSolver:
             self._random_delay()
             self._submit_audio_text(recaptcha_box, text)
 
-            if (
-                recaptcha_box.frames_are_detached()
-                or recaptcha_box.checkbox.is_checked()
-            ):
+            if recaptcha_box.is_solved():
                 if self.token is None:
                     raise RecaptchaSolveError
 
