@@ -196,7 +196,10 @@ class SyncSolver:
         recaptcha_box.audio_challenge_verify_button.click()
 
         while recaptcha_box.frames_are_attached():
-            if recaptcha_box.solve_failure_is_visible() or recaptcha_box.is_detached_or_solved():
+            if (
+                recaptcha_box.solve_failure_is_visible()
+                or recaptcha_box.is_detached_or_solved()
+            ):
                 break
 
             if recaptcha_box.rate_limit_is_visible():
