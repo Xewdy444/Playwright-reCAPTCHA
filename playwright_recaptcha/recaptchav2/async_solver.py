@@ -143,7 +143,7 @@ class AsyncSolver:
         await recaptcha_box.checkbox.click(force=True)
 
         while recaptcha_box.frames_are_attached():
-            if await recaptcha_box.is_solved():
+            if await recaptcha_box.is_detached_or_solved():
                 if self.token is None:
                     raise RecaptchaSolveError
 
@@ -215,7 +215,7 @@ class AsyncSolver:
         while recaptcha_box.frames_are_attached():
             if (
                 await recaptcha_box.solve_failure_is_visible()
-                or await recaptcha_box.is_solved()
+                or await recaptcha_box.is_detached_or_solved()
             ):
                 break
 
@@ -285,7 +285,7 @@ class AsyncSolver:
             await self._random_delay()
             await self._submit_audio_text(recaptcha_box, text)
 
-            if await recaptcha_box.is_solved():
+            if await recaptcha_box.is_detached_or_solved():
                 if self.token is None:
                     raise RecaptchaSolveError
 

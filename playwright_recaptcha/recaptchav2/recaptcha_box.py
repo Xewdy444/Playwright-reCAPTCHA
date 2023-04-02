@@ -4,7 +4,7 @@ import asyncio
 import re
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Callable, Coroutine, Iterable, List, Tuple, Union
+from typing import Awaitable, Callable, Iterable, List, Tuple, Union
 
 from playwright.async_api import Frame as AsyncFrame
 from playwright.async_api import Locator as AsyncLocator
@@ -52,8 +52,8 @@ class RecaptchaBox(ABC):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
-    is_solved() -> bool
-        Check if the reCAPTCHA challenge is solved.
+    is_detached_or_solved() -> bool
+        Check if the reCAPTCHA challenge is detached or solved.
 
     Raises
     ------
@@ -120,41 +120,52 @@ class RecaptchaBox(ABC):
         return frame_pairs
 
     @staticmethod
-    def _check_if_attached(func: Union[Callable, Coroutine]) -> Callable:
+    def _check_if_attached(
+        func: Union[
+            Callable[[AsyncRecaptchaBox], Awaitable[bool]],
+            Callable[[SyncRecaptchaBox], bool],
+        ]
+    ) -> Union[
+        Callable[[AsyncRecaptchaBox], Awaitable[bool]],
+        Callable[[SyncRecaptchaBox], bool],
+    ]:
         """
-        A decorator that checks if the reCAPTCHA frames are attached,
+        Check if the reCAPTCHA frames are attached before running the decorated function,
         otherwise return False.
+
+        Parameters
+        ----------
+        func : Union[
+            Callable[[AsyncRecaptchaBox], Awaitable[bool]], Callable[[SyncRecaptchaBox], bool]
+        ]
+            The function to decorate.
 
         Returns
         -------
-        Callable
-            The decorator.
+        Union[
+            Callable[[AsyncRecaptchaBox], Awaitable[bool]], Callable[[SyncRecaptchaBox], bool]
+        ]
+            The decorated function.
         """
 
-        def callable_decorator(func: Callable) -> Callable:
-            @wraps(func)
-            def wrapper(self: SyncRecaptchaBox) -> bool:
-                if self.frames_are_detached():
-                    return False
+        @wraps(func)
+        def sync_wrapper(self: SyncRecaptchaBox) -> bool:
+            if self.frames_are_detached():
+                return False
 
-                return func(self)
+            return func(self)
 
-            return wrapper
+        @wraps(func)
+        async def async_wrapper(self: AsyncRecaptchaBox) -> bool:
+            if self.frames_are_detached():
+                return False
 
-        def coroutine_decorator(func: Coroutine) -> Coroutine:
-            @wraps(func)
-            async def wrapper(self: AsyncRecaptchaBox) -> bool:
-                if self.frames_are_detached():
-                    return False
-
-                return await func(self)
-
-            return wrapper
+            return await func(self)
 
         if asyncio.iscoroutinefunction(func):
-            return coroutine_decorator(func)
+            return async_wrapper
 
-        return callable_decorator(func)
+        return sync_wrapper
 
     @property
     def checkbox(self) -> Locator:
@@ -283,14 +294,14 @@ class RecaptchaBox(ABC):
         """
 
     @abstractmethod
-    def is_solved(self) -> bool:
+    def is_detached_or_solved(self) -> bool:
         """
-        Check if the reCAPTCHA challenge is solved.
+        Check if the reCAPTCHA challenge is detached or solved.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA challenge is solved, False otherwise.
+            True if the reCAPTCHA challenge is detached or solved, False otherwise.
         """
 
 
@@ -336,8 +347,8 @@ class SyncRecaptchaBox(RecaptchaBox):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
-    is_solved() -> bool
-        Check if the reCAPTCHA challenge is solved.
+    is_detached_or_solved() -> bool
+        Check if the reCAPTCHA challenge is detached or solved.
 
     Raises
     ------
@@ -440,14 +451,14 @@ class SyncRecaptchaBox(RecaptchaBox):
         """
         return self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
 
-    def is_solved(self) -> bool:
+    def is_detached_or_solved(self) -> bool:
         """
-        Check if the reCAPTCHA challenge is solved.
+        Check if the reCAPTCHA challenge is detached or solved.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA challenge is solved, False otherwise.
+            True if the reCAPTCHA challenge is detached or solved, False otherwise.
         """
         return (
             self.frames_are_detached()
@@ -498,8 +509,8 @@ class AsyncRecaptchaBox(RecaptchaBox):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
-    is_solved() -> bool
-        Check if the reCAPTCHA challenge is solved.
+    is_detached_or_solved() -> bool
+        Check if the reCAPTCHA challenge is detached or solved.
 
     Raises
     ------
@@ -602,14 +613,14 @@ class AsyncRecaptchaBox(RecaptchaBox):
         """
         return await self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
 
-    async def is_solved(self) -> bool:
+    async def is_detached_or_solved(self) -> bool:
         """
-        Check if the reCAPTCHA challenge is solved.
+        Check if the reCAPTCHA challenge is detached or solved.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA challenge is solved, False otherwise.
+            True if the reCAPTCHA challenge is detached or solved, False otherwise.
         """
         return (
             self.frames_are_detached()
