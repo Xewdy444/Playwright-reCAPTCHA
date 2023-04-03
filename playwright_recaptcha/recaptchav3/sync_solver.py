@@ -105,6 +105,6 @@ class SyncSolver:
             if time.time() - start_time >= timeout:
                 raise RecaptchaTimeoutError
 
-            self._page.wait_for_timeout(100)
+            self._page.wait_for_timeout(250)
 
         return self.token
