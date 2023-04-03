@@ -141,7 +141,7 @@ class SyncSolver:
             ):
                 break
 
-            self._page.wait_for_timeout(100)
+            self._page.wait_for_timeout(250)
 
     def _get_audio_url(self, recaptcha_box: SyncRecaptchaBox) -> str:
         """
@@ -172,7 +172,7 @@ class SyncSolver:
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            self._page.wait_for_timeout(100)
+            self._page.wait_for_timeout(250)
 
         return recaptcha_box.audio_download_button.get_attribute("href")
 
@@ -205,7 +205,7 @@ class SyncSolver:
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            self._page.wait_for_timeout(100)
+            self._page.wait_for_timeout(250)
 
     def close(self) -> None:
         """Remove the userverify response listener."""
@@ -245,7 +245,7 @@ class SyncSolver:
 
         if (
             recaptcha_box.checkbox.is_hidden()
-            and recaptcha_box.audio_challenge_button.is_hidden()
+            and recaptcha_box.audio_challenge_button.is_disabled()
         ):
             raise RecaptchaNotFoundError
 

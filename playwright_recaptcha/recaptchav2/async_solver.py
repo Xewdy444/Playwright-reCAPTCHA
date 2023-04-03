@@ -156,7 +156,7 @@ class AsyncSolver:
             ):
                 break
 
-            await self._page.wait_for_timeout(100)
+            await self._page.wait_for_timeout(250)
 
     async def _get_audio_url(self, recaptcha_box: AsyncRecaptchaBox) -> str:
         """
@@ -187,7 +187,7 @@ class AsyncSolver:
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            await self._page.wait_for_timeout(100)
+            await self._page.wait_for_timeout(250)
 
         return await recaptcha_box.audio_download_button.get_attribute("href")
 
@@ -222,7 +222,7 @@ class AsyncSolver:
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            await self._page.wait_for_timeout(100)
+            await self._page.wait_for_timeout(250)
 
     def close(self) -> None:
         """Remove the userverify response listener."""
@@ -262,7 +262,7 @@ class AsyncSolver:
 
         if (
             await recaptcha_box.checkbox.is_hidden()
-            and await recaptcha_box.audio_challenge_button.is_hidden()
+            and await recaptcha_box.audio_challenge_button.is_disabled()
         ):
             raise RecaptchaNotFoundError
 
