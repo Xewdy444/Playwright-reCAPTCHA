@@ -105,6 +105,6 @@ class AsyncSolver:
             if time.time() - start_time >= timeout:
                 raise RecaptchaTimeoutError
 
-            await self._page.wait_for_timeout(100)
+            await self._page.wait_for_timeout(250)
 
         return self.token
