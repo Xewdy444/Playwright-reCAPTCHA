@@ -8,7 +8,7 @@ from playwright_recaptcha import (
 
 
 @pytest.mark.asyncio
-async def test_solver() -> None:
+async def test_solver_with_normal_browser() -> None:
     """Test the solver with a normal browser."""
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch()
@@ -32,7 +32,7 @@ async def test_solver_with_slow_browser() -> None:
 
 
 @pytest.mark.asyncio
-async def test_recaptcha_not_found() -> None:
+async def test_recaptcha_not_found_error() -> None:
     """Test the solver with a page that does not have a reCAPTCHA."""
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch()

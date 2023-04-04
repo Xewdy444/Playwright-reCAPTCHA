@@ -7,7 +7,7 @@ from playwright_recaptcha import (
 )
 
 
-def test_solver() -> None:
+def test_solver_with_normal_browser() -> None:
     """Test the solver with a normal browser."""
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch()
@@ -29,7 +29,7 @@ def test_solver_with_slow_browser() -> None:
             solver.solve_recaptcha()
 
 
-def test_recaptcha_not_found() -> None:
+def test_recaptcha_not_found_error() -> None:
     """Test the solver with a page that does not have a reCAPTCHA."""
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch()
