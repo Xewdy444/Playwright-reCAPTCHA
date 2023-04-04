@@ -193,7 +193,11 @@ class SyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         recaptcha_box.audio_challenge_textbox.fill(text)
-        recaptcha_box.audio_challenge_verify_button.click()
+
+        with self._page.expect_response(
+            re.compile("/recaptcha/(api2|enterprise)/userverify")
+        ):
+            recaptcha_box.audio_challenge_verify_button.click()
 
         while recaptcha_box.frames_are_attached():
             if (

@@ -210,7 +210,11 @@ class AsyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         await recaptcha_box.audio_challenge_textbox.fill(text)
-        await recaptcha_box.audio_challenge_verify_button.click()
+
+        async with self._page.expect_response(
+            re.compile("/recaptcha/(api2|enterprise)/userverify")
+        ):
+            await recaptcha_box.audio_challenge_verify_button.click()
 
         while recaptcha_box.frames_are_attached():
             if (
