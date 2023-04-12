@@ -143,7 +143,7 @@ class AsyncSolver:
         await recaptcha_box.checkbox.click(force=True)
 
         while recaptcha_box.frames_are_attached():
-            if await recaptcha_box.is_detached_or_solved():
+            if await recaptcha_box.is_solved():
                 if self.token is None:
                     raise RecaptchaSolveError
 
@@ -181,11 +181,11 @@ class AsyncSolver:
             await recaptcha_box.audio_challenge_button.click(force=True)
 
         while True:
-            if await recaptcha_box.audio_challenge_is_visible():
-                break
-
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
+
+            if await recaptcha_box.audio_challenge_is_visible():
+                break
 
             await self._page.wait_for_timeout(250)
 
@@ -217,14 +217,15 @@ class AsyncSolver:
             await recaptcha_box.audio_challenge_verify_button.click()
 
         while recaptcha_box.frames_are_attached():
-            if (
-                await recaptcha_box.solve_failure_is_visible()
-                or await recaptcha_box.is_detached_or_solved()
-            ):
-                break
-
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
+
+            if (
+                await recaptcha_box.new_challenge_button.is_disabled()
+                or await recaptcha_box.solve_failure_is_visible()
+                or await recaptcha_box.is_solved()
+            ):
+                break
 
             await self._page.wait_for_timeout(250)
 
@@ -289,7 +290,11 @@ class AsyncSolver:
             await self._random_delay()
             await self._submit_audio_text(recaptcha_box, text)
 
-            if await recaptcha_box.is_detached_or_solved():
+            if (
+                await recaptcha_box.frames_are_detached()
+                or await recaptcha_box.new_challenge_button.is_disabled()
+                or await recaptcha_box.is_solved()
+            ):
                 if self.token is None:
                     raise RecaptchaSolveError
 

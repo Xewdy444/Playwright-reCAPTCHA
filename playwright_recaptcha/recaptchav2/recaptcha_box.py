@@ -52,8 +52,8 @@ class RecaptchaBox(ABC):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
-    is_detached_or_solved() -> bool
-        Check if the reCAPTCHA challenge is detached or solved.
+    is_solved() -> bool
+        Check if the reCAPTCHA challenge is solved.
 
     Raises
     ------
@@ -294,14 +294,14 @@ class RecaptchaBox(ABC):
         """
 
     @abstractmethod
-    def is_detached_or_solved(self) -> bool:
+    def is_solved(self) -> bool:
         """
-        Check if the reCAPTCHA challenge is detached or solved.
+        Check if the reCAPTCHA challenge is solved.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA challenge is detached or solved, False otherwise.
+            True if the reCAPTCHA challenge is solved, False otherwise.
         """
 
 
@@ -347,8 +347,8 @@ class SyncRecaptchaBox(RecaptchaBox):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
-    is_detached_or_solved() -> bool
-        Check if the reCAPTCHA challenge is detached or solved.
+    is_solved() -> bool
+        Check if the reCAPTCHA challenge is solved.
 
     Raises
     ------
@@ -451,20 +451,17 @@ class SyncRecaptchaBox(RecaptchaBox):
         """
         return self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
 
-    def is_detached_or_solved(self) -> bool:
+    @RecaptchaBox._check_if_attached
+    def is_solved(self) -> bool:
         """
-        Check if the reCAPTCHA challenge is detached or solved.
+        Check if the reCAPTCHA challenge is solved.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA challenge is detached or solved, False otherwise.
+            True if the reCAPTCHA challenge is solved, False otherwise.
         """
-        return (
-            self.frames_are_detached()
-            or self.checkbox.is_visible()
-            and self.checkbox.is_checked()
-        )
+        return self.checkbox.is_visible() and self.checkbox.is_checked()
 
 
 class AsyncRecaptchaBox(RecaptchaBox):
@@ -509,8 +506,8 @@ class AsyncRecaptchaBox(RecaptchaBox):
         Check if the reCAPTCHA solve failure message is visible.
     audio_challenge_is_visible() -> bool
         Check if the reCAPTCHA audio challenge is visible.
-    is_detached_or_solved() -> bool
-        Check if the reCAPTCHA challenge is detached or solved.
+    is_solved() -> bool
+        Check if the reCAPTCHA challenge is solved.
 
     Raises
     ------
@@ -613,17 +610,14 @@ class AsyncRecaptchaBox(RecaptchaBox):
         """
         return await self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
 
-    async def is_detached_or_solved(self) -> bool:
+    @RecaptchaBox._check_if_attached
+    async def is_solved(self) -> bool:
         """
-        Check if the reCAPTCHA challenge is detached or solved.
+        Check if the reCAPTCHA challenge is solved.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA challenge is detached or solved, False otherwise.
+            True if the reCAPTCHA challenge is solved, False otherwise.
         """
-        return (
-            self.frames_are_detached()
-            or await self.checkbox.is_visible()
-            and await self.checkbox.is_checked()
-        )
+        return await self.checkbox.is_visible() and await self.checkbox.is_checked()

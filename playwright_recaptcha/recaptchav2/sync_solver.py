@@ -128,7 +128,7 @@ class SyncSolver:
         recaptcha_box.checkbox.click(force=True)
 
         while recaptcha_box.frames_are_attached():
-            if recaptcha_box.is_detached_or_solved():
+            if recaptcha_box.is_solved():
                 if self.token is None:
                     raise RecaptchaSolveError
 
@@ -166,11 +166,11 @@ class SyncSolver:
             recaptcha_box.audio_challenge_button.click(force=True)
 
         while True:
-            if recaptcha_box.audio_challenge_is_visible():
-                break
-
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
+
+            if recaptcha_box.audio_challenge_is_visible():
+                break
 
             self._page.wait_for_timeout(250)
 
@@ -200,14 +200,15 @@ class SyncSolver:
             recaptcha_box.audio_challenge_verify_button.click()
 
         while recaptcha_box.frames_are_attached():
-            if (
-                recaptcha_box.solve_failure_is_visible()
-                or recaptcha_box.is_detached_or_solved()
-            ):
-                break
-
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
+
+            if (
+                recaptcha_box.new_challenge_button.is_disabled()
+                or recaptcha_box.solve_failure_is_visible()
+                or recaptcha_box.is_solved()
+            ):
+                break
 
             self._page.wait_for_timeout(250)
 
@@ -272,7 +273,11 @@ class SyncSolver:
             self._random_delay()
             self._submit_audio_text(recaptcha_box, text)
 
-            if recaptcha_box.is_detached_or_solved():
+            if (
+                recaptcha_box.frames_are_detached()
+                or recaptcha_box.new_challenge_button.is_disabled()
+                or recaptcha_box.is_solved()
+            ):
                 if self.token is None:
                     raise RecaptchaSolveError
 
