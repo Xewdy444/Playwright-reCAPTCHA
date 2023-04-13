@@ -291,7 +291,7 @@ class AsyncSolver:
             await self._submit_audio_text(recaptcha_box, text)
 
             if (
-                await recaptcha_box.frames_are_detached()
+                recaptcha_box.frames_are_detached()
                 or await recaptcha_box.new_challenge_button.is_disabled()
                 or await recaptcha_box.is_solved()
             ):
