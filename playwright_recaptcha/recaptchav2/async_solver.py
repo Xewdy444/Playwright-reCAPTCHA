@@ -8,7 +8,6 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Optional
 
-import httpx
 import pydub
 import speech_recognition
 from playwright.async_api import Page, Response
@@ -68,8 +67,7 @@ class AsyncSolver:
     async def __aexit__(self, *args: Any) -> None:
         self.close()
 
-    @staticmethod
-    async def _convert_audio_to_text(audio_url: str) -> Optional[str]:
+    async def _convert_audio_to_text(self, audio_url: str) -> Optional[str]:
         """
         Convert the reCAPTCHA audio to text.
 
@@ -84,12 +82,10 @@ class AsyncSolver:
             The reCAPTCHA audio text.
         """
         loop = asyncio.get_event_loop()
-
-        async with httpx.AsyncClient() as client:
-            response = await client.get(audio_url)
+        response = await self._page.request.get(audio_url)
 
         wav_audio = io.BytesIO()
-        mp3_audio = io.BytesIO(response.content)
+        mp3_audio = io.BytesIO(await response.body())
 
         with ThreadPoolExecutor() as executor:
             audio = await loop.run_in_executor(
@@ -135,6 +131,33 @@ class AsyncSolver:
         if token_match is not None:
             self.token = token_match.group(1)
 
+    async def _click_checkbox(self, recaptcha_box: AsyncRecaptchaBox) -> None:
+        """
+        Click the reCAPTCHA checkbox.
+
+        Parameters
+        ----------
+        recaptcha_box : AsyncRecaptchaBox
+            The reCAPTCHA box.
+        """
+        await recaptcha_box.checkbox.click(force=True)
+
+        while recaptcha_box.frames_are_attached():
+            if await recaptcha_box.is_solved():
+                if self.token is None:
+                    raise RecaptchaSolveError
+
+                break
+
+            if (
+                await recaptcha_box.audio_challenge_is_visible()
+                or await recaptcha_box.audio_challenge_button.is_visible()
+                and await recaptcha_box.audio_challenge_button.is_enabled()
+            ):
+                break
+
+            await self._page.wait_for_timeout(250)
+
     async def _get_audio_url(self, recaptcha_box: AsyncRecaptchaBox) -> str:
         """
         Get the reCAPTCHA audio URL.
@@ -158,13 +181,13 @@ class AsyncSolver:
             await recaptcha_box.audio_challenge_button.click(force=True)
 
         while True:
-            if await recaptcha_box.audio_challenge_is_visible():
-                break
-
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            await self._page.wait_for_timeout(100)
+            if await recaptcha_box.audio_challenge_is_visible():
+                break
+
+            await self._page.wait_for_timeout(250)
 
         return await recaptcha_box.audio_download_button.get_attribute("href")
 
@@ -187,19 +210,24 @@ class AsyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         await recaptcha_box.audio_challenge_textbox.fill(text)
-        await recaptcha_box.audio_challenge_verify_button.click()
+
+        async with self._page.expect_response(
+            re.compile("/recaptcha/(api2|enterprise)/userverify")
+        ):
+            await recaptcha_box.audio_challenge_verify_button.click()
 
         while recaptcha_box.frames_are_attached():
-            if (
-                await recaptcha_box.checkbox.is_checked()
-                or await recaptcha_box.solve_failure_is_visible()
-            ):
-                break
-
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            await self._page.wait_for_timeout(100)
+            if (
+                await recaptcha_box.new_challenge_button.is_disabled()
+                or await recaptcha_box.solve_failure_is_visible()
+                or await recaptcha_box.is_solved()
+            ):
+                break
+
+            await self._page.wait_for_timeout(250)
 
     def close(self) -> None:
         """Remove the userverify response listener."""
@@ -237,29 +265,17 @@ class AsyncSolver:
         attempts = attempts or self._attempts
         recaptcha_box = await AsyncRecaptchaBox.from_frames(self._page.frames)
 
-        if await recaptcha_box.checkbox.is_hidden():
+        if (
+            await recaptcha_box.checkbox.is_hidden()
+            and await recaptcha_box.audio_challenge_button.is_disabled()
+        ):
             raise RecaptchaNotFoundError
 
-        await recaptcha_box.checkbox.click(force=True)
+        if await recaptcha_box.checkbox.is_visible():
+            await self._click_checkbox(recaptcha_box)
 
-        while True:
-            if (
-                await recaptcha_box.audio_challenge_is_visible()
-                or await recaptcha_box.audio_challenge_button.is_visible()
-                and await recaptcha_box.audio_challenge_button.is_enabled()
-            ):
-                break
-
-            if (
-                not recaptcha_box.frames_are_attached()
-                or await recaptcha_box.checkbox.is_checked()
-            ):
-                if self.token is None:
-                    raise RecaptchaSolveError
-
+            if self.token is not None:
                 return self.token
-
-            await self._page.wait_for_timeout(100)
 
         while attempts > 0:
             await self._random_delay()
@@ -275,8 +291,9 @@ class AsyncSolver:
             await self._submit_audio_text(recaptcha_box, text)
 
             if (
-                not recaptcha_box.frames_are_attached()
-                or await recaptcha_box.checkbox.is_checked()
+                recaptcha_box.frames_are_detached()
+                or await recaptcha_box.new_challenge_button.is_disabled()
+                or await recaptcha_box.is_solved()
             ):
                 if self.token is None:
                     raise RecaptchaSolveError
