@@ -12,6 +12,7 @@ from playwright.sync_api import Frame as SyncFrame
 from playwright.sync_api import Locator as SyncLocator
 
 from playwright_recaptcha.errors import RecaptchaNotFoundError, RecaptchaSolveError
+from playwright_recaptcha.recaptchav2.locales import SIGNATURES
 
 Locator = Union[AsyncLocator, SyncLocator]
 Frame = Union[AsyncFrame, SyncFrame]
@@ -170,34 +171,34 @@ class RecaptchaBox(ABC):
     @property
     def checkbox(self) -> Locator:
         """The reCAPTCHA checkbox locator."""
-        return self.anchor_frame.get_by_role("checkbox", name="I'm not a robot")
+        return self.anchor_frame.get_by_role("checkbox", name=SIGNATURES['im_not_a_robot'])
 
     @property
     def audio_challenge_button(self) -> Locator:
         """The reCAPTCHA audio challenge button locator."""
-        return self.bframe_frame.get_by_role("button", name="Get an audio challenge")
+        return self.bframe_frame.get_by_role("button", name=SIGNATURES['get_an_audio_challenge'])
 
     @property
     def new_challenge_button(self) -> Locator:
         """The reCAPTCHA new challenge button locator."""
-        return self.bframe_frame.get_by_role("button", name="Get a new challenge")
+        return self.bframe_frame.get_by_role("button", name=SIGNATURES['get_a_new_challenge'])
 
     @property
     def audio_download_button(self) -> Locator:
         """The reCAPTCHA audio download button locator."""
         return self.bframe_frame.get_by_role(
-            "link", name="Alternatively, download audio as MP3"
+            "link", name=SIGNATURES['download_audio_as_mp3']
         )
 
     @property
     def audio_challenge_textbox(self) -> Locator:
         """The reCAPTCHA audio challenge textbox locator."""
-        return self.bframe_frame.get_by_role("textbox", name="Enter what you hear")
+        return self.bframe_frame.get_by_role("textbox", name=SIGNATURES['enter_what_you_hear'])
 
     @property
     def audio_challenge_verify_button(self) -> Locator:
         """The reCAPTCHA audio challenge verify button locator."""
-        return self.bframe_frame.get_by_role("button", name="Verify")
+        return self.bframe_frame.get_by_role("button", name=SIGNATURES['verify'])
 
     def frames_are_attached(self) -> bool:
         """
@@ -390,11 +391,11 @@ class SyncRecaptchaBox(RecaptchaBox):
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
         for anchor_frame, bframe_frame in frame_pairs:
-            checkbox = anchor_frame.get_by_role("checkbox", name="I'm not a robot")
+            checkbox = anchor_frame.get_by_role("checkbox", name=SIGNATURES['im_not_a_robot'])
 
             if (
                 bframe_frame.get_by_role(
-                    "button", name="Get an audio challenge"
+                    "button", name=SIGNATURES['get_an_audio_challenge']
                 ).is_visible()
                 or checkbox.is_visible()
                 and not checkbox.is_checked()
@@ -423,7 +424,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         bool
             True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
-        return self.bframe_frame.get_by_text("Try again later").is_visible()
+        return self.bframe_frame.get_by_text(SIGNATURES['try_again_later']).is_visible()
 
     @RecaptchaBox._check_if_attached
     def solve_failure_is_visible(self) -> bool:
@@ -436,7 +437,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             True if the reCAPTCHA solve failure message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            "Multiple correct solutions required - please solve more."
+            SIGNATURES['multiple_correct_solutions_required']
         ).is_visible()
 
     @RecaptchaBox._check_if_attached
@@ -449,7 +450,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         bool
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
-        return self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
+        return self.bframe_frame.get_by_text(SIGNATURES['press_play_to_listen']).is_visible()
 
     @RecaptchaBox._check_if_attached
     def is_solved(self) -> bool:
@@ -549,11 +550,11 @@ class AsyncRecaptchaBox(RecaptchaBox):
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
         for anchor_frame, bframe_frame in frame_pairs:
-            checkbox = anchor_frame.get_by_role("checkbox", name="I'm not a robot")
+            checkbox = anchor_frame.get_by_role("checkbox", name=SIGNATURES['im_not_a_robot'])
 
             if (
                 await bframe_frame.get_by_role(
-                    "button", name="Get an audio challenge"
+                    "button", name=SIGNATURES['get_an_audio_challenge']
                 ).is_visible()
                 or await checkbox.is_visible()
                 and not await checkbox.is_checked()
@@ -582,7 +583,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         bool
             True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
-        return await self.bframe_frame.get_by_text("Try again later").is_visible()
+        return await self.bframe_frame.get_by_text(SIGNATURES['try_again_later']).is_visible()
 
     @RecaptchaBox._check_if_attached
     async def solve_failure_is_visible(self) -> bool:
@@ -595,7 +596,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             True if the reCAPTCHA solve failure message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            "Multiple correct solutions required - please solve more."
+            SIGNATURES['multiple_correct_solutions_required']
         ).is_visible()
 
     @RecaptchaBox._check_if_attached
@@ -608,7 +609,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         bool
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
-        return await self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
+        return await self.bframe_frame.get_by_text(SIGNATURES['press_play_to_listen']).is_visible()
 
     @RecaptchaBox._check_if_attached
     async def is_solved(self) -> bool:
