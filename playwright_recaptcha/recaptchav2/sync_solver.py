@@ -11,6 +11,7 @@ from typing import Any, Dict, Iterable, Optional
 import pydub
 import speech_recognition
 from playwright.sync_api import Page, Response
+from tenacity import Retrying, retry_if_exception_type, stop_after_delay, wait_fixed
 
 from playwright_recaptcha.errors import (
     CapSolverError,
@@ -62,7 +63,7 @@ class SyncSolver:
     @staticmethod
     def _get_task_object(recaptcha_box: SyncRecaptchaBox) -> Optional[str]:
         """
-        Get the reCAPTCHA task object ID.
+        Get the ID of the object in the reCAPTCHA image challenge task.
 
         Parameters
         ----------
@@ -72,7 +73,7 @@ class SyncSolver:
         Returns
         -------
         Optional[str]
-            The reCAPTCHA object ID.
+            The object ID. Returns None if the task object is not recognized.
         """
         object_dict = {
             "taxis": "/m/0pg52",
@@ -102,11 +103,46 @@ class SyncSolver:
 
         return None
 
+    def _response_listener(self, response: Response) -> None:
+        """
+        Listen for payload and userverify responses.
+
+        Parameters
+        ----------
+        response : Response
+            The response.
+        """
+        if (
+            re.search("/recaptcha/(api2|enterprise)/payload", response.url) is not None
+            and self._payload_response is None
+        ):
+            self._payload_response = response
+        elif (
+            re.search("/recaptcha/(api2|enterprise)/userverify", response.url)
+            is not None
+        ):
+            token_match = re.search('"uvresp","(.*?)"', response.text())
+
+            if token_match is not None:
+                self._token = token_match.group(1)
+
+    def _random_delay(self, short: bool = False) -> None:
+        """
+        Delay the browser for a random amount of time.
+
+        Parameters
+        ----------
+        short : bool, optional
+            Whether to delay for a short amount of time, by default False.
+        """
+        delay_time = random.randint(150, 350) if short else random.randint(1250, 1500)
+        self._page.wait_for_timeout(delay_time)
+
     def _get_capsolver_response(
         self, recaptcha_box: SyncRecaptchaBox, image_url: str
     ) -> Optional[Dict[str, Any]]:
         """
-        Get the CapSolver response for the image.
+        Get the CapSolver JSON response for the image.
 
         Parameters
         ----------
@@ -118,12 +154,12 @@ class SyncSolver:
         Returns
         -------
         Optional[Dict[str, Any]]
-            The CapSolver response.
+            The CapSolver JSON response. Returns None if the task object is not recognized.
 
         Raises
         ------
         CapSolverError
-            If CapSolver returned an error.
+            If the CapSolver API returned an error.
         """
         response = self._page.request.get(image_url)
         image = base64.b64encode(response.body()).decode("utf-8")
@@ -155,33 +191,34 @@ class SyncSolver:
 
         return response_json
 
-    def _solve_changing_tiles(
+    def _solve_tiles(
         self, recaptcha_box: SyncRecaptchaBox, indexes: Iterable[int]
     ) -> None:
         """
-        Solve the changing tiles.
+        Solve the tiles in the reCAPTCHA image challenge.
 
         Parameters
         ----------
         recaptcha_box : SyncRecaptchaBox
             The reCAPTCHA box.
         indexes : Iterable[int]
-            The indexes of the tiles that contain the object.
+            The indexes of the tiles that contain the task object.
 
         Raises
         ------
         CapSolverError
-            If CapSolver returned an error.
+            If the CapSolver API returned an error.
         """
-        for index in indexes:
-            recaptcha_box.tile_selector.nth(index).click()
-            self._random_delay(short=True)
-
         changing_tiles = []
 
-        for tile in recaptcha_box.tile_selector.all():
+        for index in indexes:
+            tile = recaptcha_box.tile_selector.nth(index)
+            tile.click()
+
             if "rc-imageselect-dynamic-selected" in tile.get_attribute("class"):
                 changing_tiles.append(tile)
+
+            self._random_delay(short=True)
 
         while changing_tiles:
             for tile in changing_tiles:
@@ -197,10 +234,8 @@ class SyncSolver:
                     or not capsolver_response["solution"]["hasObject"]
                 ):
                     changing_tiles.remove(tile)
-                    continue
-
-                self._random_delay(short=True)
-                tile.click()
+                else:
+                    tile.click()
 
     def _convert_audio_to_text(self, audio_url: str) -> Optional[str]:
         """
@@ -232,41 +267,6 @@ class SyncSolver:
             return recognizer.recognize_google(audio_data)
         except speech_recognition.UnknownValueError:
             return None
-
-    def _random_delay(self, short: bool = False) -> None:
-        """
-        Delay the execution for a random amount of time.
-
-        Parameters
-        ----------
-        short : bool, optional
-            Whether to delay for a short amount of time, by default False.
-        """
-        delay_time = random.randint(200, 450) if short else random.randint(1250, 1500)
-        self._page.wait_for_timeout(delay_time)
-
-    def _response_listener(self, response: Response) -> None:
-        """
-        Listen for payload and userverify responses.
-
-        Parameters
-        ----------
-        response : Response
-            The response.
-        """
-        if (
-            re.search("/recaptcha/(api2|enterprise)/payload", response.url) is not None
-            and self._payload_response is None
-        ):
-            self._payload_response = response
-        elif (
-            re.search("/recaptcha/(api2|enterprise)/userverify", response.url)
-            is not None
-        ):
-            token_match = re.search('"uvresp","(.*?)"', response.text())
-
-            if token_match is not None:
-                self._token = token_match.group(1)
 
     def _click_checkbox(self, recaptcha_box: SyncRecaptchaBox) -> None:
         """
@@ -381,7 +381,7 @@ class SyncSolver:
         Raises
         ------
         CapSolverError
-            If CapSolver returned an error.
+            If the CapSolver API returned an error.
         """
         while recaptcha_box.frames_are_attached():
             while self._payload_response is None:
@@ -401,20 +401,15 @@ class SyncSolver:
                 self._payload_response = None
                 continue
 
-            self._solve_changing_tiles(
-                recaptcha_box, capsolver_response["solution"]["objects"]
-            )
+            self._solve_tiles(recaptcha_box, capsolver_response["solution"]["objects"])
 
-            self._payload_response = None
             self._random_delay(short=True)
+            self._payload_response = None
+            button = recaptcha_box.next_button.or_(recaptcha_box.skip_button)
 
-            if recaptcha_box.next_button.is_visible():
-                recaptcha_box.next_button.click()
+            if button.is_visible():
+                button.click()
                 continue
-
-            if recaptcha_box.skip_button.is_visible():
-                recaptcha_box.skip_button.click()
-                return
 
             recaptcha_box.verify_button.click()
 
@@ -453,6 +448,30 @@ class SyncSolver:
         self._random_delay()
         self._submit_audio_text(recaptcha_box, text)
 
+    def _get_recaptcha_box(self) -> SyncRecaptchaBox:
+        """
+        Get the reCAPTCHA box.
+
+        Returns
+        -------
+        SyncRecaptchaBox
+            The reCAPTCHA box.
+
+        Raises
+        ------
+        RecaptchaNotFoundError
+            If the reCAPTCHA was not found.
+        """
+        recaptcha_box = SyncRecaptchaBox.from_frames(self._page.frames)
+
+        if (
+            recaptcha_box.checkbox.is_hidden()
+            and recaptcha_box.audio_challenge_button.is_disabled()
+        ):
+            raise RecaptchaNotFoundError
+
+        return recaptcha_box
+
     @property
     def token(self) -> Optional[str]:
         """The g-recaptcha-response token."""
@@ -466,7 +485,11 @@ class SyncSolver:
             pass
 
     def solve_recaptcha(
-        self, *, attempts: Optional[int] = None, image_challenge: bool = False
+        self,
+        *,
+        attempts: Optional[int] = None,
+        wait: bool = False,
+        image_challenge: bool = False,
     ) -> str:
         """
         Solve the reCAPTCHA and return the g-recaptcha-response token.
@@ -475,6 +498,10 @@ class SyncSolver:
         ----------
         attempts : Optional[int], optional
             The number of solve attempts, by default 3.
+        wait : bool, optional
+            Whether to wait for the reCAPTCHA to appear, by default False.
+            RecaptchaNotFoundError will be raised if the reCAPTCHA has not appeared
+            after 30 seconds.
         image_challenge : bool, optional
             Whether to solve the image challenge, by default False.
 
@@ -492,7 +519,7 @@ class SyncSolver:
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
         CapSolverError
-            If CapSolver returned an error.
+            If the CapSolver API returned an error.
         """
         if self._capsolver_api_key is None and image_challenge:
             raise CapSolverError(
@@ -501,15 +528,20 @@ class SyncSolver:
 
         self._token = None
         self._page.on("response", self._response_listener)
-
         attempts = attempts or self._attempts
-        recaptcha_box = SyncRecaptchaBox.from_frames(self._page.frames)
 
-        if (
-            recaptcha_box.checkbox.is_hidden()
-            and recaptcha_box.audio_challenge_button.is_disabled()
-        ):
-            raise RecaptchaNotFoundError
+        if wait:
+            retry = Retrying(
+                sleep=self._page.wait_for_timeout,
+                stop=stop_after_delay(30),
+                wait=wait_fixed(0.25),
+                retry=retry_if_exception_type(RecaptchaNotFoundError),
+                reraise=True,
+            )
+
+            recaptcha_box = retry(self._get_recaptcha_box)
+        else:
+            recaptcha_box = self._get_recaptcha_box()
 
         if recaptcha_box.checkbox.is_visible():
             self._click_checkbox(recaptcha_box)

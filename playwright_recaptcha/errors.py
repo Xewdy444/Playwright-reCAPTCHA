@@ -34,7 +34,7 @@ class RecaptchaTimeoutError(RecaptchaSolveError):
 
 
 class CapSolverError(Exception):
-    """An exception raised when CapSolver returned an error."""
+    """An exception raised when the CapSolver API returns an error."""
 
     def __init__(self, message: Optional[str] = None) -> None:
-        super().__init__(message or "CapSolver returned an error.")
+        super().__init__(message or "The CapSolver API returned an error.")

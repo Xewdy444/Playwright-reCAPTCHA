@@ -11,7 +11,7 @@ from playwright.async_api import Locator as AsyncLocator
 from playwright.sync_api import Frame as SyncFrame
 from playwright.sync_api import Locator as SyncLocator
 
-from playwright_recaptcha.errors import RecaptchaNotFoundError, RecaptchaSolveError
+from playwright_recaptcha.errors import RecaptchaNotFoundError
 
 Locator = Union[AsyncLocator, SyncLocator]
 Frame = Union[AsyncFrame, SyncFrame]
@@ -225,9 +225,7 @@ class RecaptchaBox(ABC):
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA frames were not found.
-        RecaptchaSolveError
-            If no unchecked reCAPTCHA boxes were found.
+            If the reCAPTCHA frames were not found or if no unchecked reCAPTCHA boxes were found.
         """
 
     @abstractmethod
@@ -334,9 +332,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA frames were not found.
-        RecaptchaSolveError
-            If no unchecked reCAPTCHA boxes were found.
+            If the reCAPTCHA frames were not found or if no unchecked reCAPTCHA boxes were found.
         """
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
@@ -352,7 +348,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             ):
                 return cls(anchor_frame, bframe_frame)
 
-        raise RecaptchaSolveError("No unchecked reCAPTCHA boxes were found.")
+        raise RecaptchaNotFoundError("No unchecked reCAPTCHA boxes were found.")
 
     @property
     def anchor_frame(self) -> SyncFrame:
@@ -480,9 +476,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA frames were not found.
-        RecaptchaSolveError
-            If no unchecked reCAPTCHA boxes were found.
+            If the reCAPTCHA frames were not found or if no unchecked reCAPTCHA boxes were found.
         """
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
@@ -498,7 +492,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             ):
                 return cls(anchor_frame, bframe_frame)
 
-        raise RecaptchaSolveError("No unchecked reCAPTCHA boxes were found.")
+        raise RecaptchaNotFoundError("No unchecked reCAPTCHA boxes were found.")
 
     @property
     def anchor_frame(self) -> AsyncFrame:
