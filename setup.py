@@ -16,7 +16,7 @@ setup(
     packages=find_packages(),
     python_requires=">=3.8",
     install_requires=[
-        "playwright==1.35.0",
+        "playwright==1.36.0",
         "pydub==0.25.1",
         "SpeechRecognition==3.10.0",
         "tenacity==8.2.2",
