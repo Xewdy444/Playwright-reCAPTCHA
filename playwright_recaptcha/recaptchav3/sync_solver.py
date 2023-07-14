@@ -19,23 +19,6 @@ class SyncSolver:
         The playwright page to solve the reCAPTCHA on.
     timeout : int, optional
         The solve timeout in seconds, by default 30.
-
-    Attributes
-    ----------
-    token : Optional[str]
-        The g-recaptcha-response token.
-
-    Methods
-    -------
-    close() -> None
-        Remove the reload response listener.
-    solve_recaptcha(timeout: Optional[int] = None) -> str
-        Solve the reCAPTCHA and return the g-recaptcha-response token.
-
-    Raises
-    ------
-    RecaptchaTimeoutError
-        If the solve timeout has been exceeded.
     """
 
     def __init__(self, page: Page, timeout: int = 30) -> None:

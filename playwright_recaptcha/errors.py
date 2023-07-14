@@ -31,3 +31,10 @@ class RecaptchaTimeoutError(RecaptchaSolveError):
 
     def __init__(self) -> None:
         super().__init__("The reCAPTCHA solve timeout has been exceeded.")
+
+
+class CapSolverError(Exception):
+    """An exception raised when CapSolver returned an error."""
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        super().__init__(message or "CapSolver returned an error.")
