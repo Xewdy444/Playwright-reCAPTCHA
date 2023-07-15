@@ -7,13 +7,10 @@ def main() -> None:
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch()
         page = browser.new_page()
-
-        page.goto(
-            "https://www.google.com/recaptcha/api2/demo", wait_until="networkidle"
-        )
+        page.goto("https://www.google.com/recaptcha/api2/demo")
 
         with recaptchav2.SyncSolver(page) as solver:
-            token = solver.solve_recaptcha()
+            token = solver.solve_recaptcha(wait=True, image_challenge=True)
             print(token)
 
 

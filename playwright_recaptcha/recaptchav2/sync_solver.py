@@ -31,14 +31,14 @@ class SyncSolver:
     page : Page
         The playwright page to solve the reCAPTCHA on.
     attempts : int, optional
-        The number of solve attempts, by default 3.
+        The number of solve attempts, by default 5.
     capsolver_api_key : Optional[str], optional
         The CapSolver API key, by default None.
-        If None, the CAPSOLVER_API_KEY environment variable will be used.
+        If None, the `CAPSOLVER_API_KEY` environment variable will be used.
     """
 
     def __init__(
-        self, page: Page, *, attempts: int = 3, capsolver_api_key: Optional[str] = None
+        self, page: Page, *, attempts: int = 5, capsolver_api_key: Optional[str] = None
     ) -> None:
         self._page = page
         self._attempts = attempts
@@ -397,15 +397,15 @@ class SyncSolver:
                 capsolver_response is None
                 or not capsolver_response["solution"]["objects"]
             ):
-                recaptcha_box.new_challenge_button.click()
                 self._payload_response = None
+                recaptcha_box.new_challenge_button.click()
                 continue
 
             self._solve_tiles(recaptcha_box, capsolver_response["solution"]["objects"])
-
             self._random_delay(short=True)
-            self._payload_response = None
+
             button = recaptcha_box.next_button.or_(recaptcha_box.skip_button)
+            self._payload_response = None
 
             if button.is_visible():
                 button.click()
@@ -419,7 +419,6 @@ class SyncSolver:
 
                 if recaptcha_box.check_new_images_is_visible():
                     recaptcha_box.new_challenge_button.click()
-                    self._payload_response = None
                     return
 
                 self._page.wait_for_timeout(250)
@@ -439,13 +438,16 @@ class SyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         self._random_delay()
-        url = self._get_audio_url(recaptcha_box)
-        text = self._convert_audio_to_text(url)
 
-        if text is None:
-            return
+        while True:
+            url = self._get_audio_url(recaptcha_box)
+            text = self._convert_audio_to_text(url)
 
-        self._random_delay()
+            if text is not None:
+                break
+
+            recaptcha_box.new_challenge_button.click()
+
         self._submit_audio_text(recaptcha_box, text)
 
     def _get_recaptcha_box(self) -> SyncRecaptchaBox:
@@ -497,7 +499,7 @@ class SyncSolver:
         Parameters
         ----------
         attempts : Optional[int], optional
-            The number of solve attempts, by default 3.
+            The number of solve attempts, by default 5.
         wait : bool, optional
             Whether to wait for the reCAPTCHA to appear, by default False.
             RecaptchaNotFoundError will be raised if the reCAPTCHA has not appeared

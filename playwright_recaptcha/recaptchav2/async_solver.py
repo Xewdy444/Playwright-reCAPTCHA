@@ -39,14 +39,14 @@ class AsyncSolver:
     page : Page
         The playwright page to solve the reCAPTCHA on.
     attempts : int, optional
-        The number of solve attempts, by default 3.
+        The number of solve attempts, by default 5.
     capsolver_api_key : Optional[str], optional
         The CapSolver API key, by default None.
-        If None, the CAPSOLVER_API_KEY environment variable will be used.
+        If None, the `CAPSOLVER_API_KEY` environment variable will be used.
     """
 
     def __init__(
-        self, page: Page, *, attempts: int = 3, capsolver_api_key: Optional[str] = None
+        self, page: Page, *, attempts: int = 5, capsolver_api_key: Optional[str] = None
     ) -> None:
         self._page = page
         self._attempts = attempts
@@ -421,8 +421,8 @@ class AsyncSolver:
                 capsolver_response is None
                 or not capsolver_response["solution"]["objects"]
             ):
-                await recaptcha_box.new_challenge_button.click()
                 self._payload_response = None
+                await recaptcha_box.new_challenge_button.click()
                 continue
 
             await self._solve_tiles(
@@ -430,8 +430,9 @@ class AsyncSolver:
             )
 
             await self._random_delay(short=True)
-            self._payload_response = None
+
             button = recaptcha_box.next_button.or_(recaptcha_box.skip_button)
+            self._payload_response = None
 
             if await button.is_visible():
                 await button.click()
@@ -448,7 +449,6 @@ class AsyncSolver:
 
                 if await recaptcha_box.check_new_images_is_visible():
                     await recaptcha_box.new_challenge_button.click()
-                    self._payload_response = None
                     return
 
                 await self._page.wait_for_timeout(250)
@@ -468,13 +468,16 @@ class AsyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         await self._random_delay()
-        url = await self._get_audio_url(recaptcha_box)
-        text = await self._convert_audio_to_text(url)
 
-        if text is None:
-            return
+        while True:
+            url = await self._get_audio_url(recaptcha_box)
+            text = await self._convert_audio_to_text(url)
 
-        await self._random_delay()
+            if text is not None:
+                break
+
+            await recaptcha_box.new_challenge_button.click()
+
         await self._submit_audio_text(recaptcha_box, text)
 
     async def _get_recaptcha_box(self) -> AsyncRecaptchaBox:
@@ -526,7 +529,7 @@ class AsyncSolver:
         Parameters
         ----------
         attempts : Optional[int], optional
-            The number of solve attempts, by default 3.
+            The number of solve attempts, by default 5.
         wait : bool, optional
             Whether to wait for the reCAPTCHA to appear, by default False.
             RecaptchaNotFoundError will be raised if the reCAPTCHA has not appeared

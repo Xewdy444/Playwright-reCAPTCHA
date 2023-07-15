@@ -42,25 +42,17 @@ class RecaptchaBox(ABC):
         RecaptchaNotFoundError
             If no reCAPTCHA anchor and bframe frame pairs were found.
         """
-        anchor_frames = list(
-            filter(
-                lambda frame: re.search(
-                    "/recaptcha/(api2|enterprise)/anchor", frame.url
-                )
-                is not None,
-                frames,
-            )
-        )
+        anchor_frames = [
+            frame
+            for frame in frames
+            if re.search("/recaptcha/(api2|enterprise)/anchor", frame.url) is not None
+        ]
 
-        bframe_frames = list(
-            filter(
-                lambda frame: re.search(
-                    "/recaptcha/(api2|enterprise)/bframe", frame.url
-                )
-                is not None,
-                frames,
-            )
-        )
+        bframe_frames = [
+            frame
+            for frame in frames
+            if re.search("/recaptcha/(api2|enterprise)/bframe", frame.url) is not None
+        ]
 
         frame_pairs = []
 
@@ -106,18 +98,18 @@ class RecaptchaBox(ABC):
         """
 
         @wraps(func)
-        def sync_wrapper(self: SyncRecaptchaBox) -> bool:
-            if self.frames_are_detached():
+        def sync_wrapper(recaptcha_box: SyncRecaptchaBox) -> bool:
+            if recaptcha_box.frames_are_detached():
                 return False
 
-            return func(self)
+            return func(recaptcha_box)
 
         @wraps(func)
-        async def async_wrapper(self: AsyncRecaptchaBox) -> bool:
-            if self.frames_are_detached():
+        async def async_wrapper(recaptcha_box: AsyncRecaptchaBox) -> bool:
+            if recaptcha_box.frames_are_detached():
                 return False
 
-            return await func(self)
+            return await func(recaptcha_box)
 
         if asyncio.iscoroutinefunction(func):
             return async_wrapper

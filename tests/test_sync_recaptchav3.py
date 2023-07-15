@@ -1,10 +1,7 @@
 import pytest
 from playwright.sync_api import sync_playwright
 
-from playwright_recaptcha import (
-    RecaptchaTimeoutError,
-    recaptchav3,
-)
+from playwright_recaptcha import RecaptchaTimeoutError, recaptchav3
 
 
 def test_solver_with_normal_browser() -> None:

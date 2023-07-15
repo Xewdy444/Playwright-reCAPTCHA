@@ -1,15 +1,17 @@
 from setuptools import find_packages, setup
 
+from playwright_recaptcha import __author__, __license__, __version__
+
 with open("README.md", encoding="utf-8") as file:
     long_description = file.read()
 
 setup(
     name="playwright-recaptcha",
-    version="0.2.0",
-    author="Xewdy444",
+    version=__version__,
+    author=__author__,
     author_email="xewdy@xewdy.tech",
     description="A library for solving reCAPTCHA v2 and v3 with Playwright",
-    license="MIT",
+    license=__license__,
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Xewdy444/Playwright-reCAPTCHA",

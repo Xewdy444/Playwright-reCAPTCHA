@@ -1,5 +1,11 @@
 """A library for solving reCAPTCHA v2 and v3 with Playwright."""
+
+__author__ = "Xewdy444"
+__version__ = "0.2.0"
+__license__ = "MIT"
+
 from playwright_recaptcha.errors import (
+    CapSolverError,
     RecaptchaError,
     RecaptchaNotFoundError,
     RecaptchaRateLimitError,
@@ -12,6 +18,7 @@ from playwright_recaptcha.recaptchav3.async_solver import AsyncSolver as AsyncSo
 from playwright_recaptcha.recaptchav3.sync_solver import SyncSolver as SyncSolverV3
 
 __all__ = [
+    "CapSolverError",
     "RecaptchaError",
     "RecaptchaNotFoundError",
     "RecaptchaRateLimitError",
