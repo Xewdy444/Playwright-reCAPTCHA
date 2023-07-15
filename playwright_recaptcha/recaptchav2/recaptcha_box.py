@@ -286,6 +286,17 @@ class RecaptchaBox(ABC):
             True if the reCAPTCHA has been solved, False otherwise.
         """
 
+    @abstractmethod
+    def is_visible(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is visible, False otherwise.
+        """
+
 
 class SyncRecaptchaBox(RecaptchaBox):
     """
@@ -430,6 +441,19 @@ class SyncRecaptchaBox(RecaptchaBox):
         """
         return self.checkbox.is_visible() and self.checkbox.is_checked()
 
+    @RecaptchaBox._check_if_attached
+    def is_visible(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is visible, False otherwise.
+        """
+        button = self.verify_button.or_(self.next_button).or_(self.skip_button)
+        return button.is_enabled()
+
 
 class AsyncRecaptchaBox(RecaptchaBox):
     """
@@ -573,3 +597,16 @@ class AsyncRecaptchaBox(RecaptchaBox):
             True if the reCAPTCHA has been solved, False otherwise.
         """
         return await self.checkbox.is_visible() and await self.checkbox.is_checked()
+
+    @RecaptchaBox._check_if_attached
+    async def is_visible(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is visible, False otherwise.
+        """
+        button = self.verify_button.or_(self.next_button).or_(self.skip_button)
+        return await button.is_enabled()

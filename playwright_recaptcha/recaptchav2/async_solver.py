@@ -54,6 +54,7 @@ class AsyncSolver:
 
         self._token: Optional[str] = None
         self._payload_response: Optional[Response] = None
+        self._page.on("response", self._response_listener)
 
     def __repr__(self) -> str:
         return (
@@ -313,6 +314,9 @@ class AsyncSolver:
 
                 break
 
+            if await recaptcha_box.rate_limit_is_visible():
+                raise RecaptchaRateLimitError
+
             if (
                 await recaptcha_box.audio_challenge_is_visible()
                 or await recaptcha_box.audio_challenge_button.is_visible()
@@ -438,20 +442,18 @@ class AsyncSolver:
                 await button.click()
                 continue
 
-            await recaptcha_box.verify_button.click()
-
-            while recaptcha_box.frames_are_attached():
-                if (
-                    await recaptcha_box.try_again_is_visible()
-                    or await recaptcha_box.is_solved()
-                ):
-                    return
+            async with self._page.expect_response(
+                re.compile("/recaptcha/(api2|enterprise)/(payload|userverify)")
+            ):
+                await recaptcha_box.verify_button.click()
 
                 if await recaptcha_box.check_new_images_is_visible():
                     await recaptcha_box.new_challenge_button.click()
-                    return
 
-                await self._page.wait_for_timeout(250)
+            if await recaptcha_box.rate_limit_is_visible():
+                raise RecaptchaRateLimitError
+
+            return
 
     async def _solve_audio_challenge(self, recaptcha_box: AsyncRecaptchaBox) -> None:
         """
@@ -559,7 +561,6 @@ class AsyncSolver:
             )
 
         self._token = None
-        self._page.on("response", self._response_listener)
         attempts = attempts or self._attempts
 
         if wait:
@@ -580,6 +581,8 @@ class AsyncSolver:
 
             if self._token is not None:
                 return self._token
+        elif await recaptcha_box.rate_limit_is_visible():
+            raise RecaptchaRateLimitError
 
         while attempts > 0:
             if image_challenge:
@@ -589,7 +592,7 @@ class AsyncSolver:
 
             if (
                 recaptcha_box.frames_are_detached()
-                or await recaptcha_box.new_challenge_button.is_disabled()
+                or not await recaptcha_box.is_visible()
                 or await recaptcha_box.is_solved()
             ):
                 if self._token is None:

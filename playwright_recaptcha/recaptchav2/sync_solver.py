@@ -46,6 +46,7 @@ class SyncSolver:
 
         self._token: Optional[str] = None
         self._payload_response: Optional[Response] = None
+        self._page.on("response", self._response_listener)
 
     def __repr__(self) -> str:
         return (
@@ -291,6 +292,9 @@ class SyncSolver:
 
                 break
 
+            if recaptcha_box.rate_limit_is_visible():
+                raise RecaptchaRateLimitError
+
             if (
                 recaptcha_box.audio_challenge_is_visible()
                 or recaptcha_box.audio_challenge_button.is_visible()
@@ -411,17 +415,18 @@ class SyncSolver:
                 button.click()
                 continue
 
-            recaptcha_box.verify_button.click()
-
-            while recaptcha_box.frames_are_attached():
-                if recaptcha_box.try_again_is_visible() or recaptcha_box.is_solved():
-                    return
+            with self._page.expect_response(
+                re.compile("/recaptcha/(api2|enterprise)/(payload|userverify)")
+            ):
+                recaptcha_box.verify_button.click()
 
                 if recaptcha_box.check_new_images_is_visible():
                     recaptcha_box.new_challenge_button.click()
-                    return
 
-                self._page.wait_for_timeout(250)
+            if recaptcha_box.rate_limit_is_visible():
+                raise RecaptchaRateLimitError
+
+            return
 
     def _solve_audio_challenge(self, recaptcha_box: SyncRecaptchaBox) -> None:
         """
@@ -529,7 +534,6 @@ class SyncSolver:
             )
 
         self._token = None
-        self._page.on("response", self._response_listener)
         attempts = attempts or self._attempts
 
         if wait:
@@ -550,6 +554,8 @@ class SyncSolver:
 
             if self._token is not None:
                 return self._token
+        elif recaptcha_box.rate_limit_is_visible():
+            raise RecaptchaRateLimitError
 
         while attempts > 0:
             if image_challenge:
@@ -559,7 +565,7 @@ class SyncSolver:
 
             if (
                 recaptcha_box.frames_are_detached()
-                or recaptcha_box.new_challenge_button.is_disabled()
+                or not recaptcha_box.is_visible()
                 or recaptcha_box.is_solved()
             ):
                 if self._token is None:
