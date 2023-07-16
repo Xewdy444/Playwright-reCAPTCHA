@@ -286,7 +286,7 @@ class SyncSolver:
         recaptcha_box.checkbox.click(force=True)
 
         while recaptcha_box.frames_are_attached():
-            if recaptcha_box.is_solved():
+            if recaptcha_box.challenge_is_solved():
                 if self._token is None:
                     raise RecaptchaSolveError
 
@@ -365,9 +365,9 @@ class SyncSolver:
                 raise RecaptchaRateLimitError
 
             if (
-                recaptcha_box.new_challenge_button.is_disabled()
+                not recaptcha_box.challenge_is_visible()
                 or recaptcha_box.solve_failure_is_visible()
-                or recaptcha_box.is_solved()
+                or recaptcha_box.challenge_is_solved()
             ):
                 break
 
@@ -408,8 +408,8 @@ class SyncSolver:
             self._solve_tiles(recaptcha_box, capsolver_response["solution"]["objects"])
             self._random_delay(short=True)
 
-            button = recaptcha_box.next_button.or_(recaptcha_box.skip_button)
             self._payload_response = None
+            button = recaptcha_box.skip_button.or_(recaptcha_box.next_button)
 
             if button.is_visible():
                 button.click()
@@ -420,8 +420,14 @@ class SyncSolver:
             ):
                 recaptcha_box.verify_button.click()
 
-                if recaptcha_box.check_new_images_is_visible():
+                if (
+                    recaptcha_box.check_new_images_is_visible()
+                    or recaptcha_box.select_all_matching_is_visible()
+                ):
                     recaptcha_box.new_challenge_button.click()
+                else:
+                    while self._token is None:
+                        self._page.wait_for_timeout(250)
 
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
@@ -558,6 +564,8 @@ class SyncSolver:
             raise RecaptchaRateLimitError
 
         while attempts > 0:
+            self._token = None
+
             if image_challenge:
                 self._solve_image_challenge(recaptcha_box)
             else:
@@ -565,8 +573,8 @@ class SyncSolver:
 
             if (
                 recaptcha_box.frames_are_detached()
-                or not recaptcha_box.is_visible()
-                or recaptcha_box.is_solved()
+                or not recaptcha_box.challenge_is_visible()
+                or recaptcha_box.challenge_is_solved()
             ):
                 if self._token is None:
                     raise RecaptchaSolveError

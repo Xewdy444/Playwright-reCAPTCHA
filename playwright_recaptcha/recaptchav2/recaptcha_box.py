@@ -144,9 +144,9 @@ class RecaptchaBox(ABC):
         return self.bframe_frame.get_by_role("textbox", name="Enter what you hear")
 
     @property
-    def verify_button(self) -> Locator:
-        """The reCAPTCHA verify button locator."""
-        return self.bframe_frame.get_by_role("button", name="Verify")
+    def skip_button(self) -> Locator:
+        """The reCAPTCHA skip button locator."""
+        return self.bframe_frame.get_by_role("button", name="Skip")
 
     @property
     def next_button(self) -> Locator:
@@ -154,9 +154,9 @@ class RecaptchaBox(ABC):
         return self.bframe_frame.get_by_role("button", name="Next")
 
     @property
-    def skip_button(self) -> Locator:
-        """The reCAPTCHA skip button locator."""
-        return self.bframe_frame.get_by_role("button", name="Skip")
+    def verify_button(self) -> Locator:
+        """The reCAPTCHA verify button locator."""
+        return self.bframe_frame.get_by_role("button", name="Verify")
 
     @property
     def tile_selector(self) -> Locator:
@@ -276,18 +276,18 @@ class RecaptchaBox(ABC):
         """
 
     @abstractmethod
-    def is_solved(self) -> bool:
+    def select_all_matching_is_visible(self) -> bool:
         """
-        Check if the reCAPTCHA has been solved.
+        Check if the reCAPTCHA select all matching images message is visible.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA has been solved, False otherwise.
+            True if the reCAPTCHA select all matching images message is visible, False otherwise.
         """
 
     @abstractmethod
-    def is_visible(self) -> bool:
+    def challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA challenge is visible.
 
@@ -295,6 +295,17 @@ class RecaptchaBox(ABC):
         -------
         bool
             True if the reCAPTCHA challenge is visible, False otherwise.
+        """
+
+    @abstractmethod
+    def challenge_is_solved(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge has been solved.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge has been solved, False otherwise.
         """
 
 
@@ -430,19 +441,21 @@ class SyncRecaptchaBox(RecaptchaBox):
         ).is_visible()
 
     @RecaptchaBox._check_if_attached
-    def is_solved(self) -> bool:
+    def select_all_matching_is_visible(self) -> bool:
         """
-        Check if the reCAPTCHA has been solved.
+        Check if the reCAPTCHA select all matching images message is visible.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA has been solved, False otherwise.
+            True if the reCAPTCHA select all matching images message is visible, False otherwise.
         """
-        return self.checkbox.is_visible() and self.checkbox.is_checked()
+        return self.bframe_frame.get_by_text(
+            re.compile("Please select all matching images")
+        ).is_visible()
 
     @RecaptchaBox._check_if_attached
-    def is_visible(self) -> bool:
+    def challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA challenge is visible.
 
@@ -451,8 +464,20 @@ class SyncRecaptchaBox(RecaptchaBox):
         bool
             True if the reCAPTCHA challenge is visible, False otherwise.
         """
-        button = self.verify_button.or_(self.next_button).or_(self.skip_button)
+        button = self.skip_button.or_(self.next_button).or_(self.verify_button)
         return button.is_enabled()
+
+    @RecaptchaBox._check_if_attached
+    def challenge_is_solved(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge has been solved.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge has been solved, False otherwise.
+        """
+        return self.checkbox.is_visible() and self.checkbox.is_checked()
 
 
 class AsyncRecaptchaBox(RecaptchaBox):
@@ -587,19 +612,21 @@ class AsyncRecaptchaBox(RecaptchaBox):
         ).is_visible()
 
     @RecaptchaBox._check_if_attached
-    async def is_solved(self) -> bool:
+    async def select_all_matching_is_visible(self) -> bool:
         """
-        Check if the reCAPTCHA has been solved.
+        Check if the reCAPTCHA select all matching images message is visible.
 
         Returns
         -------
         bool
-            True if the reCAPTCHA has been solved, False otherwise.
+            True if the reCAPTCHA select all matching images message is visible, False otherwise.
         """
-        return await self.checkbox.is_visible() and await self.checkbox.is_checked()
+        return await self.bframe_frame.get_by_text(
+            re.compile("Please select all matching images")
+        ).is_visible()
 
     @RecaptchaBox._check_if_attached
-    async def is_visible(self) -> bool:
+    async def challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA challenge is visible.
 
@@ -608,5 +635,17 @@ class AsyncRecaptchaBox(RecaptchaBox):
         bool
             True if the reCAPTCHA challenge is visible, False otherwise.
         """
-        button = self.verify_button.or_(self.next_button).or_(self.skip_button)
+        button = self.skip_button.or_(self.next_button).or_(self.verify_button)
         return await button.is_enabled()
+
+    @RecaptchaBox._check_if_attached
+    async def challenge_is_solved(self) -> bool:
+        """
+        Check if the reCAPTCHA challenge has been solved.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge has been solved, False otherwise.
+        """
+        return await self.checkbox.is_visible() and await self.checkbox.is_checked()
