@@ -140,17 +140,17 @@ class SyncSolver:
         self._page.wait_for_timeout(delay_time)
 
     def _get_capsolver_response(
-        self, recaptcha_box: SyncRecaptchaBox, image_url: str
+        self, recaptcha_box: SyncRecaptchaBox, image_data: bytes
     ) -> Optional[Dict[str, Any]]:
         """
-        Get the CapSolver JSON response for the image.
+        Get the CapSolver JSON response for an image.
 
         Parameters
         ----------
         recaptcha_box : SyncRecaptchaBox
             The reCAPTCHA box.
-        image_url : str
-            The tile image URL.
+        image_data : bytes
+            The image data.
 
         Returns
         -------
@@ -162,8 +162,7 @@ class SyncSolver:
         CapSolverError
             If the CapSolver API returned an error.
         """
-        response = self._page.request.get(image_url)
-        image = base64.b64encode(response.body()).decode("utf-8")
+        image = base64.b64encode(image_data).decode("utf-8")
         task_object = self._get_task_object(recaptcha_box)
 
         if task_object is None:
@@ -226,8 +225,12 @@ class SyncSolver:
                 while "rc-imageselect-dynamic-selected" in tile.get_attribute("class"):
                     self._page.wait_for_timeout(250)
 
+                response = self._page.request.get(
+                    tile.locator("img").get_attribute("src")
+                )
+
                 capsolver_response = self._get_capsolver_response(
-                    recaptcha_box, tile.locator("img").get_attribute("src")
+                    recaptcha_box, response.body()
                 )
 
                 if (
@@ -394,7 +397,7 @@ class SyncSolver:
             self._random_delay(short=True)
 
             capsolver_response = self._get_capsolver_response(
-                recaptcha_box, self._payload_response.url
+                recaptcha_box, self._payload_response.body()
             )
 
             if (
