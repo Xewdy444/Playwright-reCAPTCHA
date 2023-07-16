@@ -222,12 +222,11 @@ class SyncSolver:
 
         while changing_tiles:
             for tile in changing_tiles:
-                while "rc-imageselect-dynamic-selected" in tile.get_attribute("class"):
-                    self._page.wait_for_timeout(250)
+                if "rc-imageselect-dynamic-selected" in tile.get_attribute("class"):
+                    continue
 
-                response = self._page.request.get(
-                    tile.locator("img").get_attribute("src")
-                )
+                image_url = tile.locator("img").get_attribute("src")
+                response = self._page.request.get(image_url)
 
                 capsolver_response = self._get_capsolver_response(
                     recaptcha_box, response.body()
@@ -565,6 +564,11 @@ class SyncSolver:
                 return self._token
         elif recaptcha_box.rate_limit_is_visible():
             raise RecaptchaRateLimitError
+
+        if image_challenge and self._payload_response is None:
+            image = recaptcha_box.image_challenge.locator("img").first
+            image_url = image.get_attribute("src")
+            self._payload_response = self._page.request.get(image_url)
 
         while attempts > 0:
             self._token = None

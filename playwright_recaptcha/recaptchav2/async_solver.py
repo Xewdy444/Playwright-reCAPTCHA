@@ -230,14 +230,13 @@ class AsyncSolver:
 
         while changing_tiles:
             for tile in changing_tiles:
-                while "rc-imageselect-dynamic-selected" in await tile.get_attribute(
+                if "rc-imageselect-dynamic-selected" in await tile.get_attribute(
                     "class"
                 ):
-                    await self._page.wait_for_timeout(250)
+                    continue
 
-                response = await self._page.request.get(
-                    tile.locator("img").get_attribute("src")
-                )
+                image_url = await tile.locator("img").get_attribute("src")
+                response = await self._page.request.get(image_url)
 
                 capsolver_response = await self._get_capsolver_response(
                     recaptcha_box, await response.body()
@@ -592,6 +591,11 @@ class AsyncSolver:
                 return self._token
         elif await recaptcha_box.rate_limit_is_visible():
             raise RecaptchaRateLimitError
+
+        if image_challenge and self._payload_response is None:
+            image = recaptcha_box.image_challenge.locator("img").first
+            image_url = await image.get_attribute("src")
+            self._payload_response = await self._page.request.get(image_url)
 
         while attempts > 0:
             self._token = None

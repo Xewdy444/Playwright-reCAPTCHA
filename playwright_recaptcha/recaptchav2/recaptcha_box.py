@@ -163,6 +163,11 @@ class RecaptchaBox(ABC):
         """The reCAPTCHA tile selector locator."""
         return self.bframe_frame.locator(".rc-imageselect-tile")
 
+    @property
+    def image_challenge(self) -> Locator:
+        """The reCAPTCHA image challenge locator."""
+        return self.bframe_frame.locator(".rc-imageselect-challenge")
+
     def frames_are_attached(self) -> bool:
         """
         Check if all of the reCAPTCHA frames are attached.
