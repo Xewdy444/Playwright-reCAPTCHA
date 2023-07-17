@@ -24,7 +24,9 @@ class AsyncSolver:
     def __init__(self, page: Page, timeout: int = 30) -> None:
         self._page = page
         self._timeout = timeout
+
         self.token: Optional[str] = None
+        self._page.on("response", self._extract_token)
 
     def __repr__(self) -> str:
         return f"AsyncSolver(page={self._page!r}, timeout={self._timeout!r})"
@@ -37,12 +39,12 @@ class AsyncSolver:
 
     async def _extract_token(self, response: Response) -> None:
         """
-        Extract the g-recaptcha-response token from the userverify response.
+        Extract the `g-recaptcha-response` token from the userverify response.
 
         Parameters
         ----------
         response : Response
-            The response to extract the g-recaptcha-response token from.
+            The response to extract the `g-recaptcha-response` token from.
         """
         if re.search("/recaptcha/(api2|enterprise)/reload", response.url) is None:
             return
@@ -61,7 +63,7 @@ class AsyncSolver:
 
     async def solve_recaptcha(self, timeout: Optional[int] = None) -> str:
         """
-        Solve the reCAPTCHA and return the g-recaptcha-response token.
+        Wait for the reCAPTCHA to be solved and return the `g-recaptcha-response` token.
 
         Parameters
         ----------
@@ -71,7 +73,7 @@ class AsyncSolver:
         Returns
         -------
         str
-            The g-recaptcha-response token.
+            The `g-recaptcha-response` token.
 
         Raises
         ------
@@ -79,8 +81,6 @@ class AsyncSolver:
             If the solve timeout has been exceeded.
         """
         self.token = None
-        self._page.on("response", self._extract_token)
-
         timeout = timeout or self._timeout
         start_time = time.time()
 

@@ -516,7 +516,7 @@ class AsyncSolver:
 
     @property
     def token(self) -> Optional[str]:
-        """The g-recaptcha-response token."""
+        """The `g-recaptcha-response` token."""
         return self._token
 
     def close(self) -> None:
@@ -534,7 +534,7 @@ class AsyncSolver:
         image_challenge: bool = False,
     ) -> str:
         """
-        Solve the reCAPTCHA and return the g-recaptcha-response token.
+        Solve the reCAPTCHA and return the `g-recaptcha-response` token.
 
         Parameters
         ----------
@@ -550,7 +550,7 @@ class AsyncSolver:
         Returns
         -------
         str
-            The g-recaptcha-response token.
+            The `g-recaptcha-response` token.
 
         Raises
         ------
