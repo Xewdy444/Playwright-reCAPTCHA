@@ -62,13 +62,17 @@ with sync_playwright() as playwright:
     page = browser.new_page()
     page.goto("https://www.google.com/recaptcha/api2/demo")
 
-    # If you would like to solve the image challenge, you can set the CAPSOLVER_API_KEY environment variable to your CapSolver API key
-    # Otherwise, you can pass the API key as an argument to recaptchav2.SyncSolver with capsolver_api_key="your_api_key"
-    # Then, set image_challenge=True in solver.solve_recaptcha
-
     with recaptchav2.SyncSolver(page) as solver:
         token = solver.solve_recaptcha(wait=True)
         print(token)
+```
+
+If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your CapSolver API key. Otherwise, you can pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
+
+```python
+with recaptchav2.SyncSolver(page, capsolver_api_key="your_api_key") as solver:
+    token = solver.solve_recaptcha(wait=True, image_challenge=True)
+    print(token)
 ```
 
 # reCAPTCHA v3 Example
@@ -83,14 +87,13 @@ with sync_playwright() as playwright:
     browser = playwright.firefox.launch()
     page = browser.new_page()
 
-    # It is best to initialize the solver before navigating to the page with the reCAPTCHA v3 challenge
-    # This is because the solver adds a listener for the POST request to https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload and if the request is made before the listener is added, the g-recaptcha-response token will not be captured
-
     with recaptchav3.SyncSolver(page) as solver:
         page.goto("https://www.google.com/recaptcha/api2/demo")
         token = solver.solve_recaptcha()
         print(token)
 ```
+
+It is best to initialize the solver before navigating to the page with the reCAPTCHA v3 challenge. This is because the solver adds a listener for the POST request to https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload and if the request is made before the listener is added, the `g-recaptcha-response` token will not be captured.
 
 
 # Disclaimer
