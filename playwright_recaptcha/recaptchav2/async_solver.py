@@ -486,7 +486,10 @@ class AsyncSolver:
             if text is not None:
                 break
 
-            await recaptcha_box.new_challenge_button.click()
+            async with self._page.expect_response(
+                re.compile("/recaptcha/(api2|enterprise)/payload")
+            ):
+                await recaptcha_box.new_challenge_button.click()
 
         await self._submit_audio_text(recaptcha_box, text)
 

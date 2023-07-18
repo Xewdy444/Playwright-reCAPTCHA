@@ -459,7 +459,10 @@ class SyncSolver:
             if text is not None:
                 break
 
-            recaptcha_box.new_challenge_button.click()
+            with self._page.expect_response(
+                re.compile("/recaptcha/(api2|enterprise)/payload")
+            ):
+                recaptcha_box.new_challenge_button.click()
 
         self._submit_audio_text(recaptcha_box, text)
 
