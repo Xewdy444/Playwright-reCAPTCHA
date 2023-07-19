@@ -19,29 +19,14 @@ class SyncSolver:
         The playwright page to solve the reCAPTCHA on.
     timeout : int, optional
         The solve timeout in seconds, by default 30.
-
-    Attributes
-    ----------
-    token : Optional[str]
-        The g-recaptcha-response token.
-
-    Methods
-    -------
-    close() -> None
-        Remove the reload response listener.
-    solve_recaptcha(timeout: Optional[int] = None) -> str
-        Solve the reCAPTCHA and return the g-recaptcha-response token.
-
-    Raises
-    ------
-    RecaptchaTimeoutError
-        If the solve timeout has been exceeded.
     """
 
     def __init__(self, page: Page, timeout: int = 30) -> None:
         self._page = page
         self._timeout = timeout
+
         self.token: Optional[str] = None
+        self._page.on("response", self._extract_token)
 
     def __repr__(self) -> str:
         return f"SyncSolver(page={self._page!r}, timeout={self._timeout!r})"
@@ -54,12 +39,12 @@ class SyncSolver:
 
     def _extract_token(self, response: Response) -> None:
         """
-        Extract the g-recaptcha-response token from the userverify response.
+        Extract the `g-recaptcha-response` token from the userverify response.
 
         Parameters
         ----------
         response : Response
-            The response to extract the g-recaptcha-response token from.
+            The response to extract the `g-recaptcha-response` token from.
         """
         if re.search("/recaptcha/(api2|enterprise)/reload", response.url) is None:
             return
@@ -78,7 +63,7 @@ class SyncSolver:
 
     def solve_recaptcha(self, timeout: Optional[int] = None) -> str:
         """
-        Solve the reCAPTCHA and return the g-recaptcha-response token.
+        Wait for the reCAPTCHA to be solved and return the `g-recaptcha-response` token.
 
         Parameters
         ----------
@@ -88,7 +73,7 @@ class SyncSolver:
         Returns
         -------
         str
-            The g-recaptcha-response token.
+            The `g-recaptcha-response` token.
 
         Raises
         ------

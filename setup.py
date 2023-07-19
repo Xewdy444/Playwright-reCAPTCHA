@@ -19,6 +19,7 @@ setup(
         "playwright==1.36.0",
         "pydub==0.25.1",
         "SpeechRecognition==3.10.0",
+        "tenacity==8.2.2",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -1,10 +1,7 @@
 import pytest
 from playwright.async_api import async_playwright
 
-from playwright_recaptcha import (
-    RecaptchaTimeoutError,
-    recaptchav3,
-)
+from playwright_recaptcha import RecaptchaTimeoutError, recaptchav3
 
 
 @pytest.mark.asyncio
