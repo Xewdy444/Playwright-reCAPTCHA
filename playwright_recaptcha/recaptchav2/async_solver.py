@@ -9,11 +9,11 @@ import random
 import re
 from concurrent.futures import ThreadPoolExecutor
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, Union
 
 import pydub
 import speech_recognition
-from playwright.async_api import Page, Response
+from playwright.async_api import APIResponse, Page, Response
 from tenacity import (
     AsyncRetrying,
     retry_if_exception_type,
@@ -53,7 +53,7 @@ class AsyncSolver:
         self._capsolver_api_key = capsolver_api_key or os.getenv("CAPSOLVER_API_KEY")
 
         self._token: Optional[str] = None
-        self._payload_response: Optional[Response] = None
+        self._payload_response: Optional[Union[APIResponse, Response]] = None
         self._page.on("response", self._response_listener)
 
     def __repr__(self) -> str:
