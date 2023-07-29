@@ -53,7 +53,7 @@ class AsyncSolver:
         self._capsolver_api_key = capsolver_api_key or os.getenv("CAPSOLVER_API_KEY")
 
         self._token: Optional[str] = None
-        self._payload_response: Optional[Union[APIResponse, Response]] = None
+        self._payload_response: Union[APIResponse, Response, None] = None
         self._page.on("response", self._response_listener)
 
     def __repr__(self) -> str:
