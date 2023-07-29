@@ -5,7 +5,7 @@ with open("README.md", encoding="utf-8") as file:
 
 setup(
     name="playwright-recaptcha",
-    version="0.3.0",
+    version="0.3.1",
     author="Xewdy444",
     author_email="xewdy@xewdy.tech",
     description="A library for solving reCAPTCHA v2 and v3 with Playwright",
