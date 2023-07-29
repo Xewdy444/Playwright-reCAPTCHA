@@ -25,7 +25,7 @@ class AsyncSolver:
         self._page = page
         self._timeout = timeout
 
-        self.token: Optional[str] = None
+        self._token: Optional[str] = None
         self._page.on("response", self._extract_token)
 
     def __repr__(self) -> str:
@@ -52,7 +52,7 @@ class AsyncSolver:
         token_match = re.search('"rresp","(.*?)"', await response.text())
 
         if token_match is not None:
-            self.token = token_match.group(1)
+            self._token = token_match.group(1)
 
     def close(self) -> None:
         """Remove the reload response listener."""
@@ -80,14 +80,14 @@ class AsyncSolver:
         RecaptchaTimeoutError
             If the solve timeout has been exceeded.
         """
-        self.token = None
+        self._token = None
         timeout = timeout or self._timeout
         start_time = time.time()
 
-        while self.token is None:
+        while self._token is None:
             if time.time() - start_time >= timeout:
                 raise RecaptchaTimeoutError
 
             await self._page.wait_for_timeout(250)
 
-        return self.token
+        return self._token
