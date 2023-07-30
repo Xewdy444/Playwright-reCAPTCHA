@@ -490,11 +490,6 @@ class SyncSolver:
 
         return recaptcha_box
 
-    @property
-    def token(self) -> Optional[str]:
-        """The `g-recaptcha-response` token."""
-        return self._token
-
     def close(self) -> None:
         """Remove the response listener."""
         try:
