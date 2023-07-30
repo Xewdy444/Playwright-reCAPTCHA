@@ -46,7 +46,7 @@ class SyncSolver:
 
         self._token: Optional[str] = None
         self._payload_response: Union[APIResponse, Response, None] = None
-        self._page.on("response", self._response_listener)
+        self._page.on("response", self._response_callback)
 
     def __repr__(self) -> str:
         return (
@@ -104,9 +104,9 @@ class SyncSolver:
 
         return None
 
-    def _response_listener(self, response: Response) -> None:
+    def _response_callback(self, response: Response) -> None:
         """
-        Listen for payload and userverify responses.
+        The callback for intercepting payload and userverify responses.
 
         Parameters
         ----------
@@ -493,7 +493,7 @@ class SyncSolver:
     def close(self) -> None:
         """Remove the response listener."""
         try:
-            self._page.remove_listener("response", self._response_listener)
+            self._page.remove_listener("response", self._response_callback)
         except KeyError:
             pass
 
