@@ -1,0 +1,37 @@
+name: Test Package
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "playwright_recaptcha/**"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "playwright_recaptcha/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install -U pip
+          pip install -r requirements.txt .
+          playwright install --with-deps firefox
+      - name: Test with pytest
+        run: |
+          pytest
