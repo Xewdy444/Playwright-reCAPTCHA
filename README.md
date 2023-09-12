@@ -53,7 +53,7 @@ You can also download the latest static build from [here](https://ffmpeg.org/dow
 For more reCAPTCHA v2 examples, see the [examples folder](https://github.com/Xewdy444/Playwright-reCAPTCHA/tree/main/examples/recaptchav2).
 
 ```python
-from playright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright
 from playwright_recaptcha import recaptchav2
 
 
@@ -79,7 +79,7 @@ with recaptchav2.SyncSolver(page, capsolver_api_key="your_api_key") as solver:
 For more reCAPTCHA v3 examples, see the [examples folder](https://github.com/Xewdy444/Playwright-reCAPTCHA/tree/main/examples/recaptchav3).
 
 ```python
-from playright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright
 from playwright_recaptcha import recaptchav3
 
 
