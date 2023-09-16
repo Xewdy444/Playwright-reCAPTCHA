@@ -39,7 +39,7 @@ class AsyncSolver:
 
     async def _extract_token(self, response: Response) -> None:
         """
-        Extract the `g-recaptcha-response` token from the userverify response.
+        Extract the `g-recaptcha-response` token from the reload response.
 
         Parameters
         ----------

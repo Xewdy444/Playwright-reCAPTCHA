@@ -83,17 +83,19 @@ class RecaptchaBox(ABC):
     @staticmethod
     def _check_if_attached(func):
         """
-        Check if the reCAPTCHA frames are attached before running the decorated function,
-        otherwise return False.
+        Check if the reCAPTCHA frames are attached
+        before running the decorated function, otherwise return False.
 
         Parameters
         ----------
-        func : Callable[[AsyncRecaptchaBox], Awaitable[bool]] or Callable[[SyncRecaptchaBox], bool]
+        func : Callable[[AsyncRecaptchaBox], Awaitable[bool]]
+        or Callable[[SyncRecaptchaBox], bool]
             The function to decorate.
 
         Returns
         -------
-        Callable[[AsyncRecaptchaBox], Awaitable[bool]] or Callable[[SyncRecaptchaBox], bool]
+        Callable[[AsyncRecaptchaBox], Awaitable[bool]]
+        or Callable[[SyncRecaptchaBox], bool]
             The decorated function.
         """
 
@@ -222,7 +224,8 @@ class RecaptchaBox(ABC):
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA frames were not found or if no unchecked reCAPTCHA boxes were found.
+            If the reCAPTCHA frames were not found
+            or if no unchecked reCAPTCHA boxes were found.
         """
 
     @abstractmethod

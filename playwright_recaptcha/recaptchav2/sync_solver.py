@@ -155,7 +155,8 @@ class SyncSolver:
         Returns
         -------
         Optional[Dict[str, Any]]
-            The CapSolver JSON response. Returns None if the task object is not recognized.
+            The CapSolver JSON response.
+            Returns None if the task object is not recognized.
 
         Raises
         ------
