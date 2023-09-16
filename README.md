@@ -32,9 +32,9 @@ The solving of reCAPTCHA v3 is done by the browser itself, so this library simpl
 All solvers return the `g-recaptcha-response` token, which is required for form submissions.
 
 # Installation
-```
-pip install playwright-recaptcha
-```
+
+    pip install playwright-recaptcha
+
 
 This library requires FFmpeg to be installed on your system in order to convert the audio challenge from reCAPTCHA v2 into text.
 
