@@ -498,6 +498,22 @@ class SyncSolver:
         except KeyError:
             pass
 
+    def recaptcha_is_visible(self) -> bool:
+        """
+        Check if the reCAPTCHA is visible.
+
+        Returns
+        -------
+        bool
+            Whether the reCAPTCHA is visible.
+        """
+        try:
+            self._get_recaptcha_box()
+        except RecaptchaNotFoundError:
+            return False
+
+        return True
+
     def solve_recaptcha(
         self,
         *,

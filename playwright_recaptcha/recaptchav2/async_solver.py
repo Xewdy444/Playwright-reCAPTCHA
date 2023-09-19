@@ -525,6 +525,22 @@ class AsyncSolver:
         except KeyError:
             pass
 
+    async def recaptcha_is_visible(self) -> bool:
+        """
+        Check if the reCAPTCHA is visible.
+
+        Returns
+        -------
+        bool
+            Whether the reCAPTCHA is visible.
+        """
+        try:
+            await self._get_recaptcha_box()
+        except RecaptchaNotFoundError:
+            return False
+
+        return True
+
     async def solve_recaptcha(
         self,
         *,
