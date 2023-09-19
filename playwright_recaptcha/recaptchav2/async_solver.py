@@ -348,9 +348,6 @@ class AsyncSolver:
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        if await recaptcha_box.audio_challenge_button.is_visible():
-            await recaptcha_box.audio_challenge_button.click(force=True)
-
         while True:
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
@@ -606,6 +603,15 @@ class AsyncSolver:
                 return self._token
         elif await recaptcha_box.rate_limit_is_visible():
             raise RecaptchaRateLimitError
+
+        if image_challenge and await recaptcha_box.image_challenge_button.is_visible():
+            await recaptcha_box.image_challenge_button.click(force=True)
+
+        if (
+            not image_challenge
+            and await recaptcha_box.audio_challenge_button.is_visible()
+        ):
+            await recaptcha_box.audio_challenge_button.click(force=True)
 
         if image_challenge and self._payload_response is None:
             image = recaptcha_box.image_challenge.locator("img").first

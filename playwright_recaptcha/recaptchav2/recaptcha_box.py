@@ -129,6 +129,11 @@ class RecaptchaBox(ABC):
         return self.bframe_frame.get_by_role("button", name="Get an audio challenge")
 
     @property
+    def image_challenge_button(self) -> Locator:
+        """The reCAPTCHA image challenge button locator."""
+        return self.bframe_frame.get_by_role("button", name="Get a visual challenge")
+
+    @property
     def new_challenge_button(self) -> Locator:
         """The reCAPTCHA new challenge button locator."""
         return self.bframe_frame.get_by_role("button", name="Get a new challenge")
