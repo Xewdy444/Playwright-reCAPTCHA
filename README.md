@@ -56,7 +56,6 @@ For more reCAPTCHA v2 examples, see the [examples folder](https://github.com/Xew
 from playwright.sync_api import sync_playwright
 from playwright_recaptcha import recaptchav2
 
-
 with sync_playwright() as playwright:
     browser = playwright.firefox.launch()
     page = browser.new_page()
@@ -81,7 +80,6 @@ For more reCAPTCHA v3 examples, see the [examples folder](https://github.com/Xew
 ```python
 from playwright.sync_api import sync_playwright
 from playwright_recaptcha import recaptchav3
-
 
 with sync_playwright() as playwright:
     browser = playwright.firefox.launch()
