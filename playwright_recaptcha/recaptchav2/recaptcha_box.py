@@ -296,7 +296,8 @@ class RecaptchaBox(ABC):
         Returns
         -------
         bool
-            True if the reCAPTCHA select all matching images message is visible, False otherwise.
+            True if the reCAPTCHA select all matching images message is visible,
+            False otherwise.
         """
 
     @abstractmethod
@@ -359,7 +360,8 @@ class SyncRecaptchaBox(RecaptchaBox):
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA frames were not found or if no unchecked reCAPTCHA boxes were found.
+            If the reCAPTCHA frames were not found
+            or if no unchecked reCAPTCHA boxes were found.
         """
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
@@ -461,7 +463,8 @@ class SyncRecaptchaBox(RecaptchaBox):
         Returns
         -------
         bool
-            True if the reCAPTCHA select all matching images message is visible, False otherwise.
+            True if the reCAPTCHA select all matching images message is visible,
+            False otherwise.
         """
         return self.bframe_frame.get_by_text(
             re.compile("Please select all matching images")
@@ -530,7 +533,8 @@ class AsyncRecaptchaBox(RecaptchaBox):
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA frames were not found or if no unchecked reCAPTCHA boxes were found.
+            If the reCAPTCHA frames were not found
+            or if no unchecked reCAPTCHA boxes were found.
         """
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
@@ -632,7 +636,8 @@ class AsyncRecaptchaBox(RecaptchaBox):
         Returns
         -------
         bool
-            True if the reCAPTCHA select all matching images message is visible, False otherwise.
+            True if the reCAPTCHA select all matching images message is visible,
+            False otherwise.
         """
         return await self.bframe_frame.get_by_text(
             re.compile("Please select all matching images")
