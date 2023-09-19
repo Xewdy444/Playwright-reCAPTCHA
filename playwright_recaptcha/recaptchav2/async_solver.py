@@ -3,17 +3,17 @@ from __future__ import annotations
 import asyncio
 import base64
 import functools
-import io
 import os
 import random
 import re
 from concurrent.futures import ThreadPoolExecutor
+from io import BytesIO
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Optional, Union
+from typing import Any, BinaryIO, Dict, Iterable, Optional, Union
 
-import pydub
 import speech_recognition
 from playwright.async_api import APIResponse, Page, Response
+from pydub import AudioSegment
 from tenacity import (
     AsyncRetrying,
     retry_if_exception_type,
@@ -28,6 +28,34 @@ from playwright_recaptcha.errors import (
     RecaptchaSolveError,
 )
 from playwright_recaptcha.recaptchav2.recaptcha_box import AsyncRecaptchaBox
+
+
+class AsyncAudioFile(speech_recognition.AudioFile):
+    """
+    A subclass of `speech_recognition.AudioFile` that can be used asynchronously.
+
+    Parameters
+    ----------
+    file : BinaryIO
+        The audio file.
+    executor : Optional[ThreadPoolExecutor], optional
+        The thread pool executor to use, by default None.
+    """
+
+    def __init__(
+        self, file: BinaryIO, *, executor: Optional[ThreadPoolExecutor] = None
+    ) -> None:
+        super().__init__(file)
+        self._executor = executor
+
+    async def __aenter__(self) -> AsyncAudioFile:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(self._executor, super().__enter__)
+        return self
+
+    async def __aexit__(self, *args: Any) -> None:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(self._executor, super().__exit__, *args)
 
 
 class AsyncSolver:
@@ -263,17 +291,17 @@ class AsyncSolver:
         Returns
         -------
         Optional[str]
-            The reCAPTCHA audio text.
+            The reCAPTCHA audio text. Returns None if the audio could not be converted.
         """
         loop = asyncio.get_event_loop()
         response = await self._page.request.get(audio_url)
 
-        wav_audio = io.BytesIO()
-        mp3_audio = io.BytesIO(await response.body())
+        wav_audio = BytesIO()
+        mp3_audio = BytesIO(await response.body())
 
         with ThreadPoolExecutor() as executor:
             audio = await loop.run_in_executor(
-                executor, pydub.AudioSegment.from_mp3, mp3_audio
+                executor, AudioSegment.from_mp3, mp3_audio
             )
 
             await loop.run_in_executor(
@@ -282,7 +310,7 @@ class AsyncSolver:
 
             recognizer = speech_recognition.Recognizer()
 
-            with speech_recognition.AudioFile(wav_audio) as source:
+            async with AsyncAudioFile(wav_audio, executor=executor) as source:
                 audio_data = await loop.run_in_executor(
                     executor, recognizer.record, source
                 )
@@ -305,6 +333,8 @@ class AsyncSolver:
 
         Raises
         ------
+        RecaptchaRateLimitError
+            If the reCAPTCHA rate limit has been exceeded.
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
         """
@@ -410,6 +440,8 @@ class AsyncSolver:
         ------
         CapSolverError
             If the CapSolver API returned an error.
+        RecaptchaRateLimitError
+            If the reCAPTCHA rate limit has been exceeded.
         """
         while recaptcha_box.frames_are_attached():
             while self._payload_response is None:
@@ -566,14 +598,14 @@ class AsyncSolver:
 
         Raises
         ------
+        CapSolverError
+            If the CapSolver API returned an error.
         RecaptchaNotFoundError
             If the reCAPTCHA was not found.
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
-        CapSolverError
-            If the CapSolver API returned an error.
         """
         if self._capsolver_api_key is None and image_challenge:
             raise CapSolverError(

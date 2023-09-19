@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import base64
-import io
 import os
 import random
 import re
+from io import BytesIO
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Optional, Union
 
-import pydub
 import speech_recognition
 from playwright.sync_api import APIResponse, Page, Response
+from pydub import AudioSegment
 from tenacity import Retrying, retry_if_exception_type, stop_after_delay, wait_fixed
 
 from playwright_recaptcha.errors import (
@@ -253,13 +253,13 @@ class SyncSolver:
         Returns
         -------
         Optional[str]
-            The reCAPTCHA audio text.
+            The reCAPTCHA audio text. Returns None if the audio could not be converted.
         """
         response = self._page.request.get(audio_url)
 
-        wav_audio = io.BytesIO()
-        mp3_audio = io.BytesIO(response.body())
-        audio = pydub.AudioSegment.from_mp3(mp3_audio)
+        wav_audio = BytesIO()
+        mp3_audio = BytesIO(response.body())
+        audio = AudioSegment.from_mp3(mp3_audio)
         audio.export(wav_audio, format="wav")
 
         recognizer = speech_recognition.Recognizer()
@@ -283,6 +283,8 @@ class SyncSolver:
 
         Raises
         ------
+        RecaptchaRateLimitError
+            If the reCAPTCHA rate limit has been exceeded.
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
         """
@@ -386,6 +388,8 @@ class SyncSolver:
         ------
         CapSolverError
             If the CapSolver API returned an error.
+        RecaptchaRateLimitError
+            If the reCAPTCHA rate limit has been exceeded.
         """
         while recaptcha_box.frames_are_attached():
             while self._payload_response is None:
@@ -539,14 +543,14 @@ class SyncSolver:
 
         Raises
         ------
+        CapSolverError
+            If the CapSolver API returned an error.
         RecaptchaNotFoundError
             If the reCAPTCHA was not found.
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
-        CapSolverError
-            If the CapSolver API returned an error.
         """
         if self._capsolver_api_key is None and image_challenge:
             raise CapSolverError(
