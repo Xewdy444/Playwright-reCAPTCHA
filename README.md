@@ -30,7 +30,7 @@ The solving of reCAPTCHA v3 is done by the browser itself, so this library simpl
 
 All solvers return the `g-recaptcha-response` token, which is required for form submissions.
 
-# Installation
+## Installation
 
     pip install playwright-recaptcha
 
@@ -48,7 +48,7 @@ You can also download the latest static build from [here](https://ffmpeg.org/dow
 > **Note**
 > Make sure to have the ffmpeg and ffprobe binaries in your system's PATH so that the SpeechRecognition library can find them.
 
-# reCAPTCHA v2 Example
+## reCAPTCHA v2 Example
 For more reCAPTCHA v2 examples, see the [examples folder](https://github.com/Xewdy444/Playwright-reCAPTCHA/tree/main/examples/recaptchav2).
 
 ```python
@@ -73,7 +73,7 @@ with recaptchav2.SyncSolver(page, capsolver_api_key="your_api_key") as solver:
     print(token)
 ```
 
-# reCAPTCHA v3 Example
+## reCAPTCHA v3 Example
 For more reCAPTCHA v3 examples, see the [examples folder](https://github.com/Xewdy444/Playwright-reCAPTCHA/tree/main/examples/recaptchav3).
 
 ```python
@@ -93,5 +93,5 @@ with sync_playwright() as playwright:
 It is best to initialize the solver before navigating to the page with the reCAPTCHA v3 challenge. This is because the solver adds a listener for the POST request to https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload and if the request is made before the listener is added, the `g-recaptcha-response` token will not be captured.
 
 
-# Disclaimer
+## Disclaimer
 This library is intended for use in automated testing and development environments only and should not be used for any illegal or malicious purposes. Any use of this library for activities that violate the terms of service of any website or service is strictly prohibited. The contributors of this library will not be held liable for any damages or legal issues that may arise from the use of this library. By using this library, you agree to these terms and take full responsibility for your actions.
