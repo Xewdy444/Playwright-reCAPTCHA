@@ -65,7 +65,7 @@ class AsyncSolver:
     Parameters
     ----------
     page : Page
-        The playwright page to solve the reCAPTCHA on.
+        The Playwright page to solve the reCAPTCHA on.
     attempts : int, optional
         The number of solve attempts, by default 5.
     capsolver_api_key : Optional[str], optional

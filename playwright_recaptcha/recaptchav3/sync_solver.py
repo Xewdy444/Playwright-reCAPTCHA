@@ -16,7 +16,7 @@ class SyncSolver:
     Parameters
     ----------
     page : Page
-        The playwright page to solve the reCAPTCHA on.
+        The Playwright page to solve the reCAPTCHA on.
     timeout : int, optional
         The solve timeout in seconds, by default 30.
     """
