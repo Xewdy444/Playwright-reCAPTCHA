@@ -28,20 +28,18 @@ The solving of reCAPTCHA v3 is done by the browser itself, so this library simpl
 
 ---
 
-All solvers return the `g-recaptcha-response` token, which is required for form submissions.
+All solvers return the `g-recaptcha-response` token, which is required for form submissions. If you are unsure about the version of reCAPTCHA being used, you can check out [this blog post](https://www.capsolver.com/blog/reCAPTCHA/identify-what-recaptcha-version-is-being-used) for more information.
 
 ## Installation
-
     pip install playwright-recaptcha
-
 
 This library requires FFmpeg to be installed on your system in order to convert the audio challenge from reCAPTCHA v2 into text.
 
-|   OS    |           Command           |
-| :-----: | :-------------------------: |
-| Debian  | sudo apt-get install ffmpeg |
-|  MacOS  |     brew install ffmpeg     |
-| Windows |    choco install ffmpeg     |
+|   OS    |        Command         |
+| :-----: | :--------------------: |
+| Debian  | apt-get install ffmpeg |
+|  MacOS  |  brew install ffmpeg   |
+| Windows | winget install ffmpeg  |
 
 You can also download the latest static build from [here](https://ffmpeg.org/download.html).
 
@@ -65,7 +63,7 @@ with sync_playwright() as playwright:
         print(token)
 ```
 
-If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your CapSolver API key. Otherwise, you can pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
+If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your CapSolver API key. You can also pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
 
 ```python
 with recaptchav2.SyncSolver(page, capsolver_api_key="your_api_key") as solver:
