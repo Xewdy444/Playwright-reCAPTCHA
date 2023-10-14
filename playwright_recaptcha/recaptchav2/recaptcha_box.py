@@ -81,21 +81,33 @@ class RecaptchaBox(ABC):
         ...
 
     @staticmethod
-    def _check_if_attached(func):
+    def _check_if_attached(
+        func: Union[
+            Callable[[AsyncRecaptchaBox], Awaitable[bool]],
+            Callable[[SyncRecaptchaBox], bool],
+        ]
+    ) -> Union[
+        Callable[[AsyncRecaptchaBox], Awaitable[bool]],
+        Callable[[SyncRecaptchaBox], bool],
+    ]:
         """
         Check if the reCAPTCHA frames are attached
         before running the decorated function, otherwise return False.
 
         Parameters
         ----------
-        func : Callable[[AsyncRecaptchaBox], Awaitable[bool]]
-        or Callable[[SyncRecaptchaBox], bool]
+        func : Union[
+            Callable[[AsyncRecaptchaBox], Awaitable[bool]],
+            Callable[[SyncRecaptchaBox], bool],
+        ]
             The function to decorate.
 
         Returns
         -------
-        Callable[[AsyncRecaptchaBox], Awaitable[bool]]
-        or Callable[[SyncRecaptchaBox], bool]
+        Union[
+            Callable[[AsyncRecaptchaBox], Awaitable[bool]],
+            Callable[[SyncRecaptchaBox], bool],
+        ]
             The decorated function.
         """
 
