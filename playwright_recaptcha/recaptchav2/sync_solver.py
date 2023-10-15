@@ -19,7 +19,8 @@ from playwright_recaptcha.errors import (
     RecaptchaRateLimitError,
     RecaptchaSolveError,
 )
-from playwright_recaptcha.recaptchav2.recaptcha_box import SyncRecaptchaBox
+
+from .recaptcha_box import SyncRecaptchaBox
 
 
 class SyncSolver:
@@ -127,17 +128,29 @@ class SyncSolver:
             if token_match is not None:
                 self._token = token_match.group(1)
 
-    def _random_delay(self, short: bool = False) -> None:
+    def _random_delay(self, short: bool = True) -> None:
         """
         Delay the browser for a random amount of time.
 
         Parameters
         ----------
         short : bool, optional
-            Whether to delay for a short amount of time, by default False.
+            Whether to delay for a short amount of time, by default True.
         """
         delay_time = random.randint(150, 350) if short else random.randint(1250, 1500)
         self._page.wait_for_timeout(delay_time)
+
+    def _wait_for_value(self, attribute: str) -> None:
+        """
+        Wait for an attribute to have a value.
+
+        Parameters
+        ----------
+        attribute : str
+            The attribute.
+        """
+        while getattr(self, attribute) is None:
+            self._page.wait_for_timeout(250)
 
     def _get_capsolver_response(
         self, recaptcha_box: SyncRecaptchaBox, image_data: bytes
@@ -219,10 +232,10 @@ class SyncSolver:
             if "rc-imageselect-dynamic-selected" in tile.get_attribute("class"):
                 changing_tiles.append(tile)
 
-            self._random_delay(short=True)
+            self._random_delay()
 
         while changing_tiles:
-            for tile in changing_tiles:
+            for tile in changing_tiles.copy():
                 if "rc-imageselect-dynamic-selected" in tile.get_attribute("class"):
                     continue
 
@@ -300,11 +313,7 @@ class SyncSolver:
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            if (
-                recaptcha_box.audio_challenge_is_visible()
-                or recaptcha_box.audio_challenge_button.is_visible()
-                and recaptcha_box.audio_challenge_button.is_enabled()
-            ):
+            if recaptcha_box.challenge_is_visible():
                 break
 
             self._page.wait_for_timeout(250)
@@ -392,10 +401,8 @@ class SyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         while recaptcha_box.frames_are_attached():
-            while self._payload_response is None:
-                self._page.wait_for_timeout(250)
-
-            self._random_delay(short=True)
+            self._wait_for_value("_payload_response")
+            self._random_delay()
 
             capsolver_response = self._get_capsolver_response(
                 recaptcha_box, self._payload_response.body()
@@ -410,7 +417,7 @@ class SyncSolver:
                 continue
 
             self._solve_tiles(recaptcha_box, capsolver_response["solution"]["objects"])
-            self._random_delay(short=True)
+            self._random_delay()
 
             self._payload_response = None
             button = recaptcha_box.skip_button.or_(recaptcha_box.next_button)
@@ -430,8 +437,7 @@ class SyncSolver:
                 ):
                     recaptcha_box.new_challenge_button.click()
                 else:
-                    while self._token is None:
-                        self._page.wait_for_timeout(250)
+                    self._wait_for_value("_token")
 
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
@@ -452,7 +458,7 @@ class SyncSolver:
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        self._random_delay()
+        self._random_delay(short=False)
 
         while True:
             url = self._get_audio_url(recaptcha_box)

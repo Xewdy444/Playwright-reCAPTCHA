@@ -69,12 +69,14 @@ class RecaptchaBox(ABC):
         return frame_pairs
 
     @overload
+    @staticmethod
     def _check_if_attached(
         func: Callable[[AsyncRecaptchaBox], Awaitable[bool]]
     ) -> Callable[[AsyncRecaptchaBox], Awaitable[bool]]:
         ...
 
     @overload
+    @staticmethod
     def _check_if_attached(
         func: Callable[[SyncRecaptchaBox], bool]
     ) -> Callable[[SyncRecaptchaBox], bool]:
@@ -378,16 +380,15 @@ class SyncRecaptchaBox(RecaptchaBox):
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
         for anchor_frame, bframe_frame in frame_pairs:
-            checkbox = anchor_frame.get_by_role("checkbox", name="I'm not a robot")
+            recaptcha_box = cls(anchor_frame, bframe_frame)
 
             if (
-                bframe_frame.get_by_role(
-                    "button", name="Get an audio challenge"
-                ).is_visible()
-                or checkbox.is_visible()
-                and not checkbox.is_checked()
+                recaptcha_box.checkbox.is_visible()
+                and not recaptcha_box.checkbox.is_checked()
+                or recaptcha_box.audio_challenge_button.is_visible()
+                or recaptcha_box.image_challenge_button.is_visible()
             ):
-                return cls(anchor_frame, bframe_frame)
+                return recaptcha_box
 
         raise RecaptchaNotFoundError("No unchecked reCAPTCHA boxes were found.")
 
@@ -551,16 +552,15 @@ class AsyncRecaptchaBox(RecaptchaBox):
         frame_pairs = cls._get_recaptcha_frame_pairs(frames)
 
         for anchor_frame, bframe_frame in frame_pairs:
-            checkbox = anchor_frame.get_by_role("checkbox", name="I'm not a robot")
+            recaptcha_box = cls(anchor_frame, bframe_frame)
 
             if (
-                await bframe_frame.get_by_role(
-                    "button", name="Get an audio challenge"
-                ).is_visible()
-                or await checkbox.is_visible()
-                and not await checkbox.is_checked()
+                await recaptcha_box.checkbox.is_visible()
+                and not await recaptcha_box.checkbox.is_checked()
+                or await recaptcha_box.audio_challenge_button.is_visible()
+                or await recaptcha_box.image_challenge_button.is_visible()
             ):
-                return cls(anchor_frame, bframe_frame)
+                return recaptcha_box
 
         raise RecaptchaNotFoundError("No unchecked reCAPTCHA boxes were found.")
 

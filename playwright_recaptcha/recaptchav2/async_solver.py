@@ -27,7 +27,8 @@ from playwright_recaptcha.errors import (
     RecaptchaRateLimitError,
     RecaptchaSolveError,
 )
-from playwright_recaptcha.recaptchav2.recaptcha_box import AsyncRecaptchaBox
+
+from .recaptcha_box import AsyncRecaptchaBox
 
 
 class AsyncAudioFile(speech_recognition.AudioFile):
@@ -163,17 +164,29 @@ class AsyncSolver:
             if token_match is not None:
                 self._token = token_match.group(1)
 
-    async def _random_delay(self, short: bool = False) -> None:
+    async def _random_delay(self, short: bool = True) -> None:
         """
         Delay the browser for a random amount of time.
 
         Parameters
         ----------
         short : bool, optional
-            Whether to delay for a short amount of time, by default False.
+            Whether to delay for a short amount of time, by default True.
         """
         delay_time = random.randint(150, 350) if short else random.randint(1250, 1500)
         await self._page.wait_for_timeout(delay_time)
+
+    async def _wait_for_value(self, attribute: str) -> None:
+        """
+        Wait for an attribute to have a value.
+
+        Parameters
+        ----------
+        attribute : str
+            The attribute.
+        """
+        while getattr(self, attribute) is None:
+            await self._page.wait_for_timeout(250)
 
     async def _get_capsolver_response(
         self, recaptcha_box: AsyncRecaptchaBox, image_data: bytes
@@ -255,10 +268,10 @@ class AsyncSolver:
             if "rc-imageselect-dynamic-selected" in await tile.get_attribute("class"):
                 changing_tiles.append(tile)
 
-            await self._random_delay(short=True)
+            await self._random_delay()
 
         while changing_tiles:
-            for tile in changing_tiles:
+            for tile in changing_tiles.copy():
                 if "rc-imageselect-dynamic-selected" in await tile.get_attribute(
                     "class"
                 ):
@@ -342,7 +355,7 @@ class AsyncSolver:
 
         while recaptcha_box.frames_are_attached():
             if await recaptcha_box.challenge_is_solved():
-                if self.token is None:
+                if self._token is None:
                     raise RecaptchaSolveError
 
                 break
@@ -350,11 +363,7 @@ class AsyncSolver:
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            if (
-                await recaptcha_box.audio_challenge_is_visible()
-                or await recaptcha_box.audio_challenge_button.is_visible()
-                and await recaptcha_box.audio_challenge_button.is_enabled()
-            ):
+            if await recaptcha_box.challenge_is_visible():
                 break
 
             await self._page.wait_for_timeout(250)
@@ -444,10 +453,8 @@ class AsyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         while recaptcha_box.frames_are_attached():
-            while self._payload_response is None:
-                await self._page.wait_for_timeout(250)
-
-            await self._random_delay(short=True)
+            await self._wait_for_value("_payload_response")
+            await self._random_delay()
 
             capsolver_response = await self._get_capsolver_response(
                 recaptcha_box, await self._payload_response.body()
@@ -465,7 +472,7 @@ class AsyncSolver:
                 recaptcha_box, capsolver_response["solution"]["objects"]
             )
 
-            await self._random_delay(short=True)
+            await self._random_delay()
 
             self._payload_response = None
             button = recaptcha_box.skip_button.or_(recaptcha_box.next_button)
@@ -485,8 +492,7 @@ class AsyncSolver:
                 ):
                     await recaptcha_box.new_challenge_button.click()
                 else:
-                    while self._token is None:
-                        await self._page.wait_for_timeout(250)
+                    await self._wait_for_value("_token")
 
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
@@ -507,7 +513,7 @@ class AsyncSolver:
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        await self._random_delay()
+        await self._random_delay(short=False)
 
         while True:
             url = await self._get_audio_url(recaptcha_box)
