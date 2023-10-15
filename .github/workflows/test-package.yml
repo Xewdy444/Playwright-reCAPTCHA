@@ -10,7 +10,7 @@ on:
 
 jobs:
   test-package:
-    name: Test Package
+    name: Test Package With Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
