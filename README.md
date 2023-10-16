@@ -83,7 +83,7 @@ with sync_playwright() as playwright:
     page = browser.new_page()
 
     with recaptchav3.SyncSolver(page) as solver:
-        page.goto("https://www.google.com/recaptcha/api2/demo")
+        page.goto("https://antcpt.com/score_detector/")
         token = solver.solve_recaptcha()
         print(token)
 ```
