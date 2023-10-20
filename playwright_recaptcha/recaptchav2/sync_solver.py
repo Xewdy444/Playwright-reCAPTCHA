@@ -13,13 +13,12 @@ from playwright.sync_api import APIResponse, Page, Response
 from pydub import AudioSegment
 from tenacity import Retrying, retry_if_exception_type, stop_after_delay, wait_fixed
 
-from playwright_recaptcha.errors import (
+from ..errors import (
     CapSolverError,
     RecaptchaNotFoundError,
     RecaptchaRateLimitError,
     RecaptchaSolveError,
 )
-
 from .recaptcha_box import SyncRecaptchaBox
 
 

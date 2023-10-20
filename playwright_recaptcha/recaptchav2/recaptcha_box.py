@@ -11,7 +11,7 @@ from playwright.async_api import Locator as AsyncLocator
 from playwright.sync_api import Frame as SyncFrame
 from playwright.sync_api import Locator as SyncLocator
 
-from playwright_recaptcha.errors import RecaptchaNotFoundError
+from ..errors import RecaptchaNotFoundError
 
 Locator = Union[AsyncLocator, SyncLocator]
 Frame = Union[AsyncFrame, SyncFrame]

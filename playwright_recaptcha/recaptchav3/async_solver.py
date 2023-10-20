@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 from playwright.async_api import Page, Response
 
-from playwright_recaptcha.errors import RecaptchaTimeoutError
+from ..errors import RecaptchaTimeoutError
 
 
 class AsyncSolver:

@@ -21,13 +21,12 @@ from tenacity import (
     wait_fixed,
 )
 
-from playwright_recaptcha.errors import (
+from ..errors import (
     CapSolverError,
     RecaptchaNotFoundError,
     RecaptchaRateLimitError,
     RecaptchaSolveError,
 )
-
 from .recaptcha_box import AsyncRecaptchaBox
 
 
