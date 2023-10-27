@@ -4,7 +4,7 @@ import asyncio
 import re
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Awaitable, Callable, Iterable, List, Tuple, Union, overload
+from typing import Iterable, List, Tuple, Union
 
 from playwright.async_api import Frame as AsyncFrame
 from playwright.async_api import Locator as AsyncLocator
@@ -68,64 +68,26 @@ class RecaptchaBox(ABC):
 
         return frame_pairs
 
-    @overload
     @staticmethod
-    def _check_if_attached(
-        func: Callable[[AsyncRecaptchaBox], Awaitable[bool]]
-    ) -> Callable[[AsyncRecaptchaBox], Awaitable[bool]]:
-        ...
-
-    @overload
-    @staticmethod
-    def _check_if_attached(
-        func: Callable[[SyncRecaptchaBox], bool]
-    ) -> Callable[[SyncRecaptchaBox], bool]:
-        ...
-
-    @staticmethod
-    def _check_if_attached(
-        func: Union[
-            Callable[[AsyncRecaptchaBox], Awaitable[bool]],
-            Callable[[SyncRecaptchaBox], bool],
-        ]
-    ) -> Union[
-        Callable[[AsyncRecaptchaBox], Awaitable[bool]],
-        Callable[[SyncRecaptchaBox], bool],
-    ]:
+    def _check_if_attached(func):
         """
-        Check if the reCAPTCHA frames are attached
-        before running the decorated function, otherwise return False.
-
-        Parameters
-        ----------
-        func : Union[
-            Callable[[AsyncRecaptchaBox], Awaitable[bool]],
-            Callable[[SyncRecaptchaBox], bool],
-        ]
-            The function to decorate.
-
-        Returns
-        -------
-        Union[
-            Callable[[AsyncRecaptchaBox], Awaitable[bool]],
-            Callable[[SyncRecaptchaBox], bool],
-        ]
-            The decorated function.
+        A decorator for checking if the reCAPTCHA frames are attached
+        before running the decorated function.
         """
 
         @wraps(func)
-        def sync_wrapper(recaptcha_box: SyncRecaptchaBox) -> bool:
-            if recaptcha_box.frames_are_detached():
+        def sync_wrapper(self: SyncRecaptchaBox) -> bool:
+            if self.frames_are_detached():
                 return False
 
-            return func(recaptcha_box)
+            return func(self)
 
         @wraps(func)
-        async def async_wrapper(recaptcha_box: AsyncRecaptchaBox) -> bool:
-            if recaptcha_box.frames_are_detached():
+        async def async_wrapper(self: AsyncRecaptchaBox) -> bool:
+            if self.frames_are_detached():
                 return False
 
-            return await func(recaptcha_box)
+            return await func(self)
 
         if asyncio.iscoroutinefunction(func):
             return async_wrapper
