@@ -185,10 +185,7 @@ class RecaptchaBox(ABC):
 
     @classmethod
     @abstractmethod
-    def from_frames(
-        cls,
-        frames: Iterable[Frame],
-    ) -> Union[AsyncRecaptchaBox, SyncRecaptchaBox]:
+    def from_frames(cls, frames: Iterable[Frame]) -> RecaptchaBox:
         """
         Create a reCAPTCHA box using a list of frames.
 
@@ -199,7 +196,7 @@ class RecaptchaBox(ABC):
 
         Returns
         -------
-        Union[AsyncRecaptchaBox, SyncRecaptchaBox]
+        RecaptchaBox
             The reCAPTCHA box.
 
         Raises
