@@ -6,10 +6,10 @@ import random
 import re
 from io import BytesIO
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 import speech_recognition
-from playwright.sync_api import APIResponse, Page, Response
+from playwright.sync_api import APIResponse, Locator, Page, Response
 from pydub import AudioSegment
 from tenacity import Retrying, retry_if_exception_type, stop_after_delay, wait_fixed
 
@@ -24,7 +24,7 @@ from .recaptcha_box import SyncRecaptchaBox
 
 class SyncSolver:
     """
-    A class used to solve reCAPTCHA v2 synchronously.
+    A class for solving reCAPTCHA v2 synchronously with Playwright.
 
     Parameters
     ----------
@@ -58,7 +58,7 @@ class SyncSolver:
     def __enter__(self) -> SyncSolver:
         return self
 
-    def __exit__(self, *args: Any) -> None:
+    def __exit__(self, *_: Any) -> None:
         self.close()
 
     @staticmethod
@@ -222,7 +222,7 @@ class SyncSolver:
         CapSolverError
             If the CapSolver API returned an error.
         """
-        changing_tiles = []
+        changing_tiles: List[Locator] = []
 
         for index in indexes:
             tile = recaptcha_box.tile_selector.nth(index)

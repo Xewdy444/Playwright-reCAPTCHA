@@ -11,7 +11,7 @@ from ..errors import RecaptchaTimeoutError
 
 class SyncSolver:
     """
-    A class used to solve reCAPTCHA v3 synchronously.
+    A class for solving reCAPTCHA v3 synchronously with Playwright.
 
     Parameters
     ----------
@@ -26,7 +26,7 @@ class SyncSolver:
         self._timeout = timeout
 
         self._token: Optional[str] = None
-        self._page.on("response", self._extract_token)
+        self._page.on("response", self._response_callback)
 
     def __repr__(self) -> str:
         return f"SyncSolver(page={self._page!r}, timeout={self._timeout!r})"
@@ -34,17 +34,17 @@ class SyncSolver:
     def __enter__(self) -> SyncSolver:
         return self
 
-    def __exit__(self, *args: Any) -> None:
+    def __exit__(self, *_: Any) -> None:
         self.close()
 
-    def _extract_token(self, response: Response) -> None:
+    def _response_callback(self, response: Response) -> None:
         """
-        Extract the `g-recaptcha-response` token from the reload response.
+        The callback for intercepting reload responses.
 
         Parameters
         ----------
         response : Response
-            The response to extract the `g-recaptcha-response` token from.
+            The response.
         """
         if re.search("/recaptcha/(api2|enterprise)/reload", response.url) is None:
             return
@@ -57,7 +57,7 @@ class SyncSolver:
     def close(self) -> None:
         """Remove the reload response listener."""
         try:
-            self._page.remove_listener("response", self._extract_token)
+            self._page.remove_listener("response", self._response_callback)
         except KeyError:
             pass
 

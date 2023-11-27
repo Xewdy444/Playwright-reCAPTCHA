@@ -60,8 +60,10 @@ class RecaptchaBox(ABC):
             frame_id = anchor_frame.name[2:]
 
             for bframe_frame in bframe_frames:
-                if frame_id in bframe_frame.name:
-                    frame_pairs.append((anchor_frame, bframe_frame))
+                if frame_id not in bframe_frame.name:
+                    continue
+
+                frame_pairs.append((anchor_frame, bframe_frame))
 
         if not frame_pairs:
             raise RecaptchaNotFoundError

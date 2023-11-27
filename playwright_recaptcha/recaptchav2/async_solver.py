@@ -9,10 +9,10 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from json import JSONDecodeError
-from typing import Any, BinaryIO, Dict, Iterable, Optional, Union
+from typing import Any, BinaryIO, Dict, Iterable, List, Optional, Union
 
 import speech_recognition
-from playwright.async_api import APIResponse, Page, Response
+from playwright.async_api import APIResponse, Locator, Page, Response
 from pydub import AudioSegment
 from tenacity import (
     AsyncRetrying,
@@ -36,31 +36,33 @@ class AsyncAudioFile(speech_recognition.AudioFile):
 
     Parameters
     ----------
-    file : BinaryIO
-        The audio file.
+    file : Union[BinaryIO, str]
+        The audio file handle or file path.
     executor : Optional[ThreadPoolExecutor], optional
         The thread pool executor to use, by default None.
     """
 
     def __init__(
-        self, file: BinaryIO, *, executor: Optional[ThreadPoolExecutor] = None
+        self,
+        file: Union[BinaryIO, str],
+        *,
+        executor: Optional[ThreadPoolExecutor] = None,
     ) -> None:
         super().__init__(file)
+        self._loop = asyncio.get_event_loop()
         self._executor = executor
 
     async def __aenter__(self) -> AsyncAudioFile:
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(self._executor, super().__enter__)
+        await self._loop.run_in_executor(self._executor, super().__enter__)
         return self
 
     async def __aexit__(self, *args: Any) -> None:
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(self._executor, super().__exit__, *args)
+        await self._loop.run_in_executor(self._executor, super().__exit__, *args)
 
 
 class AsyncSolver:
     """
-    A class used to solve reCAPTCHA v2 asynchronously.
+    A class for solving reCAPTCHA v2 asynchronously with Playwright.
 
     Parameters
     ----------
@@ -94,7 +96,7 @@ class AsyncSolver:
     async def __aenter__(self) -> AsyncSolver:
         return self
 
-    async def __aexit__(self, *args: Any) -> None:
+    async def __aexit__(self, *_: Any) -> None:
         self.close()
 
     @staticmethod
@@ -258,7 +260,7 @@ class AsyncSolver:
         CapSolverError
             If the CapSolver API returned an error.
         """
-        changing_tiles = []
+        changing_tiles: List[Locator] = []
 
         for index in indexes:
             tile = recaptcha_box.tile_selector.nth(index)
