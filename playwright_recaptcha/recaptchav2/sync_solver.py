@@ -271,7 +271,7 @@ class SyncSolver:
 
         wav_audio = BytesIO()
         mp3_audio = BytesIO(response.body())
-        audio = AudioSegment.from_mp3(mp3_audio)
+        audio: AudioSegment = AudioSegment.from_mp3(mp3_audio)
         audio.export(wav_audio, format="wav")
 
         recognizer = speech_recognition.Recognizer()
@@ -302,13 +302,7 @@ class SyncSolver:
         """
         recaptcha_box.checkbox.click(force=True)
 
-        while recaptcha_box.frames_are_attached():
-            if recaptcha_box.challenge_is_solved():
-                if self._token is None:
-                    raise RecaptchaSolveError
-
-                break
-
+        while recaptcha_box.frames_are_attached() and self._token is None:
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
@@ -369,6 +363,8 @@ class SyncSolver:
             re.compile("/recaptcha/(api2|enterprise)/userverify")
         ):
             recaptcha_box.verify_button.click()
+
+        self._wait_for_value("_token")
 
         while recaptcha_box.frames_are_attached():
             if recaptcha_box.rate_limit_is_visible():
@@ -590,9 +586,6 @@ class SyncSolver:
                 or not recaptcha_box.challenge_is_visible()
                 or recaptcha_box.challenge_is_solved()
             ):
-                if self._token is None:
-                    raise RecaptchaSolveError
-
                 return self._token
 
             if not image_challenge:

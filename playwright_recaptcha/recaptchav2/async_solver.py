@@ -314,7 +314,7 @@ class AsyncSolver:
         mp3_audio = BytesIO(await response.body())
 
         with ThreadPoolExecutor() as executor:
-            audio = await loop.run_in_executor(
+            audio: AudioSegment = await loop.run_in_executor(
                 executor, AudioSegment.from_mp3, mp3_audio
             )
 
@@ -354,13 +354,7 @@ class AsyncSolver:
         """
         await recaptcha_box.checkbox.click(force=True)
 
-        while recaptcha_box.frames_are_attached():
-            if await recaptcha_box.challenge_is_solved():
-                if self._token is None:
-                    raise RecaptchaSolveError
-
-                break
-
+        while recaptcha_box.frames_are_attached() and self._token is None:
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
@@ -423,6 +417,8 @@ class AsyncSolver:
             re.compile("/recaptcha/(api2|enterprise)/userverify")
         ):
             await recaptcha_box.verify_button.click()
+
+        await self._wait_for_value("_token")
 
         while recaptcha_box.frames_are_attached():
             if await recaptcha_box.rate_limit_is_visible():
@@ -650,9 +646,6 @@ class AsyncSolver:
                 or not await recaptcha_box.challenge_is_visible()
                 or await recaptcha_box.challenge_is_solved()
             ):
-                if self._token is None:
-                    raise RecaptchaSolveError
-
                 return self._token
 
             if not image_challenge:
