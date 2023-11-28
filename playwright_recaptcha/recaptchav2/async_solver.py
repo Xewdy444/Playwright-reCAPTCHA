@@ -542,17 +542,10 @@ class AsyncSolver:
         Raises
         ------
         RecaptchaNotFoundError
-            If the reCAPTCHA was not found.
+            If the reCAPTCHA frames were not found
+            or if no unchecked reCAPTCHA boxes were found.
         """
-        recaptcha_box = await AsyncRecaptchaBox.from_frames(self._page.frames)
-
-        if (
-            await recaptcha_box.checkbox.is_hidden()
-            and await recaptcha_box.audio_challenge_button.is_disabled()
-        ):
-            raise RecaptchaNotFoundError
-
-        return recaptcha_box
+        return await AsyncRecaptchaBox.from_frames(self._page.frames)
 
     def close(self) -> None:
         """Remove the response listener."""
@@ -563,12 +556,12 @@ class AsyncSolver:
 
     async def recaptcha_is_visible(self) -> bool:
         """
-        Check if the reCAPTCHA is visible.
+        Check if an unchecked reCAPTCHA box is visible.
 
         Returns
         -------
         bool
-            Whether the reCAPTCHA is visible.
+            Whether an unchecked reCAPTCHA box is visible.
         """
         try:
             await self._get_recaptcha_box()
