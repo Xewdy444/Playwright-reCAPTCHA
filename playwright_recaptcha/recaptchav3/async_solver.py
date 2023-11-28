@@ -17,11 +17,11 @@ class AsyncSolver:
     ----------
     page : Page
         The Playwright page to solve the reCAPTCHA on.
-    timeout : int, optional
+    timeout : float, optional
         The solve timeout in seconds, by default 30.
     """
 
-    def __init__(self, page: Page, timeout: int = 30) -> None:
+    def __init__(self, page: Page, timeout: float = 30) -> None:
         self._page = page
         self._timeout = timeout
 
@@ -61,13 +61,13 @@ class AsyncSolver:
         except KeyError:
             pass
 
-    async def solve_recaptcha(self, timeout: Optional[int] = None) -> str:
+    async def solve_recaptcha(self, timeout: Optional[float] = None) -> str:
         """
         Wait for the reCAPTCHA to be solved and return the `g-recaptcha-response` token.
 
         Parameters
         ----------
-        timeout : Optional[int], optional
+        timeout : Optional[float], optional
             The solve timeout in seconds, by default 30.
 
         Returns
