@@ -575,6 +575,7 @@ class AsyncSolver:
         *,
         attempts: Optional[int] = None,
         wait: bool = False,
+        wait_timeout: float = 30,
         image_challenge: bool = False,
     ) -> str:
         """
@@ -586,8 +587,9 @@ class AsyncSolver:
             The number of solve attempts, by default 5.
         wait : bool, optional
             Whether to wait for the reCAPTCHA to appear, by default False.
-            RecaptchaNotFoundError will be raised if the reCAPTCHA has not appeared
-            after 30 seconds.
+        wait_timeout : float, optional
+            The amount of time in seconds to wait for the reCAPTCHA to appear,
+            by default 30. Only used if `wait` is True.
         image_challenge : bool, optional
             Whether to solve the image challenge, by default False.
 
@@ -607,7 +609,7 @@ class AsyncSolver:
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
         """
-        if self._capsolver_api_key is None and image_challenge:
+        if image_challenge and self._capsolver_api_key is None:
             raise CapSolverError(
                 "You must provide a CapSolver API key to solve image challenges."
             )
@@ -618,7 +620,7 @@ class AsyncSolver:
         if wait:
             retry = AsyncRetrying(
                 sleep=self._page.wait_for_timeout,
-                stop=stop_after_delay(30),
+                stop=stop_after_delay(wait_timeout),
                 wait=wait_fixed(0.25),
                 retry=retry_if_exception_type(RecaptchaNotFoundError),
                 reraise=True,
