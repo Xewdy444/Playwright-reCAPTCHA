@@ -530,23 +530,6 @@ class AsyncSolver:
 
         await self._submit_audio_text(recaptcha_box, text)
 
-    async def _get_recaptcha_box(self) -> AsyncRecaptchaBox:
-        """
-        Get the reCAPTCHA box.
-
-        Returns
-        -------
-        AsyncRecaptchaBox
-            The reCAPTCHA box.
-
-        Raises
-        ------
-        RecaptchaNotFoundError
-            If the reCAPTCHA frames were not found
-            or if no unchecked reCAPTCHA boxes were found.
-        """
-        return await AsyncRecaptchaBox.from_frames(self._page.frames)
-
     def close(self) -> None:
         """Remove the response listener."""
         try:
@@ -556,15 +539,15 @@ class AsyncSolver:
 
     async def recaptcha_is_visible(self) -> bool:
         """
-        Check if an unchecked reCAPTCHA box is visible.
+        Check if a reCAPTCHA challenge or unchecked reCAPTCHA box is visible.
 
         Returns
         -------
         bool
-            Whether an unchecked reCAPTCHA box is visible.
+            Whether a reCAPTCHA challenge or unchecked reCAPTCHA box is visible.
         """
         try:
-            await self._get_recaptcha_box()
+            await AsyncRecaptchaBox.from_frames(self._page.frames)
         except RecaptchaNotFoundError:
             return False
 
@@ -626,9 +609,11 @@ class AsyncSolver:
                 reraise=True,
             )
 
-            recaptcha_box = await retry(self._get_recaptcha_box)
+            recaptcha_box = await retry(
+                lambda: AsyncRecaptchaBox.from_frames(self._page.frames)
+            )
         else:
-            recaptcha_box = await self._get_recaptcha_box()
+            recaptcha_box = await AsyncRecaptchaBox.from_frames(self._page.frames)
 
         if await recaptcha_box.checkbox.is_visible():
             await self._click_checkbox(recaptcha_box)

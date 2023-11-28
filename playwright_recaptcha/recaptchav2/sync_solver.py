@@ -473,23 +473,6 @@ class SyncSolver:
 
         self._submit_audio_text(recaptcha_box, text)
 
-    def _get_recaptcha_box(self) -> SyncRecaptchaBox:
-        """
-        Get the reCAPTCHA box.
-
-        Returns
-        -------
-        SyncRecaptchaBox
-            The reCAPTCHA box.
-
-        Raises
-        ------
-        RecaptchaNotFoundError
-            If the reCAPTCHA frames were not found
-            or if no unchecked reCAPTCHA boxes were found.
-        """
-        return SyncRecaptchaBox.from_frames(self._page.frames)
-
     def close(self) -> None:
         """Remove the response listener."""
         try:
@@ -499,15 +482,15 @@ class SyncSolver:
 
     def recaptcha_is_visible(self) -> bool:
         """
-        Check if an unchecked reCAPTCHA box is visible.
+        Check if a reCAPTCHA challenge or unchecked reCAPTCHA box is visible.
 
         Returns
         -------
         bool
-            Whether an unchecked reCAPTCHA box is visible.
+            Whether a reCAPTCHA challenge or unchecked reCAPTCHA box is visible.
         """
         try:
-            self._get_recaptcha_box()
+            SyncRecaptchaBox.from_frames(self._page.frames)
         except RecaptchaNotFoundError:
             return False
 
@@ -569,9 +552,11 @@ class SyncSolver:
                 reraise=True,
             )
 
-            recaptcha_box = retry(self._get_recaptcha_box)
+            recaptcha_box = retry(
+                lambda: SyncRecaptchaBox.from_frames(self._page.frames)
+            )
         else:
-            recaptcha_box = self._get_recaptcha_box()
+            recaptcha_box = SyncRecaptchaBox.from_frames(self._page.frames)
 
         if recaptcha_box.checkbox.is_visible():
             self._click_checkbox(recaptcha_box)
