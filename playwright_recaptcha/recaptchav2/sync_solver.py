@@ -139,18 +139,6 @@ class SyncSolver:
         delay_time = random.randint(150, 350) if short else random.randint(1250, 1500)
         self._page.wait_for_timeout(delay_time)
 
-    def _wait_for_value(self, attribute: str) -> None:
-        """
-        Wait for an attribute to have a value.
-
-        Parameters
-        ----------
-        attribute : str
-            The attribute.
-        """
-        while getattr(self, attribute) is None:
-            self._page.wait_for_timeout(250)
-
     def _get_capsolver_response(
         self, recaptcha_box: SyncRecaptchaBox, image_data: bytes
     ) -> Optional[Dict[str, Any]]:
@@ -307,7 +295,7 @@ class SyncSolver:
                 raise RecaptchaRateLimitError
 
             if recaptcha_box.challenge_is_visible():
-                break
+                return
 
             self._page.wait_for_timeout(250)
 
@@ -335,11 +323,9 @@ class SyncSolver:
                 raise RecaptchaRateLimitError
 
             if recaptcha_box.audio_challenge_is_visible():
-                break
+                return recaptcha_box.audio_download_button.get_attribute("href")
 
             self._page.wait_for_timeout(250)
-
-        return recaptcha_box.audio_download_button.get_attribute("href")
 
     def _submit_audio_text(self, recaptcha_box: SyncRecaptchaBox, text: str) -> None:
         """
@@ -364,8 +350,6 @@ class SyncSolver:
         ):
             recaptcha_box.verify_button.click()
 
-        self._wait_for_value("_token")
-
         while recaptcha_box.frames_are_attached():
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
@@ -375,7 +359,46 @@ class SyncSolver:
                 or recaptcha_box.solve_failure_is_visible()
                 or recaptcha_box.challenge_is_solved()
             ):
-                break
+                return
+
+            self._page.wait_for_timeout(250)
+
+    def _submit_tile_answers(self, recaptcha_box: SyncRecaptchaBox) -> None:
+        """
+        Submit the reCAPTCHA image challenge tile answers.
+
+        Parameters
+        ----------
+        recaptcha_box : SyncRecaptchaBox
+            The reCAPTCHA box.
+
+        Raises
+        ------
+        RecaptchaRateLimitError
+            If the reCAPTCHA rate limit has been exceeded.
+        """
+        recaptcha_box.verify_button.click()
+
+        while recaptcha_box.frames_are_attached():
+            if recaptcha_box.rate_limit_is_visible():
+                raise RecaptchaRateLimitError
+
+            if (
+                recaptcha_box.challenge_is_solved()
+                or recaptcha_box.try_again_is_visible()
+            ):
+                return
+
+            if (
+                recaptcha_box.check_new_images_is_visible()
+                or recaptcha_box.select_all_matching_is_visible()
+            ):
+                with self._page.expect_response(
+                    re.compile("/recaptcha/(api2|enterprise)/payload")
+                ):
+                    recaptcha_box.new_challenge_button.click()
+
+                return
 
             self._page.wait_for_timeout(250)
 
@@ -396,7 +419,6 @@ class SyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         while recaptcha_box.frames_are_attached():
-            self._wait_for_value("_payload_response")
             self._random_delay()
 
             capsolver_response = self._get_capsolver_response(
@@ -408,7 +430,12 @@ class SyncSolver:
                 or not capsolver_response["solution"]["objects"]
             ):
                 self._payload_response = None
-                recaptcha_box.new_challenge_button.click()
+
+                with self._page.expect_response(
+                    re.compile("/recaptcha/(api2|enterprise)/payload")
+                ):
+                    recaptcha_box.new_challenge_button.click()
+
                 continue
 
             self._solve_tiles(recaptcha_box, capsolver_response["solution"]["objects"])
@@ -418,25 +445,14 @@ class SyncSolver:
             button = recaptcha_box.skip_button.or_(recaptcha_box.next_button)
 
             if button.is_visible():
-                button.click()
-                continue
-
-            with self._page.expect_response(
-                re.compile("/recaptcha/(api2|enterprise)/(payload|userverify)")
-            ):
-                recaptcha_box.verify_button.click()
-
-                if (
-                    recaptcha_box.check_new_images_is_visible()
-                    or recaptcha_box.select_all_matching_is_visible()
+                with self._page.expect_response(
+                    re.compile("/recaptcha/(api2|enterprise)/payload")
                 ):
                     recaptcha_box.new_challenge_button.click()
-                else:
-                    self._wait_for_value("_token")
 
-            if recaptcha_box.rate_limit_is_visible():
-                raise RecaptchaRateLimitError
+                continue
 
+            self._submit_tile_answers(recaptcha_box)
             return
 
     def _solve_audio_challenge(self, recaptcha_box: SyncRecaptchaBox) -> None:
@@ -468,6 +484,9 @@ class SyncSolver:
                 recaptcha_box.new_challenge_button.click()
 
         self._submit_audio_text(recaptcha_box, text)
+
+        while self._token is None:
+            self._page.wait_for_timeout(250)
 
     def close(self) -> None:
         """Remove the response listener."""

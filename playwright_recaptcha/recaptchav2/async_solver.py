@@ -177,18 +177,6 @@ class AsyncSolver:
         delay_time = random.randint(150, 350) if short else random.randint(1250, 1500)
         await self._page.wait_for_timeout(delay_time)
 
-    async def _wait_for_value(self, attribute: str) -> None:
-        """
-        Wait for an attribute to have a value.
-
-        Parameters
-        ----------
-        attribute : str
-            The attribute.
-        """
-        while getattr(self, attribute) is None:
-            await self._page.wait_for_timeout(250)
-
     async def _get_capsolver_response(
         self, recaptcha_box: AsyncRecaptchaBox, image_data: bytes
     ) -> Optional[Dict[str, Any]]:
@@ -359,7 +347,7 @@ class AsyncSolver:
                 raise RecaptchaRateLimitError
 
             if await recaptcha_box.challenge_is_visible():
-                break
+                return
 
             await self._page.wait_for_timeout(250)
 
@@ -387,11 +375,9 @@ class AsyncSolver:
                 raise RecaptchaRateLimitError
 
             if await recaptcha_box.audio_challenge_is_visible():
-                break
+                return await recaptcha_box.audio_download_button.get_attribute("href")
 
             await self._page.wait_for_timeout(250)
-
-        return await recaptcha_box.audio_download_button.get_attribute("href")
 
     async def _submit_audio_text(
         self, recaptcha_box: AsyncRecaptchaBox, text: str
@@ -415,10 +401,10 @@ class AsyncSolver:
 
         async with self._page.expect_response(
             re.compile("/recaptcha/(api2|enterprise)/userverify")
-        ):
+        ) as response:
             await recaptcha_box.verify_button.click()
 
-        await self._wait_for_value("_token")
+        await response.value
 
         while recaptcha_box.frames_are_attached():
             if await recaptcha_box.rate_limit_is_visible():
@@ -429,7 +415,47 @@ class AsyncSolver:
                 or await recaptcha_box.solve_failure_is_visible()
                 or await recaptcha_box.challenge_is_solved()
             ):
-                break
+                return
+
+            await self._page.wait_for_timeout(250)
+
+    async def _submit_tile_answers(self, recaptcha_box: AsyncRecaptchaBox) -> None:
+        """
+        Submit the reCAPTCHA image challenge tile answers.
+
+        Parameters
+        ----------
+        recaptcha_box : AsyncRecaptchaBox
+            The reCAPTCHA box.
+
+        Raises
+        ------
+        RecaptchaRateLimitError
+            If the reCAPTCHA rate limit has been exceeded.
+        """
+        await recaptcha_box.verify_button.click()
+
+        while recaptcha_box.frames_are_attached():
+            if await recaptcha_box.rate_limit_is_visible():
+                raise RecaptchaRateLimitError
+
+            if (
+                await recaptcha_box.challenge_is_solved()
+                or await recaptcha_box.try_again_is_visible()
+            ):
+                return
+
+            if (
+                await recaptcha_box.check_new_images_is_visible()
+                or await recaptcha_box.select_all_matching_is_visible()
+            ):
+                async with self._page.expect_response(
+                    re.compile("/recaptcha/(api2|enterprise)/payload")
+                ) as response:
+                    await recaptcha_box.new_challenge_button.click()
+
+                await response.value
+                return
 
             await self._page.wait_for_timeout(250)
 
@@ -450,7 +476,6 @@ class AsyncSolver:
             If the reCAPTCHA rate limit has been exceeded.
         """
         while recaptcha_box.frames_are_attached():
-            await self._wait_for_value("_payload_response")
             await self._random_delay()
 
             capsolver_response = await self._get_capsolver_response(
@@ -462,7 +487,13 @@ class AsyncSolver:
                 or not capsolver_response["solution"]["objects"]
             ):
                 self._payload_response = None
-                await recaptcha_box.new_challenge_button.click()
+
+                async with self._page.expect_response(
+                    re.compile("/recaptcha/(api2|enterprise)/payload")
+                ) as response:
+                    await recaptcha_box.new_challenge_button.click()
+
+                await response.value
                 continue
 
             await self._solve_tiles(
@@ -475,25 +506,15 @@ class AsyncSolver:
             button = recaptcha_box.skip_button.or_(recaptcha_box.next_button)
 
             if await button.is_visible():
-                await button.click()
+                async with self._page.expect_response(
+                    re.compile("/recaptcha/(api2|enterprise)/payload")
+                ) as response:
+                    await recaptcha_box.new_challenge_button.click()
+
+                await response.value
                 continue
 
-            async with self._page.expect_response(
-                re.compile("/recaptcha/(api2|enterprise)/(payload|userverify)")
-            ):
-                await recaptcha_box.verify_button.click()
-
-                if (
-                    await recaptcha_box.check_new_images_is_visible()
-                    or await recaptcha_box.select_all_matching_is_visible()
-                ):
-                    await recaptcha_box.new_challenge_button.click()
-                else:
-                    await self._wait_for_value("_token")
-
-            if await recaptcha_box.rate_limit_is_visible():
-                raise RecaptchaRateLimitError
-
+            await self._submit_tile_answers(recaptcha_box)
             return
 
     async def _solve_audio_challenge(self, recaptcha_box: AsyncRecaptchaBox) -> None:
@@ -521,10 +542,15 @@ class AsyncSolver:
 
             async with self._page.expect_response(
                 re.compile("/recaptcha/(api2|enterprise)/payload")
-            ):
+            ) as response:
                 await recaptcha_box.new_challenge_button.click()
 
+            await response.value
+
         await self._submit_audio_text(recaptcha_box, text)
+
+        while self._token is None:
+            await self._page.wait_for_timeout(250)
 
     def close(self) -> None:
         """Remove the response listener."""
