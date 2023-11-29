@@ -485,9 +485,6 @@ class SyncSolver:
 
         self._submit_audio_text(recaptcha_box, text)
 
-        while self._token is None:
-            self._page.wait_for_timeout(250)
-
     def close(self) -> None:
         """Remove the response listener."""
         try:
@@ -605,6 +602,9 @@ class SyncSolver:
                 or not recaptcha_box.challenge_is_visible()
                 or recaptcha_box.challenge_is_solved()
             ):
+                while self._token is None:
+                    self._page.wait_for_timeout(250)
+
                 return self._token
 
             if not image_challenge:
