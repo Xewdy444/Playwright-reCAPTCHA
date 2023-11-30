@@ -337,8 +337,6 @@ class AsyncSolver:
         ------
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
-        RecaptchaSolveError
-            If the reCAPTCHA could not be solved.
         """
         await recaptcha_box.checkbox.click(force=True)
 
