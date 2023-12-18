@@ -7,7 +7,7 @@ setup(
     name="playwright-recaptcha",
     version="0.4.2",
     author="Xewdy444",
-    author_email="xewdy@xewdy.tech",
+    author_email="xewdy@xewdy.systems",
     description="A library for solving reCAPTCHA v2 and v3 with Playwright",
     license="MIT",
     long_description=long_description,
