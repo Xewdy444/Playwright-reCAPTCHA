@@ -8,6 +8,11 @@ on:
     paths:
       - playwright_recaptcha/**
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
 jobs:
   analyze-with-ruff:
     name: Analyze With Ruff
