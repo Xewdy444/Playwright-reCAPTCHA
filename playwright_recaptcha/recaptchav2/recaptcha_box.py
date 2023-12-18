@@ -315,7 +315,10 @@ class SyncRecaptchaBox(RecaptchaBox):
         self._bframe_frame = bframe_frame
 
     def __repr__(self) -> str:
-        return f"SyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, bframe_frame={self._bframe_frame!r})"
+        return (
+            f"SyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, "
+            f"bframe_frame={self._bframe_frame!r})"
+        )
 
     @classmethod
     def from_frames(cls, frames: Iterable[SyncFrame]) -> SyncRecaptchaBox:
@@ -489,7 +492,10 @@ class AsyncRecaptchaBox(RecaptchaBox):
         self._bframe_frame = bframe_frame
 
     def __repr__(self) -> str:
-        return f"AsyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, bframe_frame={self._bframe_frame!r})"
+        return (
+            f"AsyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, "
+            f"bframe_frame={self._bframe_frame!r})"
+        )
 
     @classmethod
     async def from_frames(cls, frames: Iterable[AsyncFrame]) -> AsyncRecaptchaBox:
