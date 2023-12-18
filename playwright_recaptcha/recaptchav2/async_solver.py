@@ -53,11 +53,11 @@ class AsyncAudioFile(speech_recognition.AudioFile):
         self._executor = executor
 
     async def __aenter__(self) -> AsyncAudioFile:
-        await self._loop.run_in_executor(self._executor, super().__enter__)
+        await self._loop.run_in_executor(self._executor, self.__enter__)
         return self
 
     async def __aexit__(self, *args: Any) -> None:
-        await self._loop.run_in_executor(self._executor, super().__exit__, *args)
+        await self._loop.run_in_executor(self._executor, self.__exit__, *args)
 
 
 class AsyncSolver:
