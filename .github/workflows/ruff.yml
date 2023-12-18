@@ -1,0 +1,33 @@
+name: Analyze With Ruff
+
+on:
+  push:
+    paths:
+      - playwright_recaptcha/**
+  pull_request:
+    paths:
+      - playwright_recaptcha/**
+
+jobs:
+  analyze-with-ruff:
+    name: Analyze With Ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v3
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install -U pip ruff
+
+      - name: Run ruff
+        run: ruff check
+          --output-format sarif playwright_recaptcha > ruff-results.sarif
+
+      - name: Upload ruff results to GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ruff-results.sarif
+          wait-for-processing: true
