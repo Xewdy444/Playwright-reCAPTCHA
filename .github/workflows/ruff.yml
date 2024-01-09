@@ -1,6 +1,9 @@
 name: Analyze With Ruff
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
 
 permissions:
   actions: read
