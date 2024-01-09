@@ -2,6 +2,8 @@ name: Test Package
 
 on:
   push:
+    branches:
+      - main
     paths:
       - playwright_recaptcha/**
   pull_request:
