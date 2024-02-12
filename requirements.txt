@@ -1,6 +1,6 @@
 playwright>=1.33.0
 pydub==0.25.1
 pytest-asyncio==0.23.4
-setuptools==69.0.3
+setuptools==69.1.0
 SpeechRecognition==3.10.1
 tenacity==8.2.3
