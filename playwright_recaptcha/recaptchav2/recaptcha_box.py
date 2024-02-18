@@ -347,7 +347,8 @@ class SyncRecaptchaBox(RecaptchaBox):
             recaptcha_box = cls(anchor_frame, bframe_frame)
 
             if (
-                recaptcha_box.checkbox.is_visible()
+                recaptcha_box.frames_are_attached()
+                and recaptcha_box.checkbox.is_visible()
                 and not recaptcha_box.checkbox.is_checked()
                 or recaptcha_box.audio_challenge_button.is_visible()
                 and recaptcha_box.audio_challenge_button.is_enabled()
@@ -524,7 +525,8 @@ class AsyncRecaptchaBox(RecaptchaBox):
             recaptcha_box = cls(anchor_frame, bframe_frame)
 
             if (
-                await recaptcha_box.checkbox.is_visible()
+                recaptcha_box.frames_are_attached()
+                and await recaptcha_box.checkbox.is_visible()
                 and not await recaptcha_box.checkbox.is_checked()
                 or await recaptcha_box.audio_challenge_button.is_visible()
                 and await recaptcha_box.audio_challenge_button.is_enabled()
