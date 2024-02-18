@@ -4,7 +4,7 @@ import asyncio
 import re
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Iterable, List, Tuple, Union
+from typing import Generic, Iterable, List, Tuple, TypeVar, Union
 
 from playwright.async_api import Frame as AsyncFrame
 from playwright.async_api import Locator as AsyncLocator
@@ -13,28 +13,47 @@ from playwright.sync_api import Locator as SyncLocator
 
 from ..errors import RecaptchaNotFoundError
 
+FrameT = TypeVar("FrameT", AsyncFrame, SyncFrame)
 Locator = Union[AsyncLocator, SyncLocator]
-Frame = Union[AsyncFrame, SyncFrame]
 
 
-class RecaptchaBox(ABC):
-    """The base class for reCAPTCHA v2 boxes."""
+class RecaptchaBox(ABC, Generic[FrameT]):
+    """
+    The base class for reCAPTCHA v2 boxes.
+
+    Parameters
+    ----------
+    anchor_frame : FrameT
+        The reCAPTCHA anchor frame.
+    bframe_frame : FrameT
+        The reCAPTCHA bframe frame.
+    """
+
+    def __init__(self, anchor_frame: FrameT, bframe_frame: FrameT) -> None:
+        self._anchor_frame = anchor_frame
+        self._bframe_frame = bframe_frame
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(anchor_frame={self._anchor_frame!r}, "
+            f"bframe_frame={self._bframe_frame!r})"
+        )
 
     @staticmethod
     def _get_recaptcha_frame_pairs(
-        frames: Iterable[Frame],
-    ) -> List[Tuple[Frame, Frame]]:
+        frames: Iterable[FrameT],
+    ) -> List[Tuple[FrameT, FrameT]]:
         """
         Get the reCAPTCHA anchor and bframe frame pairs.
 
         Parameters
         ----------
-        frames : Iterable[Frame]
+        frames : Iterable[FrameT]
             A list of frames to search for the reCAPTCHA anchor and bframe frames.
 
         Returns
         -------
-        List[Tuple[Frame, Frame]]
+        List[Tuple[FrameT, FrameT]]
             A list of reCAPTCHA anchor and bframe frame pairs.
 
         Raises
@@ -177,23 +196,23 @@ class RecaptchaBox(ABC):
 
     @property
     @abstractmethod
-    def anchor_frame(self) -> Frame:
+    def anchor_frame(self) -> FrameT:
         """The reCAPTCHA anchor frame."""
 
     @property
     @abstractmethod
-    def bframe_frame(self) -> Frame:
+    def bframe_frame(self) -> FrameT:
         """The reCAPTCHA bframe frame."""
 
     @classmethod
     @abstractmethod
-    def from_frames(cls, frames: Iterable[Frame]) -> RecaptchaBox:
+    def from_frames(cls, frames: Iterable[FrameT]) -> RecaptchaBox:
         """
         Create a reCAPTCHA box using a list of frames.
 
         Parameters
         ----------
-        frames : Iterable[Frame]
+        frames : Iterable[FrameT]
             A list of frames to search for the reCAPTCHA frames.
 
         Returns
@@ -298,7 +317,7 @@ class RecaptchaBox(ABC):
         """
 
 
-class SyncRecaptchaBox(RecaptchaBox):
+class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
     """
     The synchronous class for reCAPTCHA v2 boxes.
 
@@ -309,16 +328,6 @@ class SyncRecaptchaBox(RecaptchaBox):
     bframe_frame : SyncFrame
         The reCAPTCHA bframe frame.
     """
-
-    def __init__(self, anchor_frame: SyncFrame, bframe_frame: SyncFrame) -> None:
-        self._anchor_frame = anchor_frame
-        self._bframe_frame = bframe_frame
-
-    def __repr__(self) -> str:
-        return (
-            f"SyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, "
-            f"bframe_frame={self._bframe_frame!r})"
-        )
 
     @classmethod
     def from_frames(cls, frames: Iterable[SyncFrame]) -> SyncRecaptchaBox:
@@ -476,7 +485,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         return self.checkbox.is_visible() and self.checkbox.is_checked()
 
 
-class AsyncRecaptchaBox(RecaptchaBox):
+class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
     """
     The asynchronous class for reCAPTCHA v2 boxes.
 
@@ -487,16 +496,6 @@ class AsyncRecaptchaBox(RecaptchaBox):
     bframe_frame : AsyncFrame
         The reCAPTCHA bframe frame.
     """
-
-    def __init__(self, anchor_frame: AsyncFrame, bframe_frame: AsyncFrame) -> None:
-        self._anchor_frame = anchor_frame
-        self._bframe_frame = bframe_frame
-
-    def __repr__(self) -> str:
-        return (
-            f"AsyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, "
-            f"bframe_frame={self._bframe_frame!r})"
-        )
 
     @classmethod
     async def from_frames(cls, frames: Iterable[AsyncFrame]) -> AsyncRecaptchaBox:

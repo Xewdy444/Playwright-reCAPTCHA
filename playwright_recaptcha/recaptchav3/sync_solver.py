@@ -7,9 +7,10 @@ from typing import Any, Optional
 from playwright.sync_api import Page, Response
 
 from ..errors import RecaptchaTimeoutError
+from .base_solver import BaseSolver
 
 
-class SyncSolver:
+class SyncSolver(BaseSolver[Page]):
     """
     A class for solving reCAPTCHA v3 synchronously with Playwright.
 
@@ -20,16 +21,6 @@ class SyncSolver:
     timeout : float, optional
         The solve timeout in seconds, by default 30.
     """
-
-    def __init__(self, page: Page, timeout: float = 30) -> None:
-        self._page = page
-        self._timeout = timeout
-
-        self._token: Optional[str] = None
-        self._page.on("response", self._response_callback)
-
-    def __repr__(self) -> str:
-        return f"SyncSolver(page={self._page!r}, timeout={self._timeout!r})"
 
     def __enter__(self) -> SyncSolver:
         return self
@@ -53,13 +44,6 @@ class SyncSolver:
 
         if token_match is not None:
             self._token = token_match.group(1)
-
-    def close(self) -> None:
-        """Remove the reload response listener."""
-        try:
-            self._page.remove_listener("response", self._response_callback)
-        except KeyError:
-            pass
 
     def solve_recaptcha(self, timeout: Optional[float] = None) -> str:
         """

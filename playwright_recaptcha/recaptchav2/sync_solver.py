@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import base64
-import os
 import random
 import re
 from io import BytesIO
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional
 
 import speech_recognition
-from playwright.sync_api import APIResponse, Locator, Page, Response
+from playwright.sync_api import Locator, Page, Response
 from pydub import AudioSegment
 from tenacity import Retrying, retry_if_exception_type, stop_after_delay, wait_fixed
 
@@ -19,10 +18,11 @@ from ..errors import (
     RecaptchaRateLimitError,
     RecaptchaSolveError,
 )
+from .base_solver import BaseSolver
 from .recaptcha_box import SyncRecaptchaBox
 
 
-class SyncSolver:
+class SyncSolver(BaseSolver[Page]):
     """
     A class for solving reCAPTCHA v2 synchronously with Playwright.
 
@@ -36,24 +36,6 @@ class SyncSolver:
         The CapSolver API key, by default None.
         If None, the `CAPSOLVER_API_KEY` environment variable will be used.
     """
-
-    def __init__(
-        self, page: Page, *, attempts: int = 5, capsolver_api_key: Optional[str] = None
-    ) -> None:
-        self._page = page
-        self._attempts = attempts
-        self._capsolver_api_key = capsolver_api_key or os.getenv("CAPSOLVER_API_KEY")
-
-        self._token: Optional[str] = None
-        self._payload_response: Union[APIResponse, Response, None] = None
-        self._page.on("response", self._response_callback)
-
-    def __repr__(self) -> str:
-        return (
-            f"SyncSolver(page={self._page!r}, "
-            f"attempts={self._attempts!r}, "
-            f"capsolver_api_key={self._capsolver_api_key!r})"
-        )
 
     def __enter__(self) -> SyncSolver:
         return self
@@ -482,13 +464,6 @@ class SyncSolver:
                 recaptcha_box.new_challenge_button.click()
 
         self._submit_audio_text(recaptcha_box, text)
-
-    def close(self) -> None:
-        """Remove the response listener."""
-        try:
-            self._page.remove_listener("response", self._response_callback)
-        except KeyError:
-            pass
 
     def recaptcha_is_visible(self) -> bool:
         """
