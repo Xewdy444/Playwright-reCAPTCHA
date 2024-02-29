@@ -310,7 +310,6 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
         The reCAPTCHA bframe frame.
     """
 
-    @staticmethod
     def _check_if_attached(func=None, /):
         """
         A decorator for checking if the reCAPTCHA frames are attached
@@ -500,7 +499,6 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
         The reCAPTCHA bframe frame.
     """
 
-    @staticmethod
     def _check_if_attached(func=None, /):
         """
         A decorator for checking if the reCAPTCHA frames are attached
