@@ -35,6 +35,13 @@ class BaseSolver(ABC, Generic[PageT]):
             f"timeout={self._timeout!r})"
         )
 
+    def close(self) -> None:
+        """Remove the reload response listener."""
+        try:
+            self._page.remove_listener("response", self._response_callback)
+        except KeyError:
+            pass
+
     @abstractmethod
     def _response_callback(self, response: Response) -> None:
         """
@@ -45,13 +52,6 @@ class BaseSolver(ABC, Generic[PageT]):
         response : Response
             The response.
         """
-
-    def close(self) -> None:
-        """Remove the reload response listener."""
-        try:
-            self._page.remove_listener("response", self._response_callback)
-        except KeyError:
-            pass
 
     @abstractmethod
     def solve_recaptcha(self, timeout: Optional[float] = None) -> str:

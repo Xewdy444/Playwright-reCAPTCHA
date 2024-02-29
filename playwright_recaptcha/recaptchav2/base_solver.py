@@ -49,6 +49,13 @@ class BaseSolver(ABC, Generic[PageT]):
             f"capsolver_api_key={self._capsolver_api_key!r})"
         )
 
+    def close(self) -> None:
+        """Remove the response listener."""
+        try:
+            self._page.remove_listener("response", self._response_callback)
+        except KeyError:
+            pass
+
     @staticmethod
     @abstractmethod
     def _get_task_object(recaptcha_box: RecaptchaBox) -> Optional[str]:
@@ -252,13 +259,6 @@ class BaseSolver(ABC, Generic[PageT]):
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-
-    def close(self) -> None:
-        """Remove the response listener."""
-        try:
-            self._page.remove_listener("response", self._response_callback)
-        except KeyError:
-            pass
 
     @abstractmethod
     def recaptcha_is_visible(self) -> bool:
