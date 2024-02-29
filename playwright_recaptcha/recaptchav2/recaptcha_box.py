@@ -167,7 +167,6 @@ class RecaptchaBox(ABC, Generic[FrameT]):
         """
         return self.anchor_frame.is_detached() or self.bframe_frame.is_detached()
 
-    @staticmethod
     @abstractmethod
     def _check_if_attached(func):
         """
