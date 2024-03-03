@@ -20,6 +20,7 @@ from ..errors import (
     RecaptchaSolveError,
 )
 from .recaptcha_box import SyncRecaptchaBox
+from .translations import TRANSLATIONS
 
 
 class SyncSolver:
@@ -77,29 +78,29 @@ class SyncSolver:
             The object ID. Returns None if the task object is not recognized.
         """
         object_dict = {
-            "taxis": "/m/0pg52",
-            "bus": "/m/01bjv",
-            "school bus": "/m/02yvhj",
-            "motorcycles": "/m/04_sv",
-            "tractors": "/m/013xlm",
-            "chimneys": "/m/01jk_4",
-            "crosswalks": "/m/014xcs",
-            "traffic lights": "/m/015qff",
-            "bicycles": "/m/0199g",
-            "parking meters": "/m/015qbp",
-            "cars": "/m/0k4j",
-            "bridges": "/m/015kr",
-            "boats": "/m/019jd",
-            "palm trees": "/m/0cdl1",
-            "mountains or hills": "/m/09d_r",
-            "fire hydrant": "/m/01pns0",
-            "stairs": "/m/01lynh",
+            "/m/0pg52": TRANSLATIONS["taxis"],
+            "/m/01bjv": TRANSLATIONS["bus"],
+            "/m/02yvhj": TRANSLATIONS["school_bus"],
+            "/m/04_sv": TRANSLATIONS["motorcycles"],
+            "/m/013xlm": TRANSLATIONS["tractors"],
+            "/m/01jk_4": TRANSLATIONS["chimneys"],
+            "/m/014xcs": TRANSLATIONS["crosswalks"],
+            "/m/015qff": TRANSLATIONS["traffic_lights"],
+            "/m/0199g": TRANSLATIONS["bicycles"],
+            "/m/015qbp": TRANSLATIONS["parking_meters"],
+            "/m/0k4j": TRANSLATIONS["cars"],
+            "/m/015kr": TRANSLATIONS["bridges"],
+            "/m/019jd": TRANSLATIONS["boats"],
+            "/m/0cdl1": TRANSLATIONS["palm_trees"],
+            "/m/09d_r": TRANSLATIONS["mountains_or_hills"],
+            "/m/01pns0": TRANSLATIONS["fire_hydrant"],
+            "/m/01lynh": TRANSLATIONS["stairs"],
         }
 
         task = recaptcha_box.bframe_frame.locator("div").all_inner_texts()
 
-        for object_name, object_id in object_dict.items():
-            if object_name in task[0]:
+        for object_id, translations in object_dict.items():
+            if any(translation in task[0] for translation in translations):
                 return object_id
 
         return None
