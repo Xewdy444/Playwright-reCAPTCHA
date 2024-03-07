@@ -44,6 +44,6 @@ TRANSLATIONS = {
     "boats": ("boats", "лодки"),
     "palm_trees": ("palm trees", "пальмы"),
     "mountains_or_hills": ("mountains or hills", "горы или холмы"),
-    "fire_hydrant": ("fire hydrant", "пожарные гидранты"),
+    "fire_hydrant": ("fire hydrant", "гидрантами", "пожарные гидранты"),
     "stairs": ("stairs", "лестницы"),
 }
