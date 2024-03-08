@@ -80,7 +80,6 @@ class SyncSolver:
         object_dict = {
             "/m/0pg52": TRANSLATIONS["taxis"],
             "/m/01bjv": TRANSLATIONS["bus"],
-            "/m/02yvhj": TRANSLATIONS["school_bus"],
             "/m/04_sv": TRANSLATIONS["motorcycles"],
             "/m/013xlm": TRANSLATIONS["tractors"],
             "/m/01jk_4": TRANSLATIONS["chimneys"],

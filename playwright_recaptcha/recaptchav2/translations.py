@@ -31,7 +31,6 @@ TRANSLATIONS = {
     ),
     "taxis": ("taxis", "такси"),
     "bus": ("bus", "автобус"),
-    "school_bus": ("school bus", "автобусы"),
     "motorcycles": ("motorcycles", "мотоциклы"),
     "tractors": ("tractors", "трактора"),
     "chimneys": ("chimneys", "дымовые трубы"),
