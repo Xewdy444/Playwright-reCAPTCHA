@@ -11,6 +11,7 @@ from playwright.sync_api import Frame as SyncFrame
 from playwright.sync_api import Locator as SyncLocator
 
 from ..errors import RecaptchaNotFoundError
+from .translations import TRANSLATIONS
 
 FrameT = TypeVar("FrameT", AsyncFrame, SyncFrame)
 Locator = Union[AsyncLocator, SyncLocator]
@@ -91,49 +92,68 @@ class RecaptchaBox(ABC, Generic[FrameT]):
     @property
     def checkbox(self) -> Locator:
         """The reCAPTCHA checkbox locator."""
-        return self.anchor_frame.get_by_role("checkbox", name="I'm not a robot")
+        return self.anchor_frame.get_by_role(
+            "checkbox", name=re.compile("|".join(TRANSLATIONS["im_not_a_robot"]))
+        )
 
     @property
     def audio_challenge_button(self) -> Locator:
         """The reCAPTCHA audio challenge button locator."""
-        return self.bframe_frame.get_by_role("button", name="Get an audio challenge")
+        return self.bframe_frame.get_by_role(
+            "button", name=re.compile("|".join(TRANSLATIONS["get_an_audio_challenge"]))
+        )
 
     @property
     def image_challenge_button(self) -> Locator:
         """The reCAPTCHA image challenge button locator."""
-        return self.bframe_frame.get_by_role("button", name="Get a visual challenge")
+        return self.bframe_frame.get_by_role(
+            "button", name=re.compile("|".join(TRANSLATIONS["get_a_visual_challenge"]))
+        )
 
     @property
     def new_challenge_button(self) -> Locator:
         """The reCAPTCHA new challenge button locator."""
-        return self.bframe_frame.get_by_role("button", name="Get a new challenge")
+        return self.bframe_frame.get_by_role(
+            "button", name=re.compile("|".join(TRANSLATIONS["get_a_new_challenge"]))
+        )
 
     @property
     def audio_download_button(self) -> Locator:
         """The reCAPTCHA audio download button locator."""
         return self.bframe_frame.get_by_role(
-            "link", name="Alternatively, download audio as MP3"
+            "link",
+            name=re.compile(
+                "|".join(TRANSLATIONS["alternatively_download_audio_as_mp3"])
+            ),
         )
 
     @property
     def audio_challenge_textbox(self) -> Locator:
         """The reCAPTCHA audio challenge textbox locator."""
-        return self.bframe_frame.get_by_role("textbox", name="Enter what you hear")
+        return self.bframe_frame.get_by_role(
+            "textbox", name=re.compile("|".join(TRANSLATIONS["enter_what_you_hear"]))
+        )
 
     @property
     def skip_button(self) -> Locator:
         """The reCAPTCHA skip button locator."""
-        return self.bframe_frame.get_by_role("button", name="Skip")
+        return self.bframe_frame.get_by_role(
+            "button", name=re.compile("|".join(TRANSLATIONS["skip"]))
+        )
 
     @property
     def next_button(self) -> Locator:
         """The reCAPTCHA next button locator."""
-        return self.bframe_frame.get_by_role("button", name="Next")
+        return self.bframe_frame.get_by_role(
+            "button", name=re.compile("|".join(TRANSLATIONS["next"]))
+        )
 
     @property
     def verify_button(self) -> Locator:
         """The reCAPTCHA verify button locator."""
-        return self.bframe_frame.get_by_role("button", name="Verify")
+        return self.bframe_frame.get_by_role(
+            "button", name=re.compile("|".join(TRANSLATIONS["verify"]))
+        )
 
     @property
     def tile_selector(self) -> Locator:
@@ -389,7 +409,9 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
         bool
             True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
-        return self.bframe_frame.get_by_text("Try again later").is_visible()
+        return self.bframe_frame.get_by_text(
+            re.compile("|".join(TRANSLATIONS["try_again_later"]))
+        ).is_visible()
 
     @_check_if_attached
     def solve_failure_is_visible(self) -> bool:
@@ -402,7 +424,7 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             True if the reCAPTCHA solve failure message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            "Multiple correct solutions required - please solve more."
+            re.compile("|".join(TRANSLATIONS["multiple_correct_solutions_required"]))
         ).is_visible()
 
     @_check_if_attached
@@ -415,7 +437,9 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
         bool
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
-        return self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
+        return self.bframe_frame.get_by_text(
+            re.compile("|".join(TRANSLATIONS["press_play_to_listen"]))
+        ).is_visible()
 
     @_check_if_attached
     def try_again_is_visible(self) -> bool:
@@ -428,7 +452,7 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             True if the reCAPTCHA try again message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("Please try again")
+            re.compile("|".join(TRANSLATIONS["please_try_again"]))
         ).is_visible()
 
     @_check_if_attached
@@ -442,7 +466,7 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             True if the reCAPTCHA check new images message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("Please also check the new images")
+            re.compile("|".join(TRANSLATIONS["please_also_check_the_new_images"]))
         ).is_visible()
 
     @_check_if_attached
@@ -457,7 +481,7 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("Please select all matching images")
+            re.compile("|".join(TRANSLATIONS["please_select_all_matching_images"]))
         ).is_visible()
 
     @_check_if_attached
@@ -578,7 +602,9 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
         bool
             True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
-        return await self.bframe_frame.get_by_text("Try again later").is_visible()
+        return await self.bframe_frame.get_by_text(
+            re.compile("|".join(TRANSLATIONS["try_again_later"]))
+        ).is_visible()
 
     @_check_if_attached
     async def solve_failure_is_visible(self) -> bool:
@@ -591,7 +617,7 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             True if the reCAPTCHA solve failure message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            "Multiple correct solutions required - please solve more."
+            re.compile("|".join(TRANSLATIONS["multiple_correct_solutions_required"]))
         ).is_visible()
 
     @_check_if_attached
@@ -604,7 +630,9 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
         bool
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
-        return await self.bframe_frame.get_by_text("Press PLAY to listen").is_visible()
+        return await self.bframe_frame.get_by_text(
+            re.compile("|".join(TRANSLATIONS["press_play_to_listen"]))
+        ).is_visible()
 
     @_check_if_attached
     async def try_again_is_visible(self) -> bool:
@@ -617,7 +645,7 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             True if the reCAPTCHA try again message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("Please try again")
+            re.compile("|".join(TRANSLATIONS["please_try_again"]))
         ).is_visible()
 
     @_check_if_attached
@@ -631,7 +659,7 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             True if the reCAPTCHA check new images message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("Please also check the new images")
+            re.compile("|".join(TRANSLATIONS["please_also_check_the_new_images"]))
         ).is_visible()
 
     @_check_if_attached
@@ -646,7 +674,7 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("Please select all matching images")
+            re.compile("|".join(TRANSLATIONS["please_select_all_matching_images"]))
         ).is_visible()
 
     @_check_if_attached
