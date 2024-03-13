@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import base64
 import functools
-import os
 import random
 import re
 from concurrent.futures import ThreadPoolExecutor
@@ -12,7 +11,7 @@ from json import JSONDecodeError
 from typing import Any, BinaryIO, Dict, Iterable, List, Optional, Union
 
 import speech_recognition
-from playwright.async_api import APIResponse, Locator, Page, Response
+from playwright.async_api import Locator, Page, Response
 from pydub import AudioSegment
 from tenacity import (
     AsyncRetrying,
@@ -27,6 +26,7 @@ from ..errors import (
     RecaptchaRateLimitError,
     RecaptchaSolveError,
 )
+from .base_solver import BaseSolver
 from .recaptcha_box import AsyncRecaptchaBox
 from .translations import TRANSLATIONS
 
@@ -61,7 +61,7 @@ class AsyncAudioFile(speech_recognition.AudioFile):
         await self._loop.run_in_executor(self._executor, self.__exit__, *args)
 
 
-class AsyncSolver:
+class AsyncSolver(BaseSolver[Page]):
     """
     A class for solving reCAPTCHA v2 asynchronously with Playwright.
 
@@ -75,24 +75,6 @@ class AsyncSolver:
         The CapSolver API key, by default None.
         If None, the `CAPSOLVER_API_KEY` environment variable will be used.
     """
-
-    def __init__(
-        self, page: Page, *, attempts: int = 5, capsolver_api_key: Optional[str] = None
-    ) -> None:
-        self._page = page
-        self._attempts = attempts
-        self._capsolver_api_key = capsolver_api_key or os.getenv("CAPSOLVER_API_KEY")
-
-        self._token: Optional[str] = None
-        self._payload_response: Union[APIResponse, Response, None] = None
-        self._page.on("response", self._response_callback)
-
-    def __repr__(self) -> str:
-        return (
-            f"AsyncSolver(page={self._page!r}, "
-            f"attempts={self._attempts!r}, "
-            f"capsolver_api_key={self._capsolver_api_key!r})"
-        )
 
     async def __aenter__(self) -> AsyncSolver:
         return self
@@ -546,13 +528,6 @@ class AsyncSolver:
             await response.value
 
         await self._submit_audio_text(recaptcha_box, text)
-
-    def close(self) -> None:
-        """Remove the response listener."""
-        try:
-            self._page.remove_listener("response", self._response_callback)
-        except KeyError:
-            pass
 
     async def recaptcha_is_visible(self) -> bool:
         """

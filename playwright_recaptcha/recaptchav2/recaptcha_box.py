@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import asyncio
 import re
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Iterable, List, Tuple, Union
+from typing import Generic, Iterable, List, Tuple, TypeVar, Union
 
 from playwright.async_api import Frame as AsyncFrame
 from playwright.async_api import Locator as AsyncLocator
@@ -14,28 +13,47 @@ from playwright.sync_api import Locator as SyncLocator
 from ..errors import RecaptchaNotFoundError
 from .translations import TRANSLATIONS
 
+FrameT = TypeVar("FrameT", AsyncFrame, SyncFrame)
 Locator = Union[AsyncLocator, SyncLocator]
-Frame = Union[AsyncFrame, SyncFrame]
 
 
-class RecaptchaBox(ABC):
-    """The base class for reCAPTCHA v2 boxes."""
+class RecaptchaBox(ABC, Generic[FrameT]):
+    """
+    The base class for reCAPTCHA v2 boxes.
+
+    Parameters
+    ----------
+    anchor_frame : FrameT
+        The reCAPTCHA anchor frame.
+    bframe_frame : FrameT
+        The reCAPTCHA bframe frame.
+    """
+
+    def __init__(self, anchor_frame: FrameT, bframe_frame: FrameT) -> None:
+        self._anchor_frame = anchor_frame
+        self._bframe_frame = bframe_frame
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}(anchor_frame={self._anchor_frame!r}, "
+            f"bframe_frame={self._bframe_frame!r})"
+        )
 
     @staticmethod
     def _get_recaptcha_frame_pairs(
-        frames: Iterable[Frame],
-    ) -> List[Tuple[Frame, Frame]]:
+        frames: Iterable[FrameT],
+    ) -> List[Tuple[FrameT, FrameT]]:
         """
         Get the reCAPTCHA anchor and bframe frame pairs.
 
         Parameters
         ----------
-        frames : Iterable[Frame]
+        frames : Iterable[FrameT]
             A list of frames to search for the reCAPTCHA anchor and bframe frames.
 
         Returns
         -------
-        List[Tuple[Frame, Frame]]
+        List[Tuple[FrameT, FrameT]]
             A list of reCAPTCHA anchor and bframe frame pairs.
 
         Raises
@@ -70,32 +88,6 @@ class RecaptchaBox(ABC):
             raise RecaptchaNotFoundError
 
         return frame_pairs
-
-    @staticmethod
-    def _check_if_attached(func):
-        """
-        A decorator for checking if the reCAPTCHA frames are attached
-        before running the decorated function.
-        """
-
-        @wraps(func)
-        def sync_wrapper(self: SyncRecaptchaBox) -> bool:
-            if self.frames_are_detached():
-                return False
-
-            return func(self)
-
-        @wraps(func)
-        async def async_wrapper(self: AsyncRecaptchaBox) -> bool:
-            if self.frames_are_detached():
-                return False
-
-            return await func(self)
-
-        if asyncio.iscoroutinefunction(func):
-            return async_wrapper
-
-        return sync_wrapper
 
     @property
     def checkbox(self) -> Locator:
@@ -195,25 +187,32 @@ class RecaptchaBox(ABC):
         """
         return self.anchor_frame.is_detached() or self.bframe_frame.is_detached()
 
+    @abstractmethod
+    def _check_if_attached(func):
+        """
+        A decorator for checking if the reCAPTCHA frames are attached
+        before running the decorated function.
+        """
+
     @property
     @abstractmethod
-    def anchor_frame(self) -> Frame:
+    def anchor_frame(self) -> FrameT:
         """The reCAPTCHA anchor frame."""
 
     @property
     @abstractmethod
-    def bframe_frame(self) -> Frame:
+    def bframe_frame(self) -> FrameT:
         """The reCAPTCHA bframe frame."""
 
     @classmethod
     @abstractmethod
-    def from_frames(cls, frames: Iterable[Frame]) -> RecaptchaBox:
+    def from_frames(cls, frames: Iterable[FrameT]) -> RecaptchaBox:
         """
         Create a reCAPTCHA box using a list of frames.
 
         Parameters
         ----------
-        frames : Iterable[Frame]
+        frames : Iterable[FrameT]
             A list of frames to search for the reCAPTCHA frames.
 
         Returns
@@ -318,7 +317,7 @@ class RecaptchaBox(ABC):
         """
 
 
-class SyncRecaptchaBox(RecaptchaBox):
+class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
     """
     The synchronous class for reCAPTCHA v2 boxes.
 
@@ -330,15 +329,26 @@ class SyncRecaptchaBox(RecaptchaBox):
         The reCAPTCHA bframe frame.
     """
 
-    def __init__(self, anchor_frame: SyncFrame, bframe_frame: SyncFrame) -> None:
-        self._anchor_frame = anchor_frame
-        self._bframe_frame = bframe_frame
+    def _check_if_attached(func=None, /):
+        """
+        A decorator for checking if the reCAPTCHA frames are attached
+        before running the decorated function.
+        """
 
-    def __repr__(self) -> str:
-        return (
-            f"SyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, "
-            f"bframe_frame={self._bframe_frame!r})"
-        )
+        def wrap(func):
+            @wraps(func)
+            def wrapper(self: SyncRecaptchaBox, *args, **kwargs) -> bool:
+                if self.frames_are_detached():
+                    return False
+
+                return func(self, *args, **kwargs)
+
+            return wrapper
+
+        if func is None:
+            return wrap
+
+        return wrap(func)
 
     @classmethod
     def from_frames(cls, frames: Iterable[SyncFrame]) -> SyncRecaptchaBox:
@@ -389,7 +399,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         """The reCAPTCHA bframe frame."""
         return self._bframe_frame
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     def rate_limit_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA rate limit message is visible.
@@ -403,7 +413,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["try_again_later"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     def solve_failure_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA solve failure message is visible.
@@ -417,7 +427,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["multiple_correct_solutions_required"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     def audio_challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA audio challenge is visible.
@@ -431,7 +441,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["press_play_to_listen"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     def try_again_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA try again message is visible.
@@ -445,7 +455,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["please_try_again"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     def check_new_images_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA check new images message is visible.
@@ -459,7 +469,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["please_also_check_the_new_images"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     def select_all_matching_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA select all matching images message is visible.
@@ -474,7 +484,7 @@ class SyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["please_select_all_matching_images"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     def challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA challenge is visible.
@@ -487,7 +497,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         button = self.skip_button.or_(self.next_button).or_(self.verify_button)
         return button.is_enabled()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     def challenge_is_solved(self) -> bool:
         """
         Check if the reCAPTCHA challenge has been solved.
@@ -500,7 +510,7 @@ class SyncRecaptchaBox(RecaptchaBox):
         return self.checkbox.is_visible() and self.checkbox.is_checked()
 
 
-class AsyncRecaptchaBox(RecaptchaBox):
+class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
     """
     The asynchronous class for reCAPTCHA v2 boxes.
 
@@ -512,15 +522,26 @@ class AsyncRecaptchaBox(RecaptchaBox):
         The reCAPTCHA bframe frame.
     """
 
-    def __init__(self, anchor_frame: AsyncFrame, bframe_frame: AsyncFrame) -> None:
-        self._anchor_frame = anchor_frame
-        self._bframe_frame = bframe_frame
+    def _check_if_attached(func=None, /):
+        """
+        A decorator for checking if the reCAPTCHA frames are attached
+        before running the decorated function.
+        """
 
-    def __repr__(self) -> str:
-        return (
-            f"AsyncRecaptchaBox(anchor_frame={self._anchor_frame!r}, "
-            f"bframe_frame={self._bframe_frame!r})"
-        )
+        def wrap(func):
+            @wraps(func)
+            async def wrapper(self: AsyncRecaptchaBox, *args, **kwargs) -> bool:
+                if self.frames_are_detached():
+                    return False
+
+                return await func(self, *args, **kwargs)
+
+            return wrapper
+
+        if func is None:
+            return wrap
+
+        return wrap(func)
 
     @classmethod
     async def from_frames(cls, frames: Iterable[AsyncFrame]) -> AsyncRecaptchaBox:
@@ -571,7 +592,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         """The reCAPTCHA bframe frame."""
         return self._bframe_frame
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     async def rate_limit_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA rate limit message is visible.
@@ -585,7 +606,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["try_again_later"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     async def solve_failure_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA solve failure message is visible.
@@ -599,7 +620,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["multiple_correct_solutions_required"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     async def audio_challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA audio challenge is visible.
@@ -613,7 +634,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["press_play_to_listen"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     async def try_again_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA try again message is visible.
@@ -627,7 +648,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["please_try_again"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     async def check_new_images_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA check new images message is visible.
@@ -641,7 +662,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["please_also_check_the_new_images"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     async def select_all_matching_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA select all matching images message is visible.
@@ -656,7 +677,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
             re.compile("|".join(TRANSLATIONS["please_select_all_matching_images"]))
         ).is_visible()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     async def challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA challenge is visible.
@@ -669,7 +690,7 @@ class AsyncRecaptchaBox(RecaptchaBox):
         button = self.skip_button.or_(self.next_button).or_(self.verify_button)
         return await button.is_enabled()
 
-    @RecaptchaBox._check_if_attached
+    @_check_if_attached
     async def challenge_is_solved(self) -> bool:
         """
         Check if the reCAPTCHA challenge has been solved.
