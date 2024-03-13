@@ -5,7 +5,7 @@ import random
 import re
 from io import BytesIO
 from json import JSONDecodeError
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, List, Optional
 
 import speech_recognition
 from playwright.sync_api import Locator, Page, Response
@@ -174,9 +174,7 @@ class SyncSolver(BaseSolver[Page]):
 
         return response_json
 
-    def _solve_tiles(
-        self, recaptcha_box: SyncRecaptchaBox, indexes: Iterable[int]
-    ) -> None:
+    def _solve_tiles(self, recaptcha_box: SyncRecaptchaBox, indexes: List[int]) -> None:
         """
         Solve the tiles in the reCAPTCHA image challenge.
 
@@ -184,7 +182,7 @@ class SyncSolver(BaseSolver[Page]):
         ----------
         recaptcha_box : SyncRecaptchaBox
             The reCAPTCHA box.
-        indexes : Iterable[int]
+        indexes : List[int]
             The indexes of the tiles that contain the task object.
 
         Raises
@@ -193,6 +191,8 @@ class SyncSolver(BaseSolver[Page]):
             If the CapSolver API returned an error.
         """
         changing_tiles: List[Locator] = []
+        indexes = indexes.copy()
+        random.shuffle(indexes)
 
         for index in indexes:
             tile = recaptcha_box.tile_selector.nth(index)
@@ -204,6 +204,8 @@ class SyncSolver(BaseSolver[Page]):
             self._random_delay()
 
         while changing_tiles:
+            random.shuffle(changing_tiles)
+
             for tile in changing_tiles.copy():
                 if "rc-imageselect-dynamic-selected" in tile.get_attribute("class"):
                     continue
@@ -458,10 +460,18 @@ class SyncSolver(BaseSolver[Page]):
             if text is not None:
                 break
 
+            self._payload_response = None
+
             with self._page.expect_response(
-                re.compile("/recaptcha/(api2|enterprise)/payload")
+                re.compile("/recaptcha/(api2|enterprise)/reload")
             ):
                 recaptcha_box.new_challenge_button.click()
+
+            while self._payload_response is None:
+                if recaptcha_box.rate_limit_is_visible():
+                    raise RecaptchaRateLimitError
+
+                self._page.wait_for_timeout(250)
 
         self._submit_audio_text(recaptcha_box, text)
 
@@ -557,7 +567,7 @@ class SyncSolver(BaseSolver[Page]):
         if not image_challenge and recaptcha_box.audio_challenge_button.is_visible():
             recaptcha_box.audio_challenge_button.click(force=True)
 
-        if image_challenge and self._payload_response is None:
+        if image_challenge:
             image = recaptcha_box.image_challenge.locator("img").first
             image_url = image.get_attribute("src")
             self._payload_response = self._page.request.get(image_url)
