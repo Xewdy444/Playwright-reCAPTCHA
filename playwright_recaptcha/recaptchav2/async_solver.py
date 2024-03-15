@@ -8,7 +8,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from json import JSONDecodeError
-from typing import Any, BinaryIO, Dict, Iterable, List, Optional, Union
+from typing import Any, BinaryIO, Dict, List, Optional, Union
 
 import speech_recognition
 from playwright.async_api import Locator, Page, Response
@@ -213,7 +213,7 @@ class AsyncSolver(BaseSolver[Page]):
         return response_json
 
     async def _solve_tiles(
-        self, recaptcha_box: AsyncRecaptchaBox, indexes: Iterable[int]
+        self, recaptcha_box: AsyncRecaptchaBox, indexes: List[int]
     ) -> None:
         """
         Solve the tiles in the reCAPTCHA image challenge.
@@ -222,7 +222,7 @@ class AsyncSolver(BaseSolver[Page]):
         ----------
         recaptcha_box : AsyncRecaptchaBox
             The reCAPTCHA box.
-        indexes : Iterable[int]
+        indexes : List[int]
             The indexes of the tiles that contain the task object.
 
         Raises
@@ -231,6 +231,8 @@ class AsyncSolver(BaseSolver[Page]):
             If the CapSolver API returned an error.
         """
         changing_tiles: List[Locator] = []
+        indexes = indexes.copy()
+        random.shuffle(indexes)
 
         for index in indexes:
             tile = recaptcha_box.tile_selector.nth(index)
@@ -242,6 +244,8 @@ class AsyncSolver(BaseSolver[Page]):
             await self._random_delay()
 
         while changing_tiles:
+            random.shuffle(changing_tiles)
+
             for tile in changing_tiles.copy():
                 if "rc-imageselect-dynamic-selected" in await tile.get_attribute(
                     "class"
@@ -520,12 +524,20 @@ class AsyncSolver(BaseSolver[Page]):
             if text is not None:
                 break
 
+            self._payload_response = None
+
             async with self._page.expect_response(
-                re.compile("/recaptcha/(api2|enterprise)/payload")
+                re.compile("/recaptcha/(api2|enterprise)/reload")
             ) as response:
                 await recaptcha_box.new_challenge_button.click()
 
             await response.value
+
+            while self._payload_response is None:
+                if await recaptcha_box.rate_limit_is_visible():
+                    raise RecaptchaRateLimitError
+
+                await self._page.wait_for_timeout(250)
 
         await self._submit_audio_text(recaptcha_box, text)
 
@@ -624,7 +636,7 @@ class AsyncSolver(BaseSolver[Page]):
         ):
             await recaptcha_box.audio_challenge_button.click(force=True)
 
-        if image_challenge and self._payload_response is None:
+        if image_challenge:
             image = recaptcha_box.image_challenge.locator("img").first
             image_url = await image.get_attribute("src")
             self._payload_response = await self._page.request.get(image_url)
