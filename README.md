@@ -21,7 +21,7 @@ A Python library for solving reCAPTCHA v2 and v3 with Playwright.
 reCAPTCHA v2 is solved by using the following methods:
 
 - Solving the audio challenge by transcribing the audio using the Google speech recognition API and entering the text as the response.
-- Solving the image challenge using the [CapSolver](https://www.capsolver.com/) API for image classification.
+- Solving the image challenge using the [CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=m4C4_LnVN_re) API for image classification.
 
 ## Solving reCAPTCHA v3
 The solving of reCAPTCHA v3 is done by the browser itself, so this library simply waits for the browser to make a POST request to https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload and parses the response to get the `g-recaptcha-response` token.
@@ -44,7 +44,7 @@ This library requires FFmpeg to be installed on your system in order to convert 
 You can also download the latest static build from [here](https://ffmpeg.org/download.html).
 
 > **Note**
-> Make sure to have the ffmpeg and ffprobe binaries in your system's PATH so that the SpeechRecognition library can find them.
+> Make sure to have the ffmpeg and ffprobe binaries in your system's PATH so that pydub can find them.
 
 ## reCAPTCHA v2 Example
 For more reCAPTCHA v2 examples, see the [examples folder](https://github.com/Xewdy444/Playwright-reCAPTCHA/tree/main/examples/recaptchav2).
@@ -63,7 +63,7 @@ with sync_playwright() as playwright:
         print(token)
 ```
 
-If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your [CapSolver](https://www.capsolver.com/) API key. You can also pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
+If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your [CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=m4C4_LnVN_re) API key. You can also pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
 
 ```python
 with recaptchav2.SyncSolver(page, capsolver_api_key="your_api_key") as solver:
