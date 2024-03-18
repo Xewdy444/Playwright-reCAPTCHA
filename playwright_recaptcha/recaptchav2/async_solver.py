@@ -287,28 +287,25 @@ class AsyncSolver(BaseSolver[Page]):
         wav_audio = BytesIO()
         mp3_audio = BytesIO(await response.body())
 
-        with ThreadPoolExecutor() as executor:
-            audio: AudioSegment = await loop.run_in_executor(
-                executor, AudioSegment.from_mp3, mp3_audio
+        audio: AudioSegment = await loop.run_in_executor(
+            None, AudioSegment.from_mp3, mp3_audio
+        )
+
+        await loop.run_in_executor(
+            None, functools.partial(audio.export, wav_audio, format="wav")
+        )
+
+        recognizer = speech_recognition.Recognizer()
+
+        async with AsyncAudioFile(wav_audio) as source:
+            audio_data = await loop.run_in_executor(None, recognizer.record, source)
+
+        try:
+            return await loop.run_in_executor(
+                None, recognizer.recognize_google, audio_data
             )
-
-            await loop.run_in_executor(
-                executor, functools.partial(audio.export, wav_audio, format="wav")
-            )
-
-            recognizer = speech_recognition.Recognizer()
-
-            async with AsyncAudioFile(wav_audio, executor=executor) as source:
-                audio_data = await loop.run_in_executor(
-                    executor, recognizer.record, source
-                )
-
-            try:
-                return await loop.run_in_executor(
-                    executor, recognizer.recognize_google, audio_data
-                )
-            except speech_recognition.UnknownValueError:
-                return None
+        except speech_recognition.UnknownValueError:
+            return None
 
     async def _click_checkbox(self, recaptcha_box: AsyncRecaptchaBox) -> None:
         """
