@@ -460,17 +460,12 @@ class SyncSolver(BaseSolver[Page]):
             if text is not None:
                 break
 
-            self._payload_response = None
-
             with self._page.expect_response(
                 re.compile("/recaptcha/(api2|enterprise)/reload")
             ):
                 recaptcha_box.new_challenge_button.click()
 
-            while self._payload_response is None:
-                if recaptcha_box.rate_limit_is_visible():
-                    raise RecaptchaRateLimitError
-
+            while url == self._get_audio_url(recaptcha_box):
                 self._page.wait_for_timeout(250)
 
         self._submit_audio_text(recaptcha_box, text)
@@ -562,10 +557,10 @@ class SyncSolver(BaseSolver[Page]):
             raise RecaptchaRateLimitError
 
         if image_challenge and recaptcha_box.image_challenge_button.is_visible():
-            recaptcha_box.image_challenge_button.click(force=True)
+            recaptcha_box.image_challenge_button.click()
 
         if not image_challenge and recaptcha_box.audio_challenge_button.is_visible():
-            recaptcha_box.audio_challenge_button.click(force=True)
+            recaptcha_box.audio_challenge_button.click()
 
         if image_challenge:
             image = recaptcha_box.image_challenge.locator("img").first

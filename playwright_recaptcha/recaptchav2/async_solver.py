@@ -521,8 +521,6 @@ class AsyncSolver(BaseSolver[Page]):
             if text is not None:
                 break
 
-            self._payload_response = None
-
             async with self._page.expect_response(
                 re.compile("/recaptcha/(api2|enterprise)/reload")
             ) as response:
@@ -530,10 +528,7 @@ class AsyncSolver(BaseSolver[Page]):
 
             await response.value
 
-            while self._payload_response is None:
-                if await recaptcha_box.rate_limit_is_visible():
-                    raise RecaptchaRateLimitError
-
+            while url == await self._get_audio_url(recaptcha_box):
                 await self._page.wait_for_timeout(250)
 
         await self._submit_audio_text(recaptcha_box, text)
@@ -625,13 +620,13 @@ class AsyncSolver(BaseSolver[Page]):
             raise RecaptchaRateLimitError
 
         if image_challenge and await recaptcha_box.image_challenge_button.is_visible():
-            await recaptcha_box.image_challenge_button.click(force=True)
+            await recaptcha_box.image_challenge_button.click()
 
         if (
             not image_challenge
             and await recaptcha_box.audio_challenge_button.is_visible()
         ):
-            await recaptcha_box.audio_challenge_button.click(force=True)
+            await recaptcha_box.audio_challenge_button.click()
 
         if image_challenge:
             image = recaptcha_box.image_challenge.locator("img").first
