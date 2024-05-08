@@ -3,4 +3,4 @@ pydub==0.25.1
 pytest-asyncio==0.23.6
 setuptools==69.5.1
 SpeechRecognition==3.10.4
-tenacity==8.2.3
+tenacity==8.3.0
