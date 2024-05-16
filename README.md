@@ -6,10 +6,12 @@
 ---
 
 <div align="center">
-  <a href="https://dashboard.capsolver.com/passport/register?inviteCode=m4C4_LnVN_re">
-    <img src="https://i.imgur.com/YaRmSt4.gif"/>
+  <a href="https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">
+    <img src="https://images2.imgbox.com/b7/cd/gC6eMlv2_o.jpg" width="75%">
   </a>
-  <br> At the lowest price on the market, you may receive a variety of solutions, including reCAPTCHA v2, reCAPTCHA v3, hCaptcha, hCaptcha Click, FunCaptcha, picture-to-text, AWS Amazon CAPTCHA, and more. With this service, 0.1s is the slowest speed ever measured.
+  <br> 
+  <a href="https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Capsolver.com</a> is an AI-powered service that specializes in solving various types of captchas automatically. It supports captchas such as <a href="https://docs.capsolver.com/guide/captcha/ReCaptchaV2.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">reCAPTCHA V2</a>, <a href="https://docs.capsolver.com/guide/captcha/ReCaptchaV3.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">reCAPTCHA V3</a>, <a href="https://docs.capsolver.com/guide/captcha/HCaptcha.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">hCaptcha</a>, <a href="https://docs.capsolver.com/guide/captcha/FunCaptcha.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">FunCaptcha</a>, <a href="https://docs.capsolver.com/guide/antibots/datadome.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">DataDome</a>, <a href="https://docs.capsolver.com/guide/captcha/awsWaf.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">AWS Captcha</a>, <a href="https://docs.capsolver.com/guide/captcha/Geetest.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Geetest</a>, and Cloudflare <a href="https://docs.capsolver.com/guide/antibots/cloudflare_turnstile.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Captcha</a> / <a href="https://docs.capsolver.com/guide/antibots/cloudflare_challenge.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Challenge 5s</a>, <a href="https://docs.capsolver.com/guide/antibots/imperva.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Imperva / Incapsula</a>, among others.
+For developers, Capsolver offers API integration options detailed in their <a href="https://docs.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">documentation</a>, facilitating the integration of captcha solving into applications. They also provide browser extensions for <a href="https://chromewebstore.google.com/detail/captcha-solver-auto-captc/pgojnojmmhpofjgdmaebadhbocahppod">Chrome</a> and <a href="https://addons.mozilla.org/es/firefox/addon/capsolver-captcha-solver/">Firefox</a>, making it easy to use their service directly within a browser. Different pricing packages are available to accommodate varying needs, ensuring flexibility for users.
 </div>
 
 ---
@@ -21,7 +23,7 @@ A Python library for solving reCAPTCHA v2 and v3 with Playwright.
 reCAPTCHA v2 is solved by using the following methods:
 
 - Solving the audio challenge by transcribing the audio using the Google speech recognition API and entering the text as the response.
-- Solving the image challenge using the [CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=m4C4_LnVN_re) API for image classification.
+- Solving the image challenge using the [CapSolver](https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA) API for image classification.
 
 ## Solving reCAPTCHA v3
 The solving of reCAPTCHA v3 is done by the browser itself, so this library simply waits for the browser to make a POST request to https://www.google.com/recaptcha/api2/reload or https://www.google.com/recaptcha/enterprise/reload and parses the response to get the `g-recaptcha-response` token.
@@ -63,7 +65,7 @@ with sync_playwright() as playwright:
         print(token)
 ```
 
-If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your [CapSolver](https://dashboard.capsolver.com/passport/register?inviteCode=m4C4_LnVN_re) API key. You can also pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
+If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your [CapSolver](https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA) API key. You can also pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
 
 ```python
 with recaptchav2.SyncSolver(page, capsolver_api_key="your_api_key") as solver:
