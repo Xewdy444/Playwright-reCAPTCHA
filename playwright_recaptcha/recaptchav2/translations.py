@@ -1,4 +1,4 @@
-TRANSLATIONS = {
+ELEMENT_TRANSLATIONS = {
     "im_not_a_robot": (
         "I'm not a robot",
         "Я не робот",
@@ -74,8 +74,11 @@ TRANSLATIONS = {
         "请选择所有相符的图片",
         "Selecciona todas las imágenes que coincidan",
     ),
+}
+
+OBJECT_TRANSLATIONS = {
     "taxis": ("taxis", "такси", "出租车"),
-    "bus": ("bus", "автобус", "公交车", "autobuses", "autobús"),
+    "bus": ("bus", "buses", "автобус", "автобусы", "公交车", "autobuses", "autobús"),
     "motorcycles": ("motorcycles", "мотоциклы", "摩托车", "motocicletas"),
     "tractors": ("tractors", "трактора", "拖拉机", "tractores"),
     "chimneys": ("chimneys", "дымовые трубы", "烟囱", "chimeneas"),
@@ -105,7 +108,8 @@ TRANSLATIONS = {
         "montañas o colinas",
     ),
     "fire_hydrant": (
-        "fire hydrant",
+        "a fire hydrant",
+        "fire hydrants",
         "гидрантами",
         "пожарные гидранты",
         "消防栓",
@@ -114,3 +118,5 @@ TRANSLATIONS = {
     ),
     "stairs": ("stairs", "лестницы", "楼梯", "escaleras"),
 }
+
+ORIGINAL_LANGUAGE_AUDIO = ["es"]

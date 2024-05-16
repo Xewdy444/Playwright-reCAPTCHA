@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from abc import ABC, abstractmethod
 from functools import wraps
-from typing import Generic, Iterable, List, Tuple, TypeVar, Union
+from typing import Generic, Iterable, List, Pattern, Tuple, TypeVar, Union
 
 from playwright.async_api import Frame as AsyncFrame
 from playwright.async_api import Locator as AsyncLocator
@@ -11,7 +11,7 @@ from playwright.sync_api import Frame as SyncFrame
 from playwright.sync_api import Locator as SyncLocator
 
 from ..errors import RecaptchaNotFoundError
-from .translations import TRANSLATIONS
+from .translations import ELEMENT_TRANSLATIONS
 
 FrameT = TypeVar("FrameT", AsyncFrame, SyncFrame)
 Locator = Union[AsyncLocator, SyncLocator]
@@ -89,32 +89,59 @@ class RecaptchaBox(ABC, Generic[FrameT]):
 
         return frame_pairs
 
+    @staticmethod
+    def _get_translations_pattern(translations: List[str]) -> Pattern:
+        """
+        Get a compiled regex pattern from a list of translations.
+
+        Parameters
+        ----------
+        translations : List[str]
+            A list of translations to compile into a regex pattern.
+
+        Returns
+        -------
+        Pattern
+            The compiled regex pattern.
+        """
+        return re.compile(f'^({"|".join(translations)}).?$')
+
     @property
     def checkbox(self) -> Locator:
         """The reCAPTCHA checkbox locator."""
         return self.anchor_frame.get_by_role(
-            "checkbox", name=re.compile("|".join(TRANSLATIONS["im_not_a_robot"]))
+            "checkbox",
+            name=self._get_translations_pattern(ELEMENT_TRANSLATIONS["im_not_a_robot"]),
         )
 
     @property
     def audio_challenge_button(self) -> Locator:
         """The reCAPTCHA audio challenge button locator."""
         return self.bframe_frame.get_by_role(
-            "button", name=re.compile("|".join(TRANSLATIONS["get_an_audio_challenge"]))
+            "button",
+            name=self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["get_an_audio_challenge"]
+            ),
         )
 
     @property
     def image_challenge_button(self) -> Locator:
         """The reCAPTCHA image challenge button locator."""
         return self.bframe_frame.get_by_role(
-            "button", name=re.compile("|".join(TRANSLATIONS["get_a_visual_challenge"]))
+            "button",
+            name=self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["get_a_visual_challenge"]
+            ),
         )
 
     @property
     def new_challenge_button(self) -> Locator:
         """The reCAPTCHA new challenge button locator."""
         return self.bframe_frame.get_by_role(
-            "button", name=re.compile("|".join(TRANSLATIONS["get_a_new_challenge"]))
+            "button",
+            name=self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["get_a_new_challenge"]
+            ),
         )
 
     @property
@@ -122,8 +149,8 @@ class RecaptchaBox(ABC, Generic[FrameT]):
         """The reCAPTCHA audio download button locator."""
         return self.bframe_frame.get_by_role(
             "link",
-            name=re.compile(
-                "|".join(TRANSLATIONS["alternatively_download_audio_as_mp3"])
+            name=self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["alternatively_download_audio_as_mp3"]
             ),
         )
 
@@ -131,28 +158,32 @@ class RecaptchaBox(ABC, Generic[FrameT]):
     def audio_challenge_textbox(self) -> Locator:
         """The reCAPTCHA audio challenge textbox locator."""
         return self.bframe_frame.get_by_role(
-            "textbox", name=re.compile("|".join(TRANSLATIONS["enter_what_you_hear"]))
+            "textbox",
+            name=self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["enter_what_you_hear"]
+            ),
         )
 
     @property
     def skip_button(self) -> Locator:
         """The reCAPTCHA skip button locator."""
         return self.bframe_frame.get_by_role(
-            "button", name=re.compile("|".join(TRANSLATIONS["skip"]))
+            "button", name=self._get_translations_pattern(ELEMENT_TRANSLATIONS["skip"])
         )
 
     @property
     def next_button(self) -> Locator:
         """The reCAPTCHA next button locator."""
         return self.bframe_frame.get_by_role(
-            "button", name=re.compile("|".join(TRANSLATIONS["next"]))
+            "button", name=self._get_translations_pattern(ELEMENT_TRANSLATIONS["next"])
         )
 
     @property
     def verify_button(self) -> Locator:
         """The reCAPTCHA verify button locator."""
         return self.bframe_frame.get_by_role(
-            "button", name=re.compile("|".join(TRANSLATIONS["verify"]))
+            "button",
+            name=self._get_translations_pattern(ELEMENT_TRANSLATIONS["verify"]),
         )
 
     @property
@@ -410,7 +441,7 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["try_again_later"]))
+            self._get_translations_pattern(ELEMENT_TRANSLATIONS["try_again_later"])
         ).is_visible()
 
     @_check_if_attached
@@ -424,7 +455,9 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             True if the reCAPTCHA solve failure message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["multiple_correct_solutions_required"]))
+            self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["multiple_correct_solutions_required"]
+            )
         ).is_visible()
 
     @_check_if_attached
@@ -438,7 +471,7 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["press_play_to_listen"]))
+            self._get_translations_pattern(ELEMENT_TRANSLATIONS["press_play_to_listen"])
         ).is_visible()
 
     @_check_if_attached
@@ -452,7 +485,7 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             True if the reCAPTCHA try again message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["please_try_again"]))
+            self._get_translations_pattern(ELEMENT_TRANSLATIONS["please_try_again"])
         ).is_visible()
 
     @_check_if_attached
@@ -466,7 +499,9 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             True if the reCAPTCHA check new images message is visible, False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["please_also_check_the_new_images"]))
+            self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["please_also_check_the_new_images"]
+            )
         ).is_visible()
 
     @_check_if_attached
@@ -481,7 +516,9 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
             False otherwise.
         """
         return self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["please_select_all_matching_images"]))
+            self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["please_select_all_matching_images"]
+            )
         ).is_visible()
 
     @_check_if_attached
@@ -603,7 +640,7 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             True if the reCAPTCHA rate limit message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["try_again_later"]))
+            self._get_translations_pattern(ELEMENT_TRANSLATIONS["try_again_later"])
         ).is_visible()
 
     @_check_if_attached
@@ -617,7 +654,9 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             True if the reCAPTCHA solve failure message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["multiple_correct_solutions_required"]))
+            self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["multiple_correct_solutions_required"]
+            )
         ).is_visible()
 
     @_check_if_attached
@@ -631,7 +670,7 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["press_play_to_listen"]))
+            self._get_translations_pattern(ELEMENT_TRANSLATIONS["press_play_to_listen"])
         ).is_visible()
 
     @_check_if_attached
@@ -645,7 +684,7 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             True if the reCAPTCHA try again message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["please_try_again"]))
+            self._get_translations_pattern(ELEMENT_TRANSLATIONS["please_try_again"])
         ).is_visible()
 
     @_check_if_attached
@@ -659,7 +698,9 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             True if the reCAPTCHA check new images message is visible, False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["please_also_check_the_new_images"]))
+            self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["please_also_check_the_new_images"]
+            )
         ).is_visible()
 
     @_check_if_attached
@@ -674,7 +715,9 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
             False otherwise.
         """
         return await self.bframe_frame.get_by_text(
-            re.compile("|".join(TRANSLATIONS["please_select_all_matching_images"]))
+            self._get_translations_pattern(
+                ELEMENT_TRANSLATIONS["please_select_all_matching_images"]
+            )
         ).is_visible()
 
     @_check_if_attached
