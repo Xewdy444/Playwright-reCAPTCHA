@@ -90,13 +90,13 @@ class RecaptchaBox(ABC, Generic[FrameT]):
         return frame_pairs
 
     @staticmethod
-    def _get_translations_pattern(translations: List[str]) -> Pattern:
+    def _get_translations_pattern(translations: Iterable[str]) -> Pattern:
         """
         Get a compiled regex pattern from a list of translations.
 
         Parameters
         ----------
-        translations : List[str]
+        translations : Iterable[str]
             A list of translations to compile into a regex pattern.
 
         Returns
@@ -104,7 +104,9 @@ class RecaptchaBox(ABC, Generic[FrameT]):
         Pattern
             The compiled regex pattern.
         """
-        return re.compile(f'^({"|".join(translations)}).?$')
+        escaped_translations = [re.escape(translation) for translation in translations]
+        pattern = re.compile(f'^({"|".join(escaped_translations)}).?$')
+        return pattern
 
     @property
     def checkbox(self) -> Locator:
