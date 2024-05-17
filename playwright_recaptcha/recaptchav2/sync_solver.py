@@ -11,6 +11,7 @@ from urllib.parse import parse_qs, urlparse
 import speech_recognition
 from playwright.sync_api import Locator, Page, Response
 from pydub import AudioSegment
+from pydub.exceptions import CouldntDecodeError
 from tenacity import Retrying, retry_if_exception_type, stop_after_delay, wait_fixed
 
 from ..errors import (
@@ -249,9 +250,13 @@ class SyncSolver(BaseSolver[Page]):
 
         wav_audio = BytesIO()
         mp3_audio = BytesIO(response.body())
-        audio: AudioSegment = AudioSegment.from_mp3(mp3_audio)
-        audio.export(wav_audio, format="wav")
 
+        try:
+            audio: AudioSegment = AudioSegment.from_mp3(mp3_audio)
+        except CouldntDecodeError:
+            return None
+
+        audio.export(wav_audio, format="wav")
         recognizer = speech_recognition.Recognizer()
 
         with speech_recognition.AudioFile(wav_audio) as source:

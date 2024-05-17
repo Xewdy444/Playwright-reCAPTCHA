@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, urlparse
 import speech_recognition
 from playwright.async_api import Locator, Page, Response
 from pydub import AudioSegment
+from pydub.exceptions import CouldntDecodeError
 from tenacity import (
     AsyncRetrying,
     retry_if_exception_type,
@@ -293,9 +294,12 @@ class AsyncSolver(BaseSolver[Page]):
         wav_audio = BytesIO()
         mp3_audio = BytesIO(await response.body())
 
-        audio: AudioSegment = await loop.run_in_executor(
-            None, AudioSegment.from_mp3, mp3_audio
-        )
+        try:
+            audio: AudioSegment = await loop.run_in_executor(
+                None, AudioSegment.from_mp3, mp3_audio
+            )
+        except CouldntDecodeError:
+            return None
 
         await loop.run_in_executor(
             None, functools.partial(audio.export, wav_audio, format="wav")
