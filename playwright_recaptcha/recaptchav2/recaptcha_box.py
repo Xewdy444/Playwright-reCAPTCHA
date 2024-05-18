@@ -105,8 +105,7 @@ class RecaptchaBox(ABC, Generic[FrameT]):
             The compiled regex pattern.
         """
         escaped_translations = [re.escape(translation) for translation in translations]
-        pattern = re.compile(f'^({"|".join(escaped_translations)}).?$')
-        return pattern
+        return re.compile(f'^({"|".join(escaped_translations)}).?$')
 
     @property
     def checkbox(self) -> Locator:
@@ -472,9 +471,15 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
         bool
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
-        return self.bframe_frame.get_by_text(
-            self._get_translations_pattern(ELEMENT_TRANSLATIONS["press_play_to_listen"])
-        ).is_visible()
+        return (
+            self.bframe_frame.get_by_text(
+                self._get_translations_pattern(
+                    ELEMENT_TRANSLATIONS["press_play_to_listen"]
+                )
+            ).is_visible()
+            and self.new_challenge_button.is_visible()
+            and self.new_challenge_button.is_enabled()
+        )
 
     @_check_if_attached
     def try_again_is_visible(self) -> bool:
@@ -671,9 +676,15 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
         bool
             True if the reCAPTCHA audio challenge is visible, False otherwise.
         """
-        return await self.bframe_frame.get_by_text(
-            self._get_translations_pattern(ELEMENT_TRANSLATIONS["press_play_to_listen"])
-        ).is_visible()
+        return (
+            await self.bframe_frame.get_by_text(
+                self._get_translations_pattern(
+                    ELEMENT_TRANSLATIONS["press_play_to_listen"]
+                )
+            ).is_visible()
+            and await self.new_challenge_button.is_visible()
+            and await self.new_challenge_button.is_enabled()
+        )
 
     @_check_if_attached
     async def try_again_is_visible(self) -> bool:
