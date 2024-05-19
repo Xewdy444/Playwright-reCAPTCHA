@@ -135,7 +135,7 @@ OBJECT_TRANSLATIONS = {
         "烟囱",
         "chimeneas",
         "cheminées",
-        "Schornsteine",
+        "Schornsteinen",
     ),
     "crosswalks": (
         "crosswalks",
