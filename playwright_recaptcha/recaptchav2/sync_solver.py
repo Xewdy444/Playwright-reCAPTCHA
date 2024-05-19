@@ -423,9 +423,15 @@ class SyncSolver(BaseSolver[Page]):
                 self._payload_response = None
 
                 with self._page.expect_response(
-                    re.compile("/recaptcha/(api2|enterprise)/payload")
+                    re.compile("/recaptcha/(api2|enterprise)/reload")
                 ):
                     recaptcha_box.new_challenge_button.click()
+
+                while self._payload_response is None:
+                    if recaptcha_box.rate_limit_is_visible():
+                        raise RecaptchaRateLimitError
+
+                    self._page.wait_for_timeout(250)
 
                 continue
 

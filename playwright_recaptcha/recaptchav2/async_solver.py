@@ -481,11 +481,18 @@ class AsyncSolver(BaseSolver[Page]):
                 self._payload_response = None
 
                 async with self._page.expect_response(
-                    re.compile("/recaptcha/(api2|enterprise)/payload")
+                    re.compile("/recaptcha/(api2|enterprise)/reload")
                 ) as response:
                     await recaptcha_box.new_challenge_button.click()
 
                 await response.value
+
+                while self._payload_response is None:
+                    if await recaptcha_box.rate_limit_is_visible():
+                        raise RecaptchaRateLimitError
+
+                    await self._page.wait_for_timeout(250)
+
                 continue
 
             await self._solve_tiles(
