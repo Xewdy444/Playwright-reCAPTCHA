@@ -159,6 +159,7 @@ OBJECT_TRANSLATIONS = {
         "tractores",
         "tracteurs",
         "Traktoren",
+        "tractoren",
     ),
     "chimneys": (
         "chimneys",
@@ -208,9 +209,17 @@ OBJECT_TRANSLATIONS = {
         "parkeermeters",
     ),
     "cars": ("cars", "автомобили", "小轿车", "coches", "voitures", "Pkws", "auto's"),
-    "bridges": ("bridges", "мостами", "桥", "puentes", "ponts", "Brücken"),
+    "bridges": ("bridges", "мостами", "桥", "puentes", "ponts", "Brücken", "bruggen"),
     "boats": ("boats", "лодки", "船", "barcos", "bateaux", "Boote", "boten"),
-    "palm_trees": ("palm trees", "пальмы", "棕榈树", "palmeras", "palmiers", "Palmen"),
+    "palm_trees": (
+        "palm trees",
+        "пальмы",
+        "棕榈树",
+        "palmeras",
+        "palmiers",
+        "Palmen",
+        "palmbomen",
+    ),
     "mountains_or_hills": (
         "mountains or hills",
         "mountain",
@@ -218,6 +227,7 @@ OBJECT_TRANSLATIONS = {
         "montañas o colinas",
         "montagnes ou collines",
         "Berge oder Hügel",
+        "bergen of heuvels",
     ),
     "fire_hydrant": (
         "a fire hydrant",
