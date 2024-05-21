@@ -8,6 +8,7 @@ ELEMENT_TRANSLATIONS = {
         "Ich bin kein Roboter",
         "Ik ben geen robot",
         "Non sono un robot",
+        "Não sou um robô",
     ),
     "get_an_audio_challenge": (
         "Get an audio challenge",
@@ -18,6 +19,7 @@ ELEMENT_TRANSLATIONS = {
         "Audio-Captcha abrufen",
         "Een audio-uitdaging ophalen",
         "Verifica audio",
+        "Receber um desafio de áudio",
     ),
     "get_a_visual_challenge": (
         "Get a visual challenge",
@@ -28,6 +30,7 @@ ELEMENT_TRANSLATIONS = {
         "Visuelles Captcha abrufen",
         "Een visuele uitdaging ophalen",
         "Verifica visiva",
+        "Receber um desafio visual",
     ),
     "get_a_new_challenge": (
         "Get a new challenge",
@@ -38,6 +41,7 @@ ELEMENT_TRANSLATIONS = {
         "Neues Captcha abrufen",
         "Een nieuwe uitdaging ophalen",
         "Nuova verifica",
+        "Receber outro desafio",
     ),
     "alternatively_download_audio_as_mp3": (
         "Alternatively, download audio as MP3",
@@ -48,6 +52,7 @@ ELEMENT_TRANSLATIONS = {
         "Audio als MP3 herunterladen",
         "Of download het geluid als MP3-bestand",
         "In alternativa, scarica l'audio come MP3",
+        "Como alternativa, faça o download do áudio como MP3",
     ),
     "enter_what_you_hear": (
         "Enter what you hear",
@@ -58,6 +63,7 @@ ELEMENT_TRANSLATIONS = {
         "Geben Sie ein, was Sie hören",
         "Geef op wat je hoort",
         "Inserisci quello che senti",
+        "Digite o que você ouve",
     ),
     "skip": (
         "Skip",
@@ -68,6 +74,7 @@ ELEMENT_TRANSLATIONS = {
         "Überspringen",
         "Overslaan",
         "Salta",
+        "Pular",
     ),
     "next": (
         "Next",
@@ -78,6 +85,7 @@ ELEMENT_TRANSLATIONS = {
         "Weiter",
         "Volgende",
         "Avanti",
+        "Avançar",
     ),
     "verify": (
         "Verify",
@@ -88,6 +96,7 @@ ELEMENT_TRANSLATIONS = {
         "Bestätigen",
         "Verifiëren",
         "Verifica",
+        "Verificar",
     ),
     "try_again_later": (
         "Try again later",
@@ -98,6 +107,7 @@ ELEMENT_TRANSLATIONS = {
         "Später noch einmal versuchen",
         "Probeer het later opnieuw",
         "Riprova più tardi",
+        "Tente novamente mais tarde",
     ),
     "multiple_correct_solutions_required": (
         "Multiple correct solutions required - please solve more",
@@ -108,6 +118,7 @@ ELEMENT_TRANSLATIONS = {
         "Es sind mehrere richtige Lösungen erforderlich. Bitte weitere Aufgaben lösen",
         "Er zijn meerdere juiste oplossingen vereist - geef meer oplossingen op",
         "È necessario fornire più soluzioni corrette. Risolvi altri captcha",
+        "São necessárias várias soluções corretas. Solucione mais",
     ),
     "press_play_to_listen": (
         "Press PLAY to listen",
@@ -118,6 +129,7 @@ ELEMENT_TRANSLATIONS = {
         "Wählen Sie WIEDERGABE aus, um die Wiedergabe zu starten",
         "Druk op AFSPELEN om te luisteren",
         "Premi RIPRODUCI per ascoltare",
+        "Pressione REPRODUZIR para ouvir",
     ),
     "please_try_again": (
         "Please try again",
@@ -128,6 +140,7 @@ ELEMENT_TRANSLATIONS = {
         "Versuche es bitte erneut",
         "Probeer het opnieuw",
         "Riprova",
+        "Tente novamente",
     ),
     "please_also_check_the_new_images": (
         "Please also check the new images",
@@ -138,6 +151,7 @@ ELEMENT_TRANSLATIONS = {
         "Sehen Sie sich auch die neuen Bilder an",
         "Controleer ook de nieuwe afbeeldingen",
         "Controlla anche le nuove immagini",
+        "Verifique também as novas imagens",
     ),
     "please_select_all_matching_images": (
         "Please select all matching images",
@@ -148,11 +162,12 @@ ELEMENT_TRANSLATIONS = {
         "Wählen Sie alle passenden Bilder aus",
         "Selecteer alle overeenkomende afbeeldingen",
         "Seleziona tutte le immagini corrispondenti",
+        "Selecione todas as imagens correspondentes",
     ),
 }
 
 OBJECT_TRANSLATIONS = {
-    "taxis": ("taxis", "такси", "出租车", "Taxis", "taxi's", "taxi"),
+    "taxis": ("taxis", "такси", "出租车", "Taxis", "taxi's", "taxi", "táxis"),
     "bus": (
         "bus",
         "buses",
@@ -165,6 +180,7 @@ OBJECT_TRANSLATIONS = {
         "Bussen",
         "bussen",
         "autobus",
+        "ônibus",
     ),
     "motorcycles": (
         "motorcycles",
@@ -186,6 +202,7 @@ OBJECT_TRANSLATIONS = {
         "Traktoren",
         "tractoren",
         "trattori",
+        "tratores",
     ),
     "chimneys": (
         "chimneys",
@@ -196,6 +213,7 @@ OBJECT_TRANSLATIONS = {
         "Schornsteinen",
         "schoorstenen",
         "camini",
+        "chaminés",
     ),
     "crosswalks": (
         "crosswalks",
@@ -208,6 +226,8 @@ OBJECT_TRANSLATIONS = {
         "oversteekplaatsen",
         "zebrapaden",
         "strisce pedonali",
+        "faixas de pedestres",
+        "faixas de pedestre",
     ),
     "traffic_lights": (
         "traffic lights",
@@ -248,6 +268,7 @@ OBJECT_TRANSLATIONS = {
         "Pkws",
         "auto's",
         "auto",
+        "carros",
     ),
     "bridges": (
         "bridges",
@@ -258,6 +279,7 @@ OBJECT_TRANSLATIONS = {
         "Brücken",
         "bruggen",
         "ponti",
+        "pontes",
     ),
     "boats": ("boats", "лодки", "船", "barcos", "bateaux", "Boote", "boten", "barche"),
     "palm_trees": (
@@ -269,6 +291,7 @@ OBJECT_TRANSLATIONS = {
         "Palmen",
         "palmbomen",
         "palme",
+        "palmeiras",
     ),
     "mountains_or_hills": (
         "mountains or hills",
@@ -279,6 +302,7 @@ OBJECT_TRANSLATIONS = {
         "Berge oder Hügel",
         "bergen of heuvels",
         "montagne o colline",
+        "montanhas ou colinas",
     ),
     "fire_hydrant": (
         "a fire hydrant",
@@ -296,6 +320,8 @@ OBJECT_TRANSLATIONS = {
         "brandkranen",
         "idrante",
         "idranti",
+        "um hidrante",
+        "hidrantes",
     ),
     "stairs": (
         "stairs",
@@ -306,7 +332,8 @@ OBJECT_TRANSLATIONS = {
         "Treppen(stufen)",
         "trappen",
         "scale",
+        "escadas",
     ),
 }
 
-ORIGINAL_LANGUAGE_AUDIO = ("de", "es", "fr", "it", "nl")
+ORIGINAL_LANGUAGE_AUDIO = ("de", "es", "fr", "it", "nl", "pt")
