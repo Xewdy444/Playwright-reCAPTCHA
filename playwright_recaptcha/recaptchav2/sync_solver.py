@@ -548,13 +548,24 @@ class SyncSolver(BaseSolver[Page]):
         else:
             recaptcha_box = SyncRecaptchaBox.from_frames(self._page.frames)
 
+        if recaptcha_box.rate_limit_is_visible():
+            raise RecaptchaRateLimitError
+
         if recaptcha_box.checkbox.is_visible():
             self._click_checkbox(recaptcha_box)
 
             if self._token is not None:
                 return self._token
-        elif recaptcha_box.rate_limit_is_visible():
-            raise RecaptchaRateLimitError
+
+            if (
+                recaptcha_box.frames_are_detached()
+                or not recaptcha_box.challenge_is_visible()
+                or recaptcha_box.challenge_is_solved()
+            ):
+                while self._token is None:
+                    self._page.wait_for_timeout(250)
+
+                return self._token
 
         if image_challenge and recaptcha_box.image_challenge_button.is_visible():
             recaptcha_box.image_challenge_button.click()

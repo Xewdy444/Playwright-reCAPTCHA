@@ -611,13 +611,24 @@ class AsyncSolver(BaseSolver[Page]):
         else:
             recaptcha_box = await AsyncRecaptchaBox.from_frames(self._page.frames)
 
+        if await recaptcha_box.rate_limit_is_visible():
+            raise RecaptchaRateLimitError
+
         if await recaptcha_box.checkbox.is_visible():
             await self._click_checkbox(recaptcha_box)
 
             if self._token is not None:
                 return self._token
-        elif await recaptcha_box.rate_limit_is_visible():
-            raise RecaptchaRateLimitError
+
+            if (
+                recaptcha_box.frames_are_detached()
+                or not await recaptcha_box.challenge_is_visible()
+                or await recaptcha_box.challenge_is_solved()
+            ):
+                while self._token is None:
+                    await self._page.wait_for_timeout(250)
+
+                return self._token
 
         if image_challenge and await recaptcha_box.image_challenge_button.is_visible():
             await recaptcha_box.image_challenge_button.click()
