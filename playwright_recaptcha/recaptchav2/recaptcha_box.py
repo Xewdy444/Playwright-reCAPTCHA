@@ -250,6 +250,17 @@ class RecaptchaBox(ABC, Generic[FrameT]):
         """
 
     @abstractmethod
+    def image_challenge_is_visible(self) -> bool:
+        """
+        Check if the reCAPTCHA image challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is visible, False otherwise.
+        """
+
+    @abstractmethod
     def audio_challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA audio challenge is visible.
@@ -258,6 +269,17 @@ class RecaptchaBox(ABC, Generic[FrameT]):
         -------
         bool
             True if the reCAPTCHA audio challenge is visible, False otherwise.
+        """
+
+    @abstractmethod
+    def any_challenge_is_visible(self) -> bool:
+        """
+        Check if any reCAPTCHA challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if any reCAPTCHA challenge is visible, False otherwise.
         """
 
     @abstractmethod
@@ -292,17 +314,6 @@ class RecaptchaBox(ABC, Generic[FrameT]):
         bool
             True if the reCAPTCHA select all matching images message is visible,
             False otherwise.
-        """
-
-    @abstractmethod
-    def challenge_is_visible(self) -> bool:
-        """
-        Check if the reCAPTCHA challenge is visible.
-
-        Returns
-        -------
-        bool
-            True if the reCAPTCHA challenge is visible, False otherwise.
         """
 
     @abstractmethod
@@ -378,8 +389,7 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
 
             if (
                 recaptcha_box.frames_are_attached()
-                and recaptcha_box.checkbox.is_visible()
-                and not recaptcha_box.checkbox.is_checked()
+                and not recaptcha_box.challenge_is_solved()
                 or recaptcha_box.audio_challenge_button.is_visible()
                 and recaptcha_box.audio_challenge_button.is_enabled()
                 or recaptcha_box.image_challenge_button.is_visible()
@@ -428,6 +438,19 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
         ).is_visible()
 
     @_check_if_attached
+    def image_challenge_is_visible(self) -> bool:
+        """
+        Check if the reCAPTCHA image challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is visible, False otherwise.
+        """
+        button = self.skip_button.or_(self.next_button).or_(self.verify_button)
+        return button.is_enabled()
+
+    @_check_if_attached
     def audio_challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA audio challenge is visible.
@@ -440,6 +463,18 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
         return self.bframe_frame.get_by_text(
             re.compile("|".join(TRANSLATIONS["press_play_to_listen"]))
         ).is_visible()
+
+    @_check_if_attached
+    def any_challenge_is_visible(self) -> bool:
+        """
+        Check if any reCAPTCHA challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if any reCAPTCHA challenge is visible, False otherwise.
+        """
+        return self.image_challenge_is_visible() or self.audio_challenge_is_visible()
 
     @_check_if_attached
     def try_again_is_visible(self) -> bool:
@@ -483,19 +518,6 @@ class SyncRecaptchaBox(RecaptchaBox[SyncFrame]):
         return self.bframe_frame.get_by_text(
             re.compile("|".join(TRANSLATIONS["please_select_all_matching_images"]))
         ).is_visible()
-
-    @_check_if_attached
-    def challenge_is_visible(self) -> bool:
-        """
-        Check if the reCAPTCHA challenge is visible.
-
-        Returns
-        -------
-        bool
-            True if the reCAPTCHA challenge is visible, False otherwise.
-        """
-        button = self.skip_button.or_(self.next_button).or_(self.verify_button)
-        return button.is_enabled()
 
     @_check_if_attached
     def challenge_is_solved(self) -> bool:
@@ -571,8 +593,7 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
 
             if (
                 recaptcha_box.frames_are_attached()
-                and await recaptcha_box.checkbox.is_visible()
-                and not await recaptcha_box.checkbox.is_checked()
+                and not await recaptcha_box.challenge_is_solved()
                 or await recaptcha_box.audio_challenge_button.is_visible()
                 and await recaptcha_box.audio_challenge_button.is_enabled()
                 or await recaptcha_box.image_challenge_button.is_visible()
@@ -621,6 +642,19 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
         ).is_visible()
 
     @_check_if_attached
+    async def image_challenge_is_visible(self) -> bool:
+        """
+        Check if the reCAPTCHA image challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if the reCAPTCHA challenge is visible, False otherwise.
+        """
+        button = self.skip_button.or_(self.next_button).or_(self.verify_button)
+        return await button.is_enabled()
+
+    @_check_if_attached
     async def audio_challenge_is_visible(self) -> bool:
         """
         Check if the reCAPTCHA audio challenge is visible.
@@ -633,6 +667,21 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
         return await self.bframe_frame.get_by_text(
             re.compile("|".join(TRANSLATIONS["press_play_to_listen"]))
         ).is_visible()
+
+    @_check_if_attached
+    async def any_challenge_is_visible(self) -> bool:
+        """
+        Check if any reCAPTCHA challenge is visible.
+
+        Returns
+        -------
+        bool
+            True if any reCAPTCHA challenge is visible, False otherwise.
+        """
+        return (
+            await self.image_challenge_is_visible()
+            or await self.audio_challenge_is_visible()
+        )
 
     @_check_if_attached
     async def try_again_is_visible(self) -> bool:
@@ -676,19 +725,6 @@ class AsyncRecaptchaBox(RecaptchaBox[AsyncFrame]):
         return await self.bframe_frame.get_by_text(
             re.compile("|".join(TRANSLATIONS["please_select_all_matching_images"]))
         ).is_visible()
-
-    @_check_if_attached
-    async def challenge_is_visible(self) -> bool:
-        """
-        Check if the reCAPTCHA challenge is visible.
-
-        Returns
-        -------
-        bool
-            True if the reCAPTCHA challenge is visible, False otherwise.
-        """
-        button = self.skip_button.or_(self.next_button).or_(self.verify_button)
-        return await button.is_enabled()
 
     @_check_if_attached
     async def challenge_is_solved(self) -> bool:

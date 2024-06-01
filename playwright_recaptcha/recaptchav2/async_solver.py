@@ -327,7 +327,7 @@ class AsyncSolver(BaseSolver[Page]):
             if await recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            if await recaptcha_box.challenge_is_visible():
+            if await recaptcha_box.any_challenge_is_visible():
                 return
 
             await self._page.wait_for_timeout(250)
@@ -392,7 +392,7 @@ class AsyncSolver(BaseSolver[Page]):
                 raise RecaptchaRateLimitError
 
             if (
-                not await recaptcha_box.challenge_is_visible()
+                not await recaptcha_box.audio_challenge_is_visible()
                 or await recaptcha_box.solve_failure_is_visible()
                 or await recaptcha_box.challenge_is_solved()
             ):
@@ -622,7 +622,7 @@ class AsyncSolver(BaseSolver[Page]):
 
             if (
                 recaptcha_box.frames_are_detached()
-                or not await recaptcha_box.challenge_is_visible()
+                or not await recaptcha_box.any_challenge_is_visible()
                 or await recaptcha_box.challenge_is_solved()
             ):
                 while self._token is None:
@@ -630,10 +630,12 @@ class AsyncSolver(BaseSolver[Page]):
 
                 return self._token
 
+        while not await recaptcha_box.any_challenge_is_visible():
+            await self._page.wait_for_timeout(250)
+
         if image_challenge and await recaptcha_box.image_challenge_button.is_visible():
             await recaptcha_box.image_challenge_button.click()
-
-        if (
+        elif (
             not image_challenge
             and await recaptcha_box.audio_challenge_button.is_visible()
         ):
@@ -654,7 +656,7 @@ class AsyncSolver(BaseSolver[Page]):
 
             if (
                 recaptcha_box.frames_are_detached()
-                or not await recaptcha_box.challenge_is_visible()
+                or not await recaptcha_box.any_challenge_is_visible()
                 or await recaptcha_box.challenge_is_solved()
             ):
                 while self._token is None:
