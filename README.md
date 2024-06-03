@@ -35,7 +35,7 @@ All solvers return the `g-recaptcha-response` token, which is required for form 
 ## Installation
     pip install playwright-recaptcha
 
-This library requires FFmpeg to be installed on your system in order to convert the audio challenge from reCAPTCHA v2 into text.
+This library requires FFmpeg to be installed on your system for the transcription of reCAPTCHA v2 audio challenges.
 
 |   OS    |        Command         |
 | :-----: | :--------------------: |
@@ -47,6 +47,19 @@ You can also download the latest static build from [here](https://ffmpeg.org/dow
 
 > **Note**
 > Make sure to have the ffmpeg and ffprobe binaries in your system's PATH so that pydub can find them.
+
+## Supported Languages
+- Chinese (zh-CN)
+- Dutch (nl)
+- English (en)
+- French (fr)
+- German (de)
+- Italian (it)
+- Portuguese (pt)
+- Russian (ru)
+- Spanish (es)
+
+If you would like to request support for a new language, please open an issue. You can also open a pull request if you would like to contribute.
 
 ## reCAPTCHA v2 Example
 For more reCAPTCHA v2 examples, see the [examples folder](https://github.com/Xewdy444/Playwright-reCAPTCHA/tree/main/examples/recaptchav2).
@@ -65,7 +78,7 @@ with sync_playwright() as playwright:
         print(token)
 ```
 
-If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your [CapSolver](https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA) API key. You can also pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
+By default, the audio challenge will be solved. If you would like to solve the image challenge, you can set the `CAPSOLVER_API_KEY` environment variable to your [CapSolver](https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA) API key. You can also pass the API key as an argument to `recaptchav2.SyncSolver()` with `capsolver_api_key="your_api_key"`. Then, set `image_challenge=True` in `solver.solve_recaptcha()`.
 
 ```python
 with recaptchav2.SyncSolver(page, capsolver_api_key="your_api_key") as solver:

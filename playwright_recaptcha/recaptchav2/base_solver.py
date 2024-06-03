@@ -85,17 +85,6 @@ class BaseSolver(ABC, Generic[PageT]):
         """
 
     @abstractmethod
-    def _random_delay(self, short: bool = True) -> None:
-        """
-        Delay the browser for a random amount of time.
-
-        Parameters
-        ----------
-        short : bool, optional
-            Whether to delay for a short amount of time, by default True.
-        """
-
-    @abstractmethod
     def _get_capsolver_response(
         self, recaptcha_box: RecaptchaBox, image_data: bytes
     ) -> Optional[Dict[str, Any]]:
@@ -140,19 +129,22 @@ class BaseSolver(ABC, Generic[PageT]):
         """
 
     @abstractmethod
-    def _convert_audio_to_text(self, audio_url: str) -> Optional[str]:
+    def _transcribe_audio(self, audio_url: str, *, language: str) -> Optional[str]:
         """
-        Convert the reCAPTCHA audio to text.
+        Transcribe the reCAPTCHA audio challenge.
 
         Parameters
         ----------
         audio_url : str
             The reCAPTCHA audio URL.
+        language : str
+            The language of the audio.
 
         Returns
         -------
         Optional[str]
-            The reCAPTCHA audio text. Returns None if the audio could not be converted.
+            The reCAPTCHA audio text.
+            Returns None if the audio could not be converted.
         """
 
     @abstractmethod

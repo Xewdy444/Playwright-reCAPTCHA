@@ -3,16 +3,18 @@ from __future__ import annotations
 import asyncio
 import base64
 import functools
-import random
 import re
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from io import BytesIO
 from json import JSONDecodeError
 from typing import Any, BinaryIO, Dict, List, Optional, Union
+from urllib.parse import parse_qs, urlparse
 
 import speech_recognition
 from playwright.async_api import Locator, Page, Response
 from pydub import AudioSegment
+from pydub.exceptions import CouldntDecodeError
 from tenacity import (
     AsyncRetrying,
     retry_if_exception_type,
@@ -28,7 +30,7 @@ from ..errors import (
 )
 from .base_solver import BaseSolver
 from .recaptcha_box import AsyncRecaptchaBox
-from .translations import TRANSLATIONS
+from .translations import OBJECT_TRANSLATIONS, ORIGINAL_LANGUAGE_AUDIO
 
 
 class AsyncAudioFile(speech_recognition.AudioFile):
@@ -98,28 +100,29 @@ class AsyncSolver(BaseSolver[Page]):
             The object ID. Returns None if the task object is not recognized.
         """
         object_dict = {
-            "/m/0pg52": TRANSLATIONS["taxis"],
-            "/m/01bjv": TRANSLATIONS["bus"],
-            "/m/04_sv": TRANSLATIONS["motorcycles"],
-            "/m/013xlm": TRANSLATIONS["tractors"],
-            "/m/01jk_4": TRANSLATIONS["chimneys"],
-            "/m/014xcs": TRANSLATIONS["crosswalks"],
-            "/m/015qff": TRANSLATIONS["traffic_lights"],
-            "/m/0199g": TRANSLATIONS["bicycles"],
-            "/m/015qbp": TRANSLATIONS["parking_meters"],
-            "/m/0k4j": TRANSLATIONS["cars"],
-            "/m/015kr": TRANSLATIONS["bridges"],
-            "/m/019jd": TRANSLATIONS["boats"],
-            "/m/0cdl1": TRANSLATIONS["palm_trees"],
-            "/m/09d_r": TRANSLATIONS["mountains_or_hills"],
-            "/m/01pns0": TRANSLATIONS["fire_hydrant"],
-            "/m/01lynh": TRANSLATIONS["stairs"],
+            "/m/0pg52": OBJECT_TRANSLATIONS["taxis"],
+            "/m/01bjv": OBJECT_TRANSLATIONS["bus"],
+            "/m/04_sv": OBJECT_TRANSLATIONS["motorcycles"],
+            "/m/013xlm": OBJECT_TRANSLATIONS["tractors"],
+            "/m/01jk_4": OBJECT_TRANSLATIONS["chimneys"],
+            "/m/014xcs": OBJECT_TRANSLATIONS["crosswalks"],
+            "/m/015qff": OBJECT_TRANSLATIONS["traffic_lights"],
+            "/m/0199g": OBJECT_TRANSLATIONS["bicycles"],
+            "/m/015qbp": OBJECT_TRANSLATIONS["parking_meters"],
+            "/m/0k4j": OBJECT_TRANSLATIONS["cars"],
+            "/m/015kr": OBJECT_TRANSLATIONS["bridges"],
+            "/m/019jd": OBJECT_TRANSLATIONS["boats"],
+            "/m/0cdl1": OBJECT_TRANSLATIONS["palm_trees"],
+            "/m/09d_r": OBJECT_TRANSLATIONS["mountains_or_hills"],
+            "/m/01pns0": OBJECT_TRANSLATIONS["fire_hydrant"],
+            "/m/01lynh": OBJECT_TRANSLATIONS["stairs"],
         }
 
         task = await recaptcha_box.bframe_frame.locator("div").all_inner_texts()
+        object_ = task[0].split("\n")[1]
 
         for object_id, translations in object_dict.items():
-            if any(translation in task[0] for translation in translations):
+            if object_ in translations:
                 return object_id
 
         return None
@@ -146,18 +149,6 @@ class AsyncSolver(BaseSolver[Page]):
 
             if token_match is not None:
                 self._token = token_match.group(1)
-
-    async def _random_delay(self, short: bool = True) -> None:
-        """
-        Delay the browser for a random amount of time.
-
-        Parameters
-        ----------
-        short : bool, optional
-            Whether to delay for a short amount of time, by default True.
-        """
-        delay_time = random.randint(150, 350) if short else random.randint(1250, 1500)
-        await self._page.wait_for_timeout(delay_time)
 
     async def _get_capsolver_response(
         self, recaptcha_box: AsyncRecaptchaBox, image_data: bytes
@@ -230,29 +221,38 @@ class AsyncSolver(BaseSolver[Page]):
         CapSolverError
             If the CapSolver API returned an error.
         """
-        changing_tiles: List[Locator] = []
+        changing_tiles: Dict[Locator, str] = {}
         indexes = indexes.copy()
-        random.shuffle(indexes)
+
+        style_script = """
+        (element) => {
+            element.style = "";
+            element.className = "rc-imageselect-tile";
+        }
+        """
 
         for index in indexes:
             tile = recaptcha_box.tile_selector.nth(index)
             await tile.click()
 
-            if "rc-imageselect-dynamic-selected" in await tile.get_attribute("class"):
-                changing_tiles.append(tile)
+            if "rc-imageselect-dynamic-selected" not in await tile.get_attribute(
+                "class"
+            ):
+                continue
 
-            await self._random_delay()
+            changing_tiles[tile] = await tile.locator("img").get_attribute("src")
+            await tile.evaluate(style_script)
 
-        while changing_tiles:
-            random.shuffle(changing_tiles)
+        start_time = datetime.now()
 
+        while changing_tiles and (datetime.now() - start_time).seconds < 60:
             for tile in changing_tiles.copy():
-                if "rc-imageselect-dynamic-selected" in await tile.get_attribute(
-                    "class"
-                ):
+                image_url = await tile.locator("img").get_attribute("src")
+
+                if changing_tiles[tile] == image_url:
                     continue
 
-                image_url = await tile.locator("img").get_attribute("src")
+                changing_tiles[tile] = image_url
                 response = await self._page.request.get(image_url)
 
                 capsolver_response = await self._get_capsolver_response(
@@ -263,23 +263,30 @@ class AsyncSolver(BaseSolver[Page]):
                     capsolver_response is None
                     or not capsolver_response["solution"]["hasObject"]
                 ):
-                    changing_tiles.remove(tile)
-                else:
-                    await tile.click()
+                    changing_tiles.pop(tile)
+                    continue
 
-    async def _convert_audio_to_text(self, audio_url: str) -> Optional[str]:
+                await tile.click()
+                await tile.evaluate(style_script)
+
+    async def _transcribe_audio(
+        self, audio_url: str, *, language: str = "en-US"
+    ) -> Optional[str]:
         """
-        Convert the reCAPTCHA audio to text.
+        Transcribe the reCAPTCHA audio challenge.
 
         Parameters
         ----------
         audio_url : str
             The reCAPTCHA audio URL.
+        language : str, optional
+            The language of the audio, by default en-US.
 
         Returns
         -------
         Optional[str]
-            The reCAPTCHA audio text. Returns None if the audio could not be converted.
+            The reCAPTCHA audio text.
+            Returns None if the audio could not be converted.
         """
         loop = asyncio.get_event_loop()
         response = await self._page.request.get(audio_url)
@@ -287,9 +294,12 @@ class AsyncSolver(BaseSolver[Page]):
         wav_audio = BytesIO()
         mp3_audio = BytesIO(await response.body())
 
-        audio: AudioSegment = await loop.run_in_executor(
-            None, AudioSegment.from_mp3, mp3_audio
-        )
+        try:
+            audio: AudioSegment = await loop.run_in_executor(
+                None, AudioSegment.from_mp3, mp3_audio
+            )
+        except CouldntDecodeError:
+            return None
 
         await loop.run_in_executor(
             None, functools.partial(audio.export, wav_audio, format="wav")
@@ -302,7 +312,10 @@ class AsyncSolver(BaseSolver[Page]):
 
         try:
             return await loop.run_in_executor(
-                None, recognizer.recognize_google, audio_data
+                None,
+                functools.partial(
+                    recognizer.recognize_google, audio_data, language=language
+                ),
             )
         except speech_recognition.UnknownValueError:
             return None
@@ -457,8 +470,6 @@ class AsyncSolver(BaseSolver[Page]):
             If the reCAPTCHA rate limit has been exceeded.
         """
         while recaptcha_box.frames_are_attached():
-            await self._random_delay()
-
             capsolver_response = await self._get_capsolver_response(
                 recaptcha_box, await self._payload_response.body()
             )
@@ -470,33 +481,35 @@ class AsyncSolver(BaseSolver[Page]):
                 self._payload_response = None
 
                 async with self._page.expect_response(
-                    re.compile("/recaptcha/(api2|enterprise)/payload")
+                    re.compile("/recaptcha/(api2|enterprise)/reload")
                 ) as response:
                     await recaptcha_box.new_challenge_button.click()
 
                 await response.value
+
+                while self._payload_response is None:
+                    if await recaptcha_box.rate_limit_is_visible():
+                        raise RecaptchaRateLimitError
+
+                    await self._page.wait_for_timeout(250)
+
                 continue
 
             await self._solve_tiles(
                 recaptcha_box, capsolver_response["solution"]["objects"]
             )
 
-            await self._random_delay()
-
             self._payload_response = None
             button = recaptcha_box.skip_button.or_(recaptcha_box.next_button)
 
-            if await button.is_visible():
-                async with self._page.expect_response(
-                    re.compile("/recaptcha/(api2|enterprise)/payload")
-                ) as response:
-                    await recaptcha_box.new_challenge_button.click()
+            if await button.is_hidden():
+                await self._submit_tile_answers(recaptcha_box)
+                return
 
-                await response.value
-                continue
-
-            await self._submit_tile_answers(recaptcha_box)
-            return
+            async with self._page.expect_response(
+                re.compile("/recaptcha/(api2|enterprise)/payload")
+            ):
+                await button.click()
 
     async def _solve_audio_challenge(self, recaptcha_box: AsyncRecaptchaBox) -> None:
         """
@@ -512,11 +525,16 @@ class AsyncSolver(BaseSolver[Page]):
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        await self._random_delay(short=False)
+        parsed_url = urlparse(recaptcha_box.anchor_frame.url)
+        query_params = parse_qs(parsed_url.query)
+        language = query_params["hl"][0]
+
+        if language not in ORIGINAL_LANGUAGE_AUDIO:
+            language = "en-US"
 
         while True:
             url = await self._get_audio_url(recaptcha_box)
-            text = await self._convert_audio_to_text(url)
+            text = await self._transcribe_audio(url, language=language)
 
             if text is not None:
                 break
@@ -650,9 +668,6 @@ class AsyncSolver(BaseSolver[Page]):
                     await self._page.wait_for_timeout(250)
 
                 return self._token
-
-            if not image_challenge:
-                await recaptcha_box.new_challenge_button.click()
 
             attempts -= 1
 
