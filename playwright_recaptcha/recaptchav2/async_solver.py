@@ -334,7 +334,7 @@ class AsyncSolver(BaseSolver[Page]):
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        await recaptcha_box.checkbox.click(force=True)
+        await recaptcha_box.checkbox.click()
 
         while recaptcha_box.frames_are_attached() and self._token is None:
             if await recaptcha_box.rate_limit_is_visible():

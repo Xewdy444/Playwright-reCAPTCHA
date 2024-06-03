@@ -281,7 +281,7 @@ class SyncSolver(BaseSolver[Page]):
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        recaptcha_box.checkbox.click(force=True)
+        recaptcha_box.checkbox.click()
 
         while recaptcha_box.frames_are_attached() and self._token is None:
             if recaptcha_box.rate_limit_is_visible():
