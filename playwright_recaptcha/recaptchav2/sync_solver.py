@@ -281,13 +281,13 @@ class SyncSolver(BaseSolver[Page]):
         RecaptchaRateLimitError
             If the reCAPTCHA rate limit has been exceeded.
         """
-        recaptcha_box.checkbox.click(force=True)
+        recaptcha_box.checkbox.click()
 
         while recaptcha_box.frames_are_attached() and self._token is None:
             if recaptcha_box.rate_limit_is_visible():
                 raise RecaptchaRateLimitError
 
-            if recaptcha_box.challenge_is_visible():
+            if recaptcha_box.any_challenge_is_visible():
                 return
 
             self._page.wait_for_timeout(250)
@@ -348,7 +348,7 @@ class SyncSolver(BaseSolver[Page]):
                 raise RecaptchaRateLimitError
 
             if (
-                not recaptcha_box.challenge_is_visible()
+                not recaptcha_box.audio_challenge_is_visible()
                 or recaptcha_box.solve_failure_is_visible()
                 or recaptcha_box.challenge_is_solved()
             ):
@@ -565,18 +565,31 @@ class SyncSolver(BaseSolver[Page]):
         else:
             recaptcha_box = SyncRecaptchaBox.from_frames(self._page.frames)
 
+        if recaptcha_box.rate_limit_is_visible():
+            raise RecaptchaRateLimitError
+
         if recaptcha_box.checkbox.is_visible():
             self._click_checkbox(recaptcha_box)
 
             if self._token is not None:
                 return self._token
-        elif recaptcha_box.rate_limit_is_visible():
-            raise RecaptchaRateLimitError
+
+            if (
+                recaptcha_box.frames_are_detached()
+                or not recaptcha_box.any_challenge_is_visible()
+                or recaptcha_box.challenge_is_solved()
+            ):
+                while self._token is None:
+                    self._page.wait_for_timeout(250)
+
+                return self._token
+
+        while not recaptcha_box.any_challenge_is_visible():
+            self._page.wait_for_timeout(250)
 
         if image_challenge and recaptcha_box.image_challenge_button.is_visible():
             recaptcha_box.image_challenge_button.click()
-
-        if not image_challenge and recaptcha_box.audio_challenge_button.is_visible():
+        elif not image_challenge and recaptcha_box.audio_challenge_button.is_visible():
             recaptcha_box.audio_challenge_button.click()
 
         if image_challenge:
@@ -594,7 +607,7 @@ class SyncSolver(BaseSolver[Page]):
 
             if (
                 recaptcha_box.frames_are_detached()
-                or not recaptcha_box.challenge_is_visible()
+                or not recaptcha_box.any_challenge_is_visible()
                 or recaptcha_box.challenge_is_solved()
             ):
                 while self._token is None:
