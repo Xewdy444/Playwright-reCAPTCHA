@@ -1,7 +1,7 @@
 """A library for solving reCAPTCHA v2 and v3 with Playwright."""
 
 __author__ = "Xewdy444"
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 __license__ = "MIT"
 
 from .errors import (
