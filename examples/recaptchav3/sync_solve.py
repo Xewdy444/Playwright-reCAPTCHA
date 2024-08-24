@@ -9,9 +9,9 @@ def main() -> None:
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch()
         page = browser.new_page()
-        page.goto("https://antcpt.com/score_detector/")
 
         with recaptchav3.SyncSolver(page) as solver:
+            page.goto("https://antcpt.com/score_detector/")
             token = solver.solve_recaptcha()
             print(token)
 

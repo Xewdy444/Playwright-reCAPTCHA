@@ -10,9 +10,9 @@ async def main() -> None:
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch()
         page = await browser.new_page()
-        await page.goto("https://antcpt.com/score_detector/")
 
         async with recaptchav3.AsyncSolver(page) as solver:
+            await page.goto("https://antcpt.com/score_detector/")
             token = await solver.solve_recaptcha()
             print(token)
 
