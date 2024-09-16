@@ -10,9 +10,9 @@ async def test_solver_with_normal_browser() -> None:
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch()
         page = await browser.new_page()
-        await page.goto("https://antcpt.com/score_detector/")
 
         async with recaptchav3.AsyncSolver(page) as solver:
+            await page.goto("https://antcpt.com/score_detector/")
             await solver.solve_recaptcha()
 
 
@@ -22,9 +22,9 @@ async def test_solver_with_slow_browser() -> None:
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch(slow_mo=1000)
         page = await browser.new_page()
-        await page.goto("https://antcpt.com/score_detector/")
 
         async with recaptchav3.AsyncSolver(page) as solver:
+            await page.goto("https://antcpt.com/score_detector/")
             await solver.solve_recaptcha()
 
 
@@ -34,8 +34,8 @@ async def test_recaptcha_not_found_error() -> None:
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch()
         page = await browser.new_page()
-        await page.goto("https://www.google.com/")
 
         with pytest.raises(RecaptchaTimeoutError):
             async with recaptchav3.AsyncSolver(page, timeout=10) as solver:
+                await page.goto("https://www.google.com/")
                 await solver.solve_recaptcha()

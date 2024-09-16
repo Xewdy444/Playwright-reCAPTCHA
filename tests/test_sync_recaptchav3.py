@@ -9,9 +9,9 @@ def test_solver_with_normal_browser() -> None:
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch()
         page = browser.new_page()
-        page.goto("https://antcpt.com/score_detector/")
 
         with recaptchav3.SyncSolver(page) as solver:
+            page.goto("https://antcpt.com/score_detector/")
             solver.solve_recaptcha()
 
 
@@ -20,9 +20,9 @@ def test_solver_with_slow_browser() -> None:
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch(slow_mo=1000)
         page = browser.new_page()
-        page.goto("https://antcpt.com/score_detector/")
 
         with recaptchav3.SyncSolver(page) as solver:
+            page.goto("https://antcpt.com/score_detector/")
             solver.solve_recaptcha()
 
 
@@ -31,9 +31,9 @@ def test_recaptcha_not_found_error() -> None:
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch()
         page = browser.new_page()
-        page.goto("https://www.google.com/")
 
         with pytest.raises(RecaptchaTimeoutError), recaptchav3.SyncSolver(
             page, timeout=10
         ) as solver:
+            page.goto("https://www.google.com/")
             solver.solve_recaptcha()
