@@ -2,5 +2,5 @@ playwright>=1.33.0
 pydub==0.25.1
 pytest-asyncio==0.25.2
 setuptools==75.8.0
-SpeechRecognition==3.14.0
+SpeechRecognition==3.14.1
 tenacity==9.0.0

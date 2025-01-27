@@ -18,7 +18,7 @@ setup(
     install_requires=[
         "playwright>=1.33.0",
         "pydub==0.25.1",
-        "SpeechRecognition==3.14.0",
+        "SpeechRecognition==3.14.1",
         "tenacity==9.0.0",
     ],
     classifiers=[
