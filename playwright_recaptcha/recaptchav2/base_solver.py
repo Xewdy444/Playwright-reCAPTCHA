@@ -26,16 +26,19 @@ class BaseSolver(ABC, Generic[PageT]):
         The Playwright page to solve the reCAPTCHA on.
     attempts : int, optional
         The number of solve attempts, by default 5.
+    timeout : float, optional
+        The solve timeout in seconds, by default 30.
     capsolver_api_key : Optional[str], optional
         The CapSolver API key, by default None.
         If None, the `CAPSOLVER_API_KEY` environment variable will be used.
     """
 
     def __init__(
-        self, page: PageT, *, attempts: int = 5, capsolver_api_key: Optional[str] = None
+        self, page: PageT, *, attempts: int = 5, timeout: float = 30, capsolver_api_key: Optional[str] = None
     ) -> None:
         self._page = page
         self._attempts = attempts
+        self._timeout = timeout
         self._capsolver_api_key = capsolver_api_key or os.getenv("CAPSOLVER_API_KEY")
 
         self._token: Optional[str] = None
@@ -46,6 +49,7 @@ class BaseSolver(ABC, Generic[PageT]):
         return (
             f"{self.__class__.__name__}(page={self._page!r}, "
             f"attempts={self._attempts!r}, "
+            f"timeout={self._timeout!r}, "
             f"capsolver_api_key={self._capsolver_api_key!r})"
         )
 
@@ -268,6 +272,7 @@ class BaseSolver(ABC, Generic[PageT]):
         self,
         *,
         attempts: Optional[int] = None,
+        timeout: Optional[float] = None,
         wait: bool = False,
         wait_timeout: float = 30,
         image_challenge: bool = False,
@@ -279,6 +284,9 @@ class BaseSolver(ABC, Generic[PageT]):
         ----------
         attempts : Optional[int], optional
             The number of solve attempts, by default 5.
+        timeout : Optional[float], optional
+            The amount of time in seconds to wait for the reCAPTCHA to be solved.
+            Defaults to instance's timeout attribute, which in turn defaults to 30 seconds.
         wait : bool, optional
             Whether to wait for the reCAPTCHA to appear, by default False.
         wait_timeout : float, optional

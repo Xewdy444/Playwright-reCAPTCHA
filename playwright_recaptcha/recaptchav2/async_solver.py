@@ -4,6 +4,7 @@ import asyncio
 import base64
 import functools
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from io import BytesIO
@@ -27,6 +28,7 @@ from ..errors import (
     RecaptchaNotFoundError,
     RecaptchaRateLimitError,
     RecaptchaSolveError,
+    RecaptchaTimeoutError,
 )
 from .base_solver import BaseSolver
 from .recaptcha_box import AsyncRecaptchaBox
@@ -571,6 +573,7 @@ class AsyncSolver(BaseSolver[Page]):
         self,
         *,
         attempts: Optional[int] = None,
+        timeout: Optional[float] = None,
         wait: bool = False,
         wait_timeout: float = 30,
         image_challenge: bool = False,
@@ -582,6 +585,9 @@ class AsyncSolver(BaseSolver[Page]):
         ----------
         attempts : Optional[int], optional
             The number of solve attempts, by default 5.
+        timeout : Optional[float], optional
+            The amount of time in seconds to wait for the reCAPTCHA to be solved.
+            Defaults to instance's timeout attribute, which in turn defaults to 30 seconds.
         wait : bool, optional
             Whether to wait for the reCAPTCHA to appear, by default False.
         wait_timeout : float, optional
@@ -605,6 +611,8 @@ class AsyncSolver(BaseSolver[Page]):
             If the reCAPTCHA rate limit has been exceeded.
         RecaptchaSolveError
             If the reCAPTCHA could not be solved.
+        RecaptchaTimeoutError
+            If the solve timeout has been exceeded.
         """
         if image_challenge and self._capsolver_api_key is None:
             raise CapSolverError(
@@ -613,6 +621,8 @@ class AsyncSolver(BaseSolver[Page]):
 
         self._token = None
         attempts = attempts or self._attempts
+        timeout = timeout or self._timeout
+        start_time = time.time()
 
         if wait:
             retry = AsyncRetrying(
@@ -644,11 +654,17 @@ class AsyncSolver(BaseSolver[Page]):
                 or await recaptcha_box.challenge_is_solved()
             ):
                 while self._token is None:
+                    if time.time() - start_time > timeout:
+                        raise RecaptchaTimeoutError
+                    
                     await self._page.wait_for_timeout(250)
 
                 return self._token
 
         while not await recaptcha_box.any_challenge_is_visible():
+            if time.time() - start_time > timeout:
+                raise RecaptchaTimeoutError
+            
             await self._page.wait_for_timeout(250)
 
         if image_challenge and await recaptcha_box.image_challenge_button.is_visible():
@@ -665,6 +681,9 @@ class AsyncSolver(BaseSolver[Page]):
             self._payload_response = await self._page.request.get(image_url)
 
         while attempts > 0:
+            if time.time() - start_time > timeout:
+                raise RecaptchaTimeoutError
+            
             self._token = None
 
             if image_challenge:
@@ -678,6 +697,9 @@ class AsyncSolver(BaseSolver[Page]):
                 or await recaptcha_box.challenge_is_solved()
             ):
                 while self._token is None:
+                    if time.time() - start_time > timeout:
+                        raise RecaptchaTimeoutError
+            
                     await self._page.wait_for_timeout(250)
 
                 return self._token
