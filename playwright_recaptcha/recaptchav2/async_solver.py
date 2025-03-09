@@ -4,6 +4,7 @@ import asyncio
 import base64
 import functools
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from io import BytesIO
@@ -633,6 +634,7 @@ class AsyncSolver(BaseSolver[Page]):
             raise RecaptchaRateLimitError
 
         if await recaptcha_box.checkbox.is_visible():
+            click_timestamp = time.time()
             await self._click_checkbox(recaptcha_box)
 
             if self._token is not None:
@@ -650,6 +652,9 @@ class AsyncSolver(BaseSolver[Page]):
 
         while not await recaptcha_box.any_challenge_is_visible():
             await self._page.wait_for_timeout(250)
+
+        time_to_wait = max(1 - (time.time() - click_timestamp), 0)
+        await self._page.wait_for_timeout(time_to_wait * 1000)
 
         if image_challenge and await recaptcha_box.image_challenge_button.is_visible():
             await recaptcha_box.image_challenge_button.click()
