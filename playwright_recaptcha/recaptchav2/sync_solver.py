@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import re
+import time
 from datetime import datetime
 from io import BytesIO
 from json import JSONDecodeError
@@ -569,6 +570,7 @@ class SyncSolver(BaseSolver[Page]):
             raise RecaptchaRateLimitError
 
         if recaptcha_box.checkbox.is_visible():
+            click_timestamp = time.time()
             self._click_checkbox(recaptcha_box)
 
             if self._token is not None:
@@ -583,6 +585,9 @@ class SyncSolver(BaseSolver[Page]):
                     self._page.wait_for_timeout(250)
 
                 return self._token
+
+            time_to_wait = max(1 - (time.time() - click_timestamp), 0)
+            self._page.wait_for_timeout(time_to_wait * 1000)
 
         while not recaptcha_box.any_challenge_is_visible():
             self._page.wait_for_timeout(250)
