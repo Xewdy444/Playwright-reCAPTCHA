@@ -20,7 +20,7 @@ setup(
         "pydub==0.25.1",
         'SpeechRecognition==3.14.2; python_version == "3.8"',
         'SpeechRecognition==3.14.2; python_version >= "3.9"',
-        "tenacity==9.0.0",
+        "tenacity==9.1.2",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
