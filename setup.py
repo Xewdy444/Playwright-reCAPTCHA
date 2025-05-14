@@ -19,7 +19,7 @@ setup(
         "playwright>=1.33.0,!=1.50.0",
         "pydub==0.25.1",
         'SpeechRecognition==3.14.3; python_version == "3.8"',
-        'SpeechRecognition==3.14.2; python_version >= "3.9"',
+        'SpeechRecognition==3.14.3; python_version >= "3.9"',
         "tenacity==9.1.2",
     ],
     classifiers=[
