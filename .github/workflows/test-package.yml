@@ -10,6 +10,9 @@ on:
     paths:
       - playwright_recaptcha/**
 
+permissions:
+  contents: read
+
 jobs:
   test-package:
     name: Test Package With Python ${{ matrix.python-version }}
