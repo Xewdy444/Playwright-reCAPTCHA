@@ -4,7 +4,7 @@ import re
 import time
 from typing import Any, Optional
 
-from playwright.async_api import Page, Response
+from playwright.async_api import Page, Response, Route
 
 from ..errors import RecaptchaTimeoutError
 from .base_solver import BaseSolver
@@ -23,10 +23,39 @@ class AsyncSolver(BaseSolver[Page]):
     """
 
     async def __aenter__(self) -> AsyncSolver:
+        if self._block_token_requests and not self._route_callback_added:
+            await self.add_token_request_blocker()
+
         return self
 
     async def __aexit__(self, *_: Any) -> None:
-        self.close()
+        await self.close()
+
+    async def _route_callback(self, route: Route) -> None:
+        """
+        The callback for intercepting requests with the reCAPTCHA token.
+
+        Parameters
+        ----------
+        route : Route
+            The route.
+        """
+        if self._token is None:
+            await route.continue_()
+            return
+
+        if (
+            self._token in route.request.url
+            or (
+                route.request.post_data_buffer is not None
+                and self._token.encode("utf-8") in route.request.post_data_buffer
+            )
+            or any(self._token in value for value in route.request.headers.values())
+        ):
+            await route.abort()
+            return
+
+        await route.continue_()
 
     async def _response_callback(self, response: Response) -> None:
         """
@@ -45,7 +74,28 @@ class AsyncSolver(BaseSolver[Page]):
         if token_match is not None:
             self._token = token_match.group(1)
 
-    async def solve_recaptcha(self, timeout: Optional[float] = None) -> str:
+    async def close(self) -> None:
+        """Remove the interceptors and listeners."""
+        super().close()
+        await self.remove_token_request_blocker()
+
+    async def add_token_request_blocker(self) -> None:
+        """Add the route callback for blocking reCAPTCHA token requests."""
+        if self._route_callback_added:
+            return
+
+        await self._page.route("**/*", self._route_callback)
+        self._route_callback_added = True
+
+    async def remove_token_request_blocker(self) -> None:
+        """Remove the route callback for blocking reCAPTCHA token requests."""
+        if not self._route_callback_added:
+            return
+
+        await self._page.unroute("**/*", self._route_callback)
+        self._route_callback_added = False
+
+    async def solve_recaptcha(self, *, timeout: Optional[float] = None) -> str:
         """
         Wait for the reCAPTCHA to be solved and return the `g-recaptcha-response` token.
 
