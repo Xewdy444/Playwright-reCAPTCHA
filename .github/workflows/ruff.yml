@@ -34,7 +34,7 @@ jobs:
           --output-format sarif > ruff-results.sarif
 
       - name: Upload ruff results to GitHub
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ruff-results.sarif
           wait-for-processing: true

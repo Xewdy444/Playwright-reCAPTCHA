@@ -2,7 +2,8 @@ name: Publish Package to PyPI
 
 on:
   release:
-    types: [published]
+    types:
+      - published
 
 permissions:
   contents: read
