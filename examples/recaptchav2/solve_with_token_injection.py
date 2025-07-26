@@ -72,7 +72,7 @@ def main() -> None:
     with sync_playwright() as playwright:
         browser = playwright.firefox.launch()
         page = browser.new_page()
-        page.goto("https://www.google.com/recaptcha/api2")
+        page.goto("https://www.google.com/recaptcha/api2/demo")
 
         token = get_recaptcha_token(
             page,
