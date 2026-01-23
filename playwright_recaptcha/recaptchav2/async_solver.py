@@ -19,6 +19,7 @@ from pydub.exceptions import CouldntDecodeError
 from tenacity import (
     AsyncRetrying,
     retry_if_exception_type,
+    retry_if_result,
     stop_after_delay,
     wait_fixed,
 )
@@ -568,6 +569,54 @@ class AsyncSolver(BaseSolver[Page]):
 
         return True
 
+    async def inject_token(
+        self, token: str, *, wait: bool = False, wait_timeout: float = 30
+    ) -> None:
+        """
+        Inject the `g-recaptcha-response` token into the page.
+
+        Parameters
+        ----------
+        token : str
+            The `g-recaptcha-response` token.
+        wait : bool, optional
+            Whether to wait for the `g-recaptcha-response` textarea to appear,
+            by default False.
+        wait_timeout : float, optional
+            The amount of time in seconds to wait for the `g-recaptcha-response`
+            textarea to appear, by default 30. Only used if `wait` is True.
+
+        Raises
+        ------
+        RecaptchaNotFoundError
+            If the `g-recaptcha-response` textarea was not found on the page.
+        """
+        if wait:
+            retry = AsyncRetrying(
+                sleep=self._page.wait_for_timeout,
+                stop=stop_after_delay(wait_timeout),
+                wait=wait_fixed(250),
+                retry=retry_if_result(lambda result: result is None),
+                retry_error_callback=lambda _: None,
+            )
+
+            textarea = await retry(
+                lambda: self._page.query_selector(
+                    'textarea[name="g-recaptcha-response"]'
+                )
+            )
+        else:
+            textarea = await self._page.query_selector(
+                'textarea[name="g-recaptcha-response"]'
+            )
+
+        if textarea is None:
+            raise RecaptchaNotFoundError(
+                "The g-recaptcha-response textarea was not found on the page."
+            )
+
+        await textarea.evaluate("(textarea, token) => textarea.value = token", token)
+
     async def solve_recaptcha(
         self,
         *,
@@ -619,7 +668,7 @@ class AsyncSolver(BaseSolver[Page]):
             retry = AsyncRetrying(
                 sleep=self._page.wait_for_timeout,
                 stop=stop_after_delay(wait_timeout),
-                wait=wait_fixed(0.25),
+                wait=wait_fixed(250),
                 retry=retry_if_exception_type(RecaptchaNotFoundError),
                 reraise=True,
             )
