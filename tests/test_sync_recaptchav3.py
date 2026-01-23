@@ -37,3 +37,16 @@ def test_recaptcha_not_found_error() -> None:
         ) as solver:
             page.goto("https://www.google.com/")
             solver.solve_recaptcha()
+
+
+def test_solver_with_blocked_token_requests() -> None:
+    """Test the solver with blocked token requests."""
+    with sync_playwright() as playwright:
+        browser = playwright.firefox.launch()
+        page = browser.new_page()
+
+        with recaptchav3.SyncSolver(page, block_token_requests=True) as solver:
+            page.goto("https://antcpt.com/score_detector/")
+            solver.solve_recaptcha()
+
+        assert page.get_by_text("And error occurred, sorry!").is_visible()
