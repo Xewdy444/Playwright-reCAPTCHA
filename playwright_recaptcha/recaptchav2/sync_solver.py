@@ -13,7 +13,13 @@ import speech_recognition
 from playwright.sync_api import Locator, Page, Response
 from pydub import AudioSegment
 from pydub.exceptions import CouldntDecodeError
-from tenacity import Retrying, retry_if_exception_type, stop_after_delay, wait_fixed
+from tenacity import (
+    Retrying,
+    retry_if_exception_type,
+    retry_if_result,
+    stop_after_delay,
+    wait_fixed,
+)
 
 from ..errors import (
     CapSolverError,
@@ -504,6 +510,54 @@ class SyncSolver(BaseSolver[Page]):
 
         return True
 
+    def inject_token(
+        self, token: str, *, wait: bool = False, wait_timeout: float = 30
+    ) -> None:
+        """
+        Inject the `g-recaptcha-response` token into the page.
+
+        Parameters
+        ----------
+        token : str
+            The `g-recaptcha-response` token.
+        wait : bool, optional
+            Whether to wait for the `g-recaptcha-response` textarea to appear,
+            by default False.
+        wait_timeout : float, optional
+            The amount of time in seconds to wait for the `g-recaptcha-response`
+            textarea to appear, by default 30. Only used if `wait` is True.
+
+        Raises
+        ------
+        RecaptchaNotFoundError
+            If the `g-recaptcha-response` textarea was not found on the page.
+        """
+        if wait:
+            retry = Retrying(
+                sleep=self._page.wait_for_timeout,
+                stop=stop_after_delay(wait_timeout),
+                wait=wait_fixed(250),
+                retry=retry_if_result(lambda result: result is None),
+                retry_error_callback=lambda _: None,
+            )
+
+            textarea = retry(
+                lambda: self._page.query_selector(
+                    'textarea[name="g-recaptcha-response"]'
+                )
+            )
+        else:
+            textarea = self._page.query_selector(
+                'textarea[name="g-recaptcha-response"]'
+            )
+
+        if textarea is None:
+            raise RecaptchaNotFoundError(
+                "The g-recaptcha-response textarea was not found on the page."
+            )
+
+        textarea.evaluate("(textarea, token) => textarea.value = token", token)
+
     def solve_recaptcha(
         self,
         *,
@@ -555,7 +609,7 @@ class SyncSolver(BaseSolver[Page]):
             retry = Retrying(
                 sleep=self._page.wait_for_timeout,
                 stop=stop_after_delay(wait_timeout),
-                wait=wait_fixed(0.25),
+                wait=wait_fixed(250),
                 retry=retry_if_exception_type(RecaptchaNotFoundError),
                 reraise=True,
             )
