@@ -6,12 +6,86 @@
 ---
 
 <div align="center">
-  <a href="https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">
-    <img src="https://images2.imgbox.com/b7/cd/gC6eMlv2_o.jpg" width="75%">
-  </a>
-  <br> 
-  <a href="https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Capsolver.com</a> is an AI-powered service that specializes in solving various types of captchas automatically. It supports captchas such as <a href="https://docs.capsolver.com/guide/captcha/ReCaptchaV2.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">reCAPTCHA V2</a>, <a href="https://docs.capsolver.com/guide/captcha/ReCaptchaV3.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">reCAPTCHA V3</a>, <a href="https://docs.capsolver.com/guide/captcha/HCaptcha.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">hCaptcha</a>, <a href="https://docs.capsolver.com/guide/captcha/FunCaptcha.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">FunCaptcha</a>, <a href="https://docs.capsolver.com/guide/antibots/datadome.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">DataDome</a>, <a href="https://docs.capsolver.com/guide/captcha/awsWaf.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">AWS Captcha</a>, <a href="https://docs.capsolver.com/guide/captcha/Geetest.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Geetest</a>, and Cloudflare <a href="https://docs.capsolver.com/guide/antibots/cloudflare_turnstile.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Captcha</a> / <a href="https://docs.capsolver.com/guide/antibots/cloudflare_challenge.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Challenge 5s</a>, <a href="https://docs.capsolver.com/guide/antibots/imperva.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">Imperva / Incapsula</a>, among others.
-For developers, Capsolver offers API integration options detailed in their <a href="https://docs.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">documentation</a>, facilitating the integration of captcha solving into applications. They also provide browser extensions for <a href="https://chromewebstore.google.com/detail/captcha-solver-auto-captc/pgojnojmmhpofjgdmaebadhbocahppod">Chrome</a> and <a href="https://addons.mozilla.org/es/firefox/addon/capsolver-captcha-solver/">Firefox</a>, making it easy to use their service directly within a browser. Different pricing packages are available to accommodate varying needs, ensuring flexibility for users.
+    <a href="https://www.rapidproxy.io/?ref=recaptcha">
+        <img
+            width="800"
+            height="300"
+            src="https://github.com/user-attachments/assets/6adf1956-54fe-4967-8c86-3b545dd1faae"
+        />
+    </a>
+    <br />
+    RapidProxy provides reliable residential proxies for Playwright and browser automation workflows. Access 90M+
+    residential IPs worldwide with intelligent rotation, sticky sessions, geo-targeting, and high-concurrency support
+    for stable automated browsing. Residential proxies start at $0.55/GB with non-expiring bandwidth. Use code RAPID10
+    for 10% off. <a href="https://www.rapidproxy.io/?ref=recaptcha">Try RapidProxy for free →</a>
+</div>
+
+---
+
+<div align="center">
+    <a href="https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">
+        <img
+            width="500"
+            height="300"
+            src="https://github.com/user-attachments/assets/d372eaf8-a3f8-4646-a55d-b4e5825b8876"
+        />
+    </a>
+    <br />
+    <a href="https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >Capsolver.com</a
+    >
+    is an AI-powered service that specializes in solving various types of captchas automatically. It supports captchas
+    such as
+    <a
+        href="https://docs.capsolver.com/guide/captcha/ReCaptchaV2.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >reCAPTCHA V2</a
+    >,
+    <a
+        href="https://docs.capsolver.com/guide/captcha/ReCaptchaV3.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >reCAPTCHA V3</a
+    >,
+    <a
+        href="https://docs.capsolver.com/guide/captcha/HCaptcha.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >hCaptcha</a
+    >,
+    <a
+        href="https://docs.capsolver.com/guide/captcha/FunCaptcha.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >FunCaptcha</a
+    >,
+    <a
+        href="https://docs.capsolver.com/guide/antibots/datadome.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >DataDome</a
+    >,
+    <a
+        href="https://docs.capsolver.com/guide/captcha/awsWaf.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >AWS Captcha</a
+    >,
+    <a
+        href="https://docs.capsolver.com/guide/captcha/Geetest.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >Geetest</a
+    >, and Cloudflare
+    <a
+        href="https://docs.capsolver.com/guide/antibots/cloudflare_turnstile.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >Captcha</a
+    >
+    /
+    <a
+        href="https://docs.capsolver.com/guide/antibots/cloudflare_challenge.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >Challenge 5s</a
+    >,
+    <a
+        href="https://docs.capsolver.com/guide/antibots/imperva.html?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >Imperva / Incapsula</a
+    >, among others. For developers, Capsolver offers API integration options detailed in their
+    <a href="https://docs.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA"
+        >documentation</a
+    >, facilitating the integration of captcha solving into applications. They also provide browser extensions for
+    <a href="https://chromewebstore.google.com/detail/captcha-solver-auto-captc/pgojnojmmhpofjgdmaebadhbocahppod"
+        >Chrome</a
+    >
+    and <a href="https://addons.mozilla.org/es/firefox/addon/capsolver-captcha-solver/">Firefox</a>, making it easy to
+    use their service directly within a browser. Different pricing packages are available to accommodate varying needs,
+    ensuring flexibility for users.
 </div>
 
 ---
