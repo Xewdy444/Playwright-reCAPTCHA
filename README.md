@@ -6,23 +6,6 @@
 ---
 
 <div align="center">
-    <a href="https://www.rapidproxy.io/?ref=recaptcha">
-        <img
-            width="800"
-            height="300"
-            src="https://github.com/user-attachments/assets/6adf1956-54fe-4967-8c86-3b545dd1faae"
-        />
-    </a>
-    <br />
-    RapidProxy provides reliable residential proxies for Playwright and browser automation workflows. Access 90M+
-    residential IPs worldwide with intelligent rotation, sticky sessions, geo-targeting, and high-concurrency support
-    for stable automated browsing. Residential proxies start at $0.55/GB with non-expiring bandwidth. Use code RAPID10
-    for 10% off. <a href="https://www.rapidproxy.io/?ref=recaptcha">Try RapidProxy for free →</a>
-</div>
-
----
-
-<div align="center">
     <a href="https://www.capsolver.com/?utm_source=github&utm_medium=banner_github&utm_campaign=Playwright-reCAPTCHA">
         <img
             width="500"
