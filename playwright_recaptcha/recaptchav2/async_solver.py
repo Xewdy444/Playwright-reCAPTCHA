@@ -77,6 +77,11 @@ class AsyncSolver(BaseSolver[Page]):
     capsolver_api_key : Optional[str], optional
         The CapSolver API key, by default None.
         If None, the `CAPSOLVER_API_KEY` environment variable will be used.
+    capsolver_api_url : Optional[str], optional
+        The base URL of the CapSolver API, by default None.
+        If None, the `CAPSOLVER_API_URL` environment variable will be used,
+        falling back to `https://api.capsolver.com`.
+        Any CapSolver-compatible service can be used.
     """
 
     async def __aenter__(self) -> AsyncSolver:
@@ -191,7 +196,7 @@ class AsyncSolver(BaseSolver[Page]):
         }
 
         response = await self._page.request.post(
-            "https://api.capsolver.com/createTask", data=payload
+            f"{self._capsolver_api_url}/createTask", data=payload
         )
 
         try:

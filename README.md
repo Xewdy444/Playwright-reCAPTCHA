@@ -143,6 +143,8 @@ with recaptchav2.SyncSolver(page, capsolver_api_key="your_api_key") as solver:
     print(token)
 ```
 
+The CapSolver API base URL can be changed with the `CAPSOLVER_API_URL` environment variable or the `capsolver_api_url` argument (default: `https://api.capsolver.com`), so CapSolver-compatible services can be used. For example, [Solvecha](https://solvecha.com/docs/migrate-from-capsolver) works with `capsolver_api_url="https://api.solvecha.com"` and a Solvecha API key.
+
 ## reCAPTCHA v3 Example
 For more reCAPTCHA v3 examples, see the [examples folder](https://github.com/Xewdy444/Playwright-reCAPTCHA/tree/main/examples/recaptchav3).
 
