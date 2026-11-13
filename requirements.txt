@@ -1,4 +1,4 @@
-playwright>=1.33.0,!=1.50.0
+playwright!=1.50.0,>=1.65.0
 pydub==0.25.1
 pytest-asyncio==1.4.1.post1
 setuptools==84.2.1
